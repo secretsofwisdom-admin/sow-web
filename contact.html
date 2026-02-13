@@ -20,15 +20,43 @@
   <p>Feel free to reach out for consultations, collaborations, or questions.</p>
   <p><strong>Email:</strong> secretsofwisdom@icloud.com<br/>
   <strong>Secondary:</strong> secretsofwisdominbox@gmail.com</p>
-  <form class="fade-up">
+  <form id="contact-form" class="fade-up">
     <label>Name</label><br/>
-    <input type="text" style="width:100%;padding:10px;border:1px solid #ccc;margin-bottom:10px;"/><br/>
+    <input type="text" name="name" required style="width:100%;padding:10px;border:1px solid #ccc;margin-bottom:10px;"/><br/>
     <label>Email</label><br/>
-    <input type="email" style="width:100%;padding:10px;border:1px solid #ccc;margin-bottom:10px;"/><br/>
+    <input type="email" name="email" required style="width:100%;padding:10px;border:1px solid #ccc;margin-bottom:10px;"/><br/>
     <label>Message</label><br/>
-    <textarea style="width:100%;padding:10px;border:1px solid #ccc;height:120px;"></textarea><br/>
+    <textarea name="message" required style="width:100%;padding:10px;border:1px solid #ccc;height:120px;"></textarea><br/>
     <button type="submit">Send</button>
+    <p id="form-status" style="margin-top:10px;"></p>
   </form>
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const status = document.getElementById('form-status');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      status.textContent = '';
+      try {
+        const res = await fetch('/api/contact', { method: 'POST', body: new FormData(e.target) });
+        const data = await res.json();
+        if (res.ok) {
+          status.style.color = '#2E5941';
+          status.textContent = 'Message sent! Thank you.';
+          e.target.reset();
+        } else {
+          status.style.color = '#c0392b';
+          status.textContent = data.error || 'Failed to send. Please try again.';
+        }
+      } catch {
+        status.style.color = '#c0392b';
+        status.textContent = 'Failed to send. Please try again.';
+      }
+      btn.disabled = false;
+      btn.textContent = 'Send';
+    });
+  </script>
 </section>
 <footer>© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
 </body>
