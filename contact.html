@@ -42,9 +42,8 @@
         const res = await fetch('/api/contact', { method: 'POST', body: new FormData(e.target) });
         const data = await res.json();
         if (res.ok) {
-          status.style.color = '#2E5941';
-          status.textContent = 'Message sent! Thank you.';
-          e.target.reset();
+          window.location.href = 'thank-you.html';
+          return;
         } else {
           status.style.color = '#c0392b';
           status.textContent = data.error || 'Failed to send. Please try again.';
