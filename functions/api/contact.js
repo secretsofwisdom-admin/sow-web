@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         from: "Contact Form <onboarding@resend.dev>",
-        to: "secretsofwisdom@icloud.com",
+        to: "secretsofwisdominbox@gmail.com",
         reply_to: email,
         subject: `New message from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
