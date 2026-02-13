@@ -1,0 +1,100 @@
+
+body {
+  margin: 0;
+  font-family: 'Lora', serif;
+  background-color: #f8f7f3;
+  color: #2E2E2E;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+nav {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  background-color: rgba(248,247,243,0.9);
+  display: flex;
+  justify-content: center;
+  padding: 15px;
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+nav a {
+  text-decoration: none;
+  color: #2E5941;
+  font-weight: 500;
+  margin: 0 15px;
+  transition: color 0.3s ease;
+}
+nav a:hover {
+  color: #b89c63;
+  border-bottom: 2px solid #b89c63;
+}
+header {
+  background: linear-gradient(rgba(250,248,242,0.9), rgba(250,248,242,0.9)), url('https://res.cloudinary.com/duhygs5ck/image/upload/v1769820120/chat/generated-images/2fcb87f5-6a79-4588-930b-68b34234c4e5___0ee18e0c-00b9-4e42-8ed3-ee451ea43647.png') center/cover no-repeat;
+  text-align: center;
+  padding: 120px 20px 100px;
+  animation: fadeIn 1.5s ease-out;
+}
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  color: #2E5941;
+  font-size: 46px;
+  margin: 0;
+}
+header p {
+  font-style: italic;
+  font-size: 18px;
+  color: #5A5A5A;
+  margin-top: 10px;
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+section {
+  max-width: 900px;
+  margin: 80px auto;
+  padding: 0 20px;
+}
+.service {
+  background-color: rgba(255,255,255,0.85);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin: 20px 0;
+}
+.service h2 {
+  color: #2E5941;
+}
+button {
+  background-color: #2E5941;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+button:hover { background-color: #b89c63; }
+
+footer {
+  text-align: center;
+  font-size: 13px;
+  color: #808080;
+  padding: 20px 0 40px;
+}
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@media (max-width: 768px) {
+  header h1 {font-size: 34px;}
+  header p {font-size: 16px;}
+}
