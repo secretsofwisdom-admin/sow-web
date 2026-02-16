@@ -132,11 +132,17 @@ footer {
   header p {font-size: 16px;}
   nav {
     flex-wrap: wrap;
+    padding: 12px 10px;
+  }
+  nav a {
+    font-size: 16px;
+    margin: 0 8px;
+    padding: 4px 2px;
   }
   .lang-select {
     position: static;
     transform: none;
-    margin-top: 8px;
+    margin-top: 6px;
     align-self: center;
   }
 }
