@@ -5,20 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Thank You · Secrets of Wisdom · NZ</title>
   <link rel="stylesheet" href="style.css" />
+  <script defer src="lang-switcher.js"></script>
 </head>
 <body>
 <nav>
-  <a href="index.html">Home</a>
-  <a href="posts.html">Posts</a>
-  <a href="about.html">About</a>
-  <a href="services.html">Services</a>
-  <a href="contact.html">Contact</a>
+  <a href="index.html" data-i18n="nav.home">Home</a>
+  <a href="posts.html" data-i18n="nav.posts">Posts</a>
+  <a href="about.html" data-i18n="nav.about">About</a>
+  <a href="services.html" data-i18n="nav.services">Services</a>
+  <a href="contact.html" data-i18n="nav.contact">Contact</a>
+  <div class="lang-toggle">
+    <button data-lang="en" class="active">EN</button>
+    <button data-lang="ru">RU</button>
+  </div>
 </nav>
-<header><h1>Thank You</h1><p>Your message has been received.</p></header>
+<header>
+  <h1 data-i18n="thankYou.heading">Thank You</h1>
+  <p data-i18n="thankYou.subtitle">Your message has been received.</p>
+</header>
 <section class="fade-up">
-  <p>Thank you for reaching out to <strong>Secrets of Wisdom · NZ</strong>.<br/>I will connect with you soon to align energy and intention.</p>
-  <p><a href="index.html"><button>Back to Home</button></a></p>
+  <p data-i18n-html="thankYou.message">Thank you for reaching out to <strong>Secrets of Wisdom · NZ</strong>.<br/>I will connect with you soon to align energy and intention.</p>
+  <p><a href="index.html"><button data-i18n="thankYou.btnHome">Back to Home</button></a></p>
 </section>
-<footer>© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
+<footer data-i18n="footer">© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
 </body>
 </html>

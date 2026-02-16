@@ -6,20 +6,28 @@
   <title>Posts · Secrets of Wisdom · NZ</title>
   <link rel="icon" href="https://res.cloudinary.com/duhygs5ck/image/upload/v1769820120/chat/generated-images/2fcb87f5-6a79-4588-930b-68b34234c4e5___0ee18e0c-00b9-4e42-8ed3-ee451ea43647.png" />
   <link rel="stylesheet" href="style.css" />
+  <script defer src="lang-switcher.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body>
 <nav>
-  <a href="index.html">Home</a>
-  <a href="posts.html">Posts</a>
-  <a href="about.html">About</a>
-  <a href="services.html">Services</a>
-  <a href="contact.html">Contact</a>
+  <a href="index.html" data-i18n="nav.home">Home</a>
+  <a href="posts.html" data-i18n="nav.posts">Posts</a>
+  <a href="about.html" data-i18n="nav.about">About</a>
+  <a href="services.html" data-i18n="nav.services">Services</a>
+  <a href="contact.html" data-i18n="nav.contact">Contact</a>
+  <div class="lang-toggle">
+    <button data-lang="en" class="active">EN</button>
+    <button data-lang="ru">RU</button>
+  </div>
 </nav>
-<header><h1>Posts</h1><p>Insights on Energy, Harmony, and Destiny</p></header>
+<header>
+  <h1 data-i18n="posts.heading">Posts</h1>
+  <p data-i18n="posts.subtitle">Insights on Energy, Harmony, and Destiny</p>
+</header>
 <section class="fade-up">
-  <p style="text-align:center;color:#808080;margin-top:40px;">Articles coming soon. Stay tuned.</p>
+  <p style="text-align:center;color:#808080;margin-top:40px;" data-i18n="posts.comingSoon">Articles coming soon. Stay tuned.</p>
 </section>
-<footer>© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
+<footer data-i18n="footer">© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
 </body>
 </html>

@@ -6,36 +6,46 @@
   <title>Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</title>
   <link rel="icon" href="https://res.cloudinary.com/duhygs5ck/image/upload/v1769820120/chat/generated-images/2fcb87f5-6a79-4588-930b-68b34234c4e5___0ee18e0c-00b9-4e42-8ed3-ee451ea43647.png" />
   <link rel="stylesheet" href="style.css" />
+  <script defer src="lang-switcher.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body>
 <nav>
-  <a href="index.html">Home</a>
-  <a href="posts.html">Posts</a>
-  <a href="about.html">About</a>
-  <a href="services.html">Services</a>
-  <a href="contact.html">Contact</a>
+  <a href="index.html" data-i18n="nav.home">Home</a>
+  <a href="posts.html" data-i18n="nav.posts">Posts</a>
+  <a href="about.html" data-i18n="nav.about">About</a>
+  <a href="services.html" data-i18n="nav.services">Services</a>
+  <a href="contact.html" data-i18n="nav.contact">Contact</a>
+  <div class="lang-toggle">
+    <button data-lang="en" class="active">EN</button>
+    <button data-lang="ru">RU</button>
+  </div>
 </nav>
-<header><h1>Connect with Me</h1><p>Begin Your Harmony Journey</p></header>
+<header>
+  <h1 data-i18n="contact.heading">Connect with Me</h1>
+  <p data-i18n="contact.subtitle">Begin Your Harmony Journey</p>
+</header>
 <section class="fade-up">
-  <p>Feel free to reach out for consultations, collaborations, or questions.</p>
+  <p data-i18n="contact.intro">Feel free to reach out for consultations, collaborations, or questions.</p>
   <form id="contact-form" class="fade-up">
-    <label>Name</label><br/>
+    <label data-i18n="contact.labelName">Name</label><br/>
     <input type="text" name="name" required style="width:100%;padding:10px;border:1px solid #ccc;margin-bottom:10px;"/><br/>
-    <label>Email</label><br/>
+    <label data-i18n="contact.labelEmail">Email</label><br/>
     <input type="email" name="email" required style="width:100%;padding:10px;border:1px solid #ccc;margin-bottom:10px;"/><br/>
-    <label>Message</label><br/>
+    <label data-i18n="contact.labelMessage">Message</label><br/>
     <textarea name="message" required style="width:100%;padding:10px;border:1px solid #ccc;height:120px;"></textarea><br/>
-    <button type="submit">Send</button>
+    <button type="submit" data-i18n="contact.btnSend">Send</button>
     <p id="form-status" style="margin-top:10px;"></p>
   </form>
   <script>
+    window.sowFormText = { send: 'Send', sending: 'Sending...', error: 'Failed to send. Please try again.' };
     document.getElementById('contact-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const t = window.sowFormText;
       const btn = e.target.querySelector('button');
       const status = document.getElementById('form-status');
       btn.disabled = true;
-      btn.textContent = 'Sending...';
+      btn.textContent = t.sending;
       status.textContent = '';
       try {
         const res = await fetch('/api/contact', { method: 'POST', body: new FormData(e.target) });
@@ -45,17 +55,17 @@
           return;
         } else {
           status.style.color = '#c0392b';
-          status.textContent = data.error || 'Failed to send. Please try again.';
+          status.textContent = data.error || t.error;
         }
       } catch {
         status.style.color = '#c0392b';
-        status.textContent = 'Failed to send. Please try again.';
+        status.textContent = t.error;
       }
       btn.disabled = false;
-      btn.textContent = 'Send';
+      btn.textContent = t.send;
     });
   </script>
 </section>
-<footer>© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
+<footer data-i18n="footer">© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
 </body>
 </html>
