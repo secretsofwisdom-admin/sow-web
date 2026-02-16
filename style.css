@@ -101,7 +101,8 @@ footer {
 .lang-toggle {
   display: flex;
   align-items: center;
-  margin-left: 10px;
+  position: absolute;
+  right: 20px;
   gap: 0;
   flex-shrink: 0;
 }
