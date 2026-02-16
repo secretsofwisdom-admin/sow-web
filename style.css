@@ -135,6 +135,7 @@ footer {
   }
   .lang-select {
     position: static;
+    transform: none;
     margin-top: 8px;
     align-self: center;
   }
