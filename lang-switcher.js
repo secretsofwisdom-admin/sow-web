@@ -45,10 +45,9 @@
       };
     }
 
-    // Mark active toggle
-    document.querySelectorAll('.lang-toggle').forEach(function (wrap) {
-      wrap.querySelector('[data-lang="en"]').classList.remove('active');
-      wrap.querySelector('[data-lang="ru"]').classList.add('active');
+    // Update dropdown selection
+    document.querySelectorAll('.lang-select').forEach(function (sel) {
+      sel.value = 'ru';
     });
   }
 
@@ -88,10 +87,10 @@
 
   // On DOM ready, check saved preference
   function init() {
-    // Attach click handlers to toggle buttons
-    document.querySelectorAll('.lang-toggle [data-lang]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        switchTo(this.getAttribute('data-lang'));
+    // Attach change handler to language dropdown
+    document.querySelectorAll('.lang-select').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        switchTo(this.value);
       });
     });
 
