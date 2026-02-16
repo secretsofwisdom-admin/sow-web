@@ -21,9 +21,10 @@ nav a {
   text-decoration: none;
   color: #2E5941;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 28px;
   margin: 0 20px;
   padding: 8px 4px;
+  text-transform: uppercase;
   transition: color 0.3s ease;
 }
 nav a:hover {
