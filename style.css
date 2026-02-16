@@ -99,10 +99,10 @@ footer {
 
 /* Language select */
 .lang-select {
-  position: fixed;
-  top: 20px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   right: 30px;
-  z-index: 1001;
   font-family: 'Lora', serif;
   font-size: 14px;
   font-weight: 600;
