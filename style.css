@@ -7,6 +7,9 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
+body.mandala-reveal {
+  background: #f8f7f3 url('https://res.cloudinary.com/duhygs5ck/image/upload/v1769820120/chat/generated-images/2fcb87f5-6a79-4588-930b-68b34234c4e5___0ee18e0c-00b9-4e42-8ed3-ee451ea43647.png') center 60% / cover no-repeat fixed;
+}
 #mandala-overlay {
   position: fixed;
   inset: 0;
@@ -44,6 +47,8 @@ nav a:hover {
   border-bottom: 2px solid #b89c63;
 }
 header {
+  position: relative;
+  z-index: 1;
   text-align: center;
   padding: 120px 20px 100px;
   animation: fadeIn 1.5s ease-out;
@@ -72,6 +77,8 @@ header p {
 }
 
 section {
+  position: relative;
+  z-index: 1;
   max-width: 900px;
   margin: 80px auto;
   padding: 0 20px;
@@ -98,6 +105,8 @@ button {
 button:hover { background-color: #b89c63; }
 
 footer {
+  position: relative;
+  z-index: 1;
   text-align: center;
   font-size: 13px;
   color: #808080;
