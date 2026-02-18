@@ -16,7 +16,7 @@ body.mandala-reveal {
   background: rgba(248,247,243,0.7);
   pointer-events: none;
   z-index: 0;
-  animation: overlayFadeIn 2s ease-out;
+  animation: overlayFadeIn 5s ease-out;
 }
 @keyframes overlayFadeIn {
   from { opacity: 0; }
