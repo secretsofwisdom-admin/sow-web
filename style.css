@@ -2,7 +2,7 @@
 body {
   margin: 0;
   font-family: 'Lora', serif;
-  background: linear-gradient(rgba(248,247,243,0.8), rgba(248,247,243,0.8)), url('https://res.cloudinary.com/duhygs5ck/image/upload/v1769820120/chat/generated-images/2fcb87f5-6a79-4588-930b-68b34234c4e5___0ee18e0c-00b9-4e42-8ed3-ee451ea43647.png') center 60% / cover no-repeat fixed;
+  background: linear-gradient(rgba(248,247,243,0.7), rgba(248,247,243,0.7)), url('https://res.cloudinary.com/duhygs5ck/image/upload/v1769820120/chat/generated-images/2fcb87f5-6a79-4588-930b-68b34234c4e5___0ee18e0c-00b9-4e42-8ed3-ee451ea43647.png') center 60% / cover no-repeat fixed;
   color: #2E2E2E;
   line-height: 1.6;
   overflow-x: hidden;
