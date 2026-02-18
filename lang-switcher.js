@@ -1,6 +1,9 @@
 (function () {
   const STORAGE_KEY = 'sow-lang';
   let translations = null;
+  var originals = {};       // key → original textContent
+  var originalsHtml = {};   // key → original innerHTML
+  var originalBrand = {};   // element index → original innerHTML
 
   function getNestedValue(obj, path) {
     return path.split('.').reduce((o, k) => {
@@ -11,8 +14,48 @@
     }, obj);
   }
 
+  function saveOriginals() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      if (!(key in originals)) originals[key] = el.textContent;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-html');
+      if (!(key in originalsHtml)) originalsHtml[key] = el.innerHTML;
+    });
+    document.querySelectorAll('[data-i18n-brand]').forEach(function (el, i) {
+      if (!(i in originalBrand)) originalBrand[i] = el.innerHTML;
+    });
+  }
+
+  function restoreEnglish() {
+    document.documentElement.lang = 'en';
+
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      if (key in originals) el.textContent = originals[key];
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-html');
+      if (key in originalsHtml) el.innerHTML = originalsHtml[key];
+    });
+    document.querySelectorAll('[data-i18n-brand]').forEach(function (el, i) {
+      if (i in originalBrand) el.innerHTML = originalBrand[i];
+    });
+
+    // Reset form text
+    window.sowFormText = null;
+
+    document.querySelectorAll('.lang-select').forEach(function (sel) {
+      sel.value = 'en';
+    });
+  }
+
   function applyTranslations(data) {
     translations = data;
+
+    // Save English originals before first translation
+    saveOriginals();
 
     // Set lang attribute
     document.documentElement.lang = 'ru';
@@ -77,8 +120,7 @@
       }
     } else {
       localStorage.setItem(STORAGE_KEY, 'en');
-      // Reload to restore original English HTML
-      window.location.reload();
+      restoreEnglish();
     }
   }
 
@@ -93,6 +135,9 @@
         switchTo(this.value);
       });
     });
+
+    // Save English originals before any translation
+    saveOriginals();
 
     // Auto-apply saved language
     if (localStorage.getItem(STORAGE_KEY) === 'ru') {
