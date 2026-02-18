@@ -28,7 +28,7 @@ nav {
   background-color: rgba(248,247,243,0.9);
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 17px;
   backdrop-filter: blur(4px);
   z-index: 1000;
 }
@@ -38,7 +38,7 @@ nav a {
   font-weight: 500;
   font-size: 28px;
   margin: 0 20px;
-  padding: 8px 4px;
+  padding: 7px 4px;
   text-transform: uppercase;
   transition: color 0.3s ease;
 }
