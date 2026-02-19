@@ -10,6 +10,6 @@ window.addEventListener('load', () => {
     entries.forEach(entry => {
       if(entry.isIntersecting){ entry.target.classList.add('visible'); }
     });
-  }, {threshold: 0.4});
+  }, {threshold: 0.1});
   observers.forEach(el => observer.observe(el));
 });
