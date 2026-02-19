@@ -48,7 +48,7 @@ nav {
   border: none;
 }
 .nav-logo img {
-  height: 40px;
+  height: 120px;
   width: auto;
 }
 nav a {
@@ -272,7 +272,7 @@ footer {
     left: 8px;
   }
   .nav-logo img {
-    height: 32px;
+    height: 96px;
   }
   .lang-select {
     position: static;
