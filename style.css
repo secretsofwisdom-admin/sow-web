@@ -28,10 +28,30 @@ nav {
   top: 0; left: 0; width: 100%;
   background-color: rgba(248,247,243,0.9);
   display: flex;
+  align-items: center;
   justify-content: center;
   padding: 10px;
   backdrop-filter: blur(4px);
   z-index: 1000;
+}
+.nav-logo {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  border: none;
+}
+.nav-logo:hover {
+  border: none;
+}
+.nav-logo img {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 nav a {
   text-decoration: none;
@@ -249,6 +269,13 @@ footer {
     font-size: 16px;
     margin: 0 8px;
     padding: 4px 2px;
+  }
+  .nav-logo {
+    left: 8px;
+  }
+  .nav-logo img {
+    height: 32px;
+    width: 32px;
   }
   .lang-select {
     position: static;
