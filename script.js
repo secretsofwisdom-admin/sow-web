@@ -8,6 +8,27 @@ window.addEventListener('load', () => {
   }
 });
 
+// Post card expand/collapse
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.post-card-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const card = header.closest('.post-card');
+      const wasExpanded = card.classList.contains('expanded');
+      card.classList.toggle('expanded');
+      header.setAttribute('aria-expanded', !wasExpanded);
+      if (wasExpanded) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    header.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        header.click();
+      }
+    });
+  });
+});
+
 // Fade-up: init as soon as DOM is ready (don't wait for images)
 document.addEventListener('DOMContentLoaded', () => {
   const observers = document.querySelectorAll('.fade-up');
