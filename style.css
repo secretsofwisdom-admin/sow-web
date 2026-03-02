@@ -2,14 +2,14 @@
 body {
   margin: 0;
   font-family: 'Lora', serif;
-  background: linear-gradient(rgba(248,247,243,0.7), rgba(248,247,243,0.7)), url('images/Secrets logo.png') center / auto no-repeat fixed;
+  background: linear-gradient(rgba(248,247,243,0.7), rgba(248,247,243,0.7)), url('images/secrets-logo.png') center / auto no-repeat fixed;
   font-size: 20px;
   color: #2E2E2E;
   line-height: 1.6;
   overflow-x: hidden;
 }
 body.mandala-reveal {
-  background: #f8f7f3 url('images/Secrets logo.png') center / auto no-repeat fixed;
+  background: #f8f7f3 url('images/secrets-logo.png') center / auto no-repeat fixed;
 }
 #mandala-overlay {
   position: fixed;
