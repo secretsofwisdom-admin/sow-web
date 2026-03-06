@@ -8,11 +8,13 @@ window.addEventListener('load', () => {
   }
 });
 
-// Post card expand/collapse
+// Expandable card handler (posts + services)
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.post-card-header').forEach(header => {
-    header.addEventListener('click', () => {
-      const card = header.closest('.post-card');
+  document.querySelectorAll('.post-card-header, .svc-card-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      // Don't toggle if clicking a link or button inside the body
+      if (e.target.closest('a.btn-cta')) return;
+      const card = header.closest('.post-card, .svc-card');
       const wasExpanded = card.classList.contains('expanded');
       card.classList.toggle('expanded');
       header.setAttribute('aria-expanded', !wasExpanded);
