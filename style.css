@@ -154,6 +154,14 @@ section {
   border-radius: 12px;
   backdrop-filter: blur(6px);
 }
+/* Service card sections: no glass background, tighter spacing */
+section:has(.svc-card) {
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  padding: 0 20px;
+  margin: 30px auto;
+}
 
 /* Expandable service cards */
 .svc-card {

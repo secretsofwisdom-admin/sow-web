@@ -12,8 +12,8 @@ window.addEventListener('load', () => {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.post-card-header, .svc-card-header').forEach(header => {
     header.addEventListener('click', (e) => {
-      // Don't toggle if clicking a link or button inside the body
-      if (e.target.closest('a.btn-cta')) return;
+      // Don't toggle if clicking a CTA link inside the expanded body
+      if (e.target.closest('.svc-card-body a.btn-cta, .post-card-body a')) return;
       const card = header.closest('.post-card, .svc-card');
       const wasExpanded = card.classList.contains('expanded');
       card.classList.toggle('expanded');
