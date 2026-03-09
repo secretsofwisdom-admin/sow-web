@@ -661,13 +661,15 @@ section a:hover {
 
 /* Calculator iframe wrapper */
 .calc-wrapper {
-  position: relative;
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 1;
-  width: 100%;
-  height: calc(100vh - 60px);
-  margin-top: 60px;
 }
 .calc-wrapper iframe {
+  display: block;
   width: 100%;
   height: 100%;
   border: none;
