@@ -354,6 +354,39 @@ section:has(.svc-card) {
   border-top: 1px solid rgba(201,168,76,0.1);
 }
 
+/* Suggestion list (Date Selection) */
+.suggestion-cat {
+  color: #C9A84C;
+  font-size: 16px;
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+.suggestion-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  columns: 2;
+  column-gap: 24px;
+}
+.suggestion-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 4px;
+  font-size: 15px;
+  line-height: 1.45;
+  break-inside: avoid;
+}
+.suggestion-list li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: #C9A84C;
+  font-weight: bold;
+}
+@media (max-width: 600px) {
+  .suggestion-list { columns: 1; }
+}
+
 /* Add-on rows */
 .addon-list {
   display: flex;
