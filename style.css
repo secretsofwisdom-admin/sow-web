@@ -659,6 +659,20 @@ section a:hover {
   border-bottom-color: #E8D48B;
 }
 
+/* Calculator iframe wrapper */
+.calc-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: calc(100vh - 60px);
+  margin-top: 60px;
+}
+.calc-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   header h1 {font-size: 34px;}
