@@ -104,13 +104,14 @@ header h1 {
   color: #C9A84C;
   font-size: 46px;
   margin: 0;
-  text-shadow: 0 0 30px rgba(201,168,76,0.3);
+  text-shadow: 0 0 30px rgba(201,168,76,0.3), 0 2px 12px rgba(0,0,0,0.8);
 }
 header p {
   font-style: italic;
   font-size: 18px;
   color: #B8B4AC;
   margin-top: 10px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
 }
 .tagline {
   font-size: 16px;
@@ -120,6 +121,7 @@ header p {
   letter-spacing: 1px;
   margin-top: 14px;
   text-transform: uppercase;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
 }
 
 /* Hero image (index page) */
