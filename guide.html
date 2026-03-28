@@ -26,9 +26,15 @@
     <option value="ru">RU</option>
   </select>
 </nav>
-<header>
-  <h1 data-i18n="guide.heading">Your Consultation Guide</h1>
-  <p data-i18n="guide.subtitle" style="font-family:'Cormorant Garamond',serif; font-size:1.6em; color:transparent; font-weight:700; letter-spacing:1px; margin-top:0.5em; -webkit-text-stroke: 1px #c9a84c; text-shadow:none;">How to Get the Most from Your Chinese Astrology Reading</p>
+<header style="position:relative; overflow:hidden;">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:110%; text-align:center; pointer-events:none; z-index:0;">
+    <div style="font-family:'Cormorant Garamond',serif; font-size:5em; font-weight:700; color:transparent; -webkit-text-stroke:1px rgba(201,168,76,0.15); line-height:1.1; letter-spacing:2px; text-shadow:none;">Your Consultation Guide</div>
+    <div style="font-family:'Cormorant Garamond',serif; font-size:2.2em; font-weight:600; color:transparent; -webkit-text-stroke:1px rgba(201,168,76,0.1); line-height:1.3; margin-top:0.2em; text-shadow:none;">How to Get the Most from Your Chinese Astrology Reading</div>
+  </div>
+  <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
+    <h1 data-i18n="guide.heading" style="color:#f0e0a8; background:rgba(201,168,76,0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:0.5em 1.2em; border-radius:20px; border:1px solid rgba(201,168,76,0.15); display:inline-block; text-shadow:none;">Your Consultation Guide</h1>
+    <p data-i18n="guide.subtitle" style="font-family:'Cormorant Garamond',serif; font-size:1.6em; color:#f0e0a8; font-weight:700; letter-spacing:1px; text-shadow:none; background:rgba(201,168,76,0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:0.6em 1.2em; border-radius:20px; border:1px solid rgba(201,168,76,0.15); display:inline-block;">How to Get the Most from Your Chinese Astrology Reading</p>
+  </div>
 </header>
 
 <section>
@@ -126,7 +132,9 @@
   </div>
 </section>
 
-<p class="guide-closing" style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.8em; font-weight:600; font-style:italic; color:transparent; -webkit-text-stroke: 1px #c9a84c; margin:2.5em 0; letter-spacing:1px;" data-i18n="guide.closing">Your chart is not your fate — it is your compass.</p>
+<div style="text-align:center; margin:2.5em 0;">
+<p class="guide-closing" style="font-family:'Cormorant Garamond',serif; font-size:1.8em; font-weight:600; font-style:italic; color:#f0e0a8; letter-spacing:1px; background:rgba(201,168,76,0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:0.6em 1.2em; border-radius:20px; border:1px solid rgba(201,168,76,0.15); display:inline-block;" data-i18n="guide.closing">Your chart is not your fate — it is your compass.</p>
+</div>
 
 <footer data-i18n="footer">© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
 </body>
