@@ -90,6 +90,14 @@ nav a:hover {
   color: #E8D48B;
   border-bottom: 2px solid #E8D48B;
 }
+.nav-yt {
+  display: flex;
+  align-items: center;
+  font-size: 14px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.nav-yt:hover svg { fill: #FF3333; }
 
 /* Header */
 header {
