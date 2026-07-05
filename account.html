@@ -22,7 +22,8 @@
       padding: 28px 30px;
       margin: 22px 0;
     }
-    .acct-card h3 { font-family: 'Cormorant Garamond', serif; color: #C9A84C; margin: 0 0 14px; font-size: 1.5em; font-weight: 600; }
+    .acct-card h3 { font-family: 'Cormorant Garamond', serif; color: #C9A84C; margin: 0 0 6px; font-size: 1.5em; font-weight: 600; }
+    .acct-card .lead { color: #B9B3C7; font-size: 0.92em; margin: 0 0 16px; }
     .acct-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid rgba(201,168,76,0.12); }
     .acct-row:last-child { border-bottom: none; }
     .acct-label { color: #B9B3C7; font-size: 0.92em; }
@@ -39,6 +40,7 @@
     .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
     .switch input { width: 20px; height: 20px; accent-color: #C9A84C; }
     .linkbtn { background: none; border: none; color: #C9A84C; cursor: pointer; text-decoration: underline; font-size: 0.95em; padding: 0; font-family: inherit; }
+    .altrow { margin-top: 14px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
     .hidden { display: none !important; }
     #acct-loading { text-align: center; color: #B9B3C7; padding: 30px 0; }
     .name-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -73,18 +75,53 @@
 
     <div id="acct-loading">Loading…</div>
 
-    <!-- SIGNED OUT: request a magic link -->
-    <div id="acct-login" class="acct-card hidden">
-      <h3 data-i18n="account.signInHeading">Sign in</h3>
-      <p class="muted" data-i18n="account.signInIntro">Enter your email and we'll send you a secure sign-in link — no password needed. Use the same email you booked or paid with to see your orders.</p>
-      <div id="login-msg"></div>
-      <form id="login-form" autocomplete="on">
-        <label for="li-name" data-i18n="account.labelName">Name (optional)</label><br/>
-        <input id="li-name" type="text" name="name" autocomplete="name" /><br/>
-        <label for="li-email" data-i18n="account.labelEmail">Email</label><br/>
-        <input id="li-email" type="email" name="email" autocomplete="email" required /><br/>
-        <button type="submit" id="li-submit" data-i18n="account.sendLink">Send me a sign-in link</button>
-      </form>
+    <!-- SIGNED OUT: sign in + create account -->
+    <div id="acct-auth" class="hidden">
+      <div class="acct-card">
+        <h3 data-i18n="account.signInHeading">Sign in</h3>
+        <p class="lead" data-i18n="account.signInIntro">Welcome back. Sign in to see your orders and manage your preferences.</p>
+        <div id="login-msg"></div>
+        <form id="login-form" autocomplete="on">
+          <label for="li-email" data-i18n="account.labelEmail">Email</label><br/>
+          <input id="li-email" type="email" name="email" autocomplete="email" required /><br/>
+          <label for="li-password" data-i18n="account.labelPassword">Password</label><br/>
+          <input id="li-password" type="password" name="password" autocomplete="current-password" required /><br/>
+          <button type="submit" id="li-submit" data-i18n="account.signInBtn">Sign in</button>
+        </form>
+        <div class="altrow">
+          <button class="linkbtn" id="forgot-btn" data-i18n="account.forgot">Forgot password?</button>
+          <button class="linkbtn" id="magic-btn" data-i18n="account.magicLink">Email me a sign-in link instead</button>
+        </div>
+      </div>
+
+      <div class="acct-card">
+        <h3 data-i18n="account.createHeading">Create your account</h3>
+        <p class="lead" data-i18n="account.createIntro">New here? Create an account with the same email you book or pay with, so your orders appear automatically.</p>
+        <div id="signup-msg"></div>
+        <form id="signup-form" autocomplete="on">
+          <label for="su-name" data-i18n="account.labelName">Name (optional)</label><br/>
+          <input id="su-name" type="text" name="name" autocomplete="name" /><br/>
+          <label for="su-email" data-i18n="account.labelEmail">Email</label><br/>
+          <input id="su-email" type="email" name="email" autocomplete="email" required /><br/>
+          <label for="su-password" data-i18n="account.labelNewPassword">Password (at least 8 characters)</label><br/>
+          <input id="su-password" type="password" name="password" autocomplete="new-password" minlength="8" required /><br/>
+          <button type="submit" id="su-submit" data-i18n="account.createBtn">Create account</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RESET: set a new password from an emailed link -->
+    <div id="acct-reset" class="hidden">
+      <div class="acct-card">
+        <h3 data-i18n="account.resetHeading">Set a new password</h3>
+        <p class="lead" data-i18n="account.resetIntro">Choose a new password for your account.</p>
+        <div id="reset-msg"></div>
+        <form id="reset-form" autocomplete="on">
+          <label for="rs-password" data-i18n="account.labelNewPassword">New password (at least 8 characters)</label><br/>
+          <input id="rs-password" type="password" name="password" autocomplete="new-password" minlength="8" required /><br/>
+          <button type="submit" id="rs-submit" data-i18n="account.resetBtn">Set password &amp; sign in</button>
+        </form>
+      </div>
     </div>
 
     <!-- SIGNED IN: dashboard -->
@@ -105,6 +142,10 @@
         <div class="acct-row">
           <span class="acct-label" data-i18n="account.memberSince">Member since</span>
           <span class="acct-value" id="dash-since"></span>
+        </div>
+        <div class="acct-row">
+          <span class="acct-label" data-i18n="account.password">Password</span>
+          <button class="linkbtn" id="change-pw" data-i18n="account.changePassword">Change password</button>
         </div>
         <div id="profile-msg"></div>
       </div>
@@ -139,10 +180,9 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-
-  function msg(el, text, kind) {
-    el.innerHTML = text ? '<div class="msg ' + kind + '">' + text + '</div>' : '';
-  }
+  function show(id) { $(id).classList.remove('hidden'); }
+  function hide(id) { $(id).classList.add('hidden'); }
+  function msg(el, text, kind) { el.innerHTML = text ? '<div class="msg ' + kind + '">' + text + '</div>' : ''; }
   function fmtDate(ms) {
     try { return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
     catch (e) { return ''; }
@@ -151,23 +191,31 @@
     try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format((amount || 0) / 100); }
     catch (e) { return '$' + ((amount || 0) / 100).toFixed(2); }
   }
+  function postJSON(url, data) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(data || {})
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); });
+  }
 
-  // Surface magic-link errors passed back via ?error=
   var params = new URLSearchParams(location.search);
   var errParam = params.get('error');
+  var resetToken = params.get('reset');
 
-  function showLogin() {
-    $('acct-loading').classList.add('hidden');
-    $('acct-dash').classList.add('hidden');
-    $('acct-login').classList.remove('hidden');
-    if (errParam === 'expired') msg($('login-msg'), 'That sign-in link has expired or was already used. Please request a new one.', 'err');
-    else if (errParam === 'invalid') msg($('login-msg'), 'That sign-in link was not valid. Please request a new one.', 'err');
+  function showAuth() {
+    hide('acct-loading'); hide('acct-dash'); hide('acct-reset'); show('acct-auth');
+    if (errParam === 'expired') msg($('login-msg'), 'That link has expired or was already used. Please sign in or request a new one.', 'err');
+    else if (errParam === 'invalid') msg($('login-msg'), 'That link was not valid. Please try again.', 'err');
+  }
+
+  function showReset() {
+    hide('acct-loading'); hide('acct-dash'); hide('acct-auth'); show('acct-reset');
   }
 
   function showDash(me) {
-    $('acct-loading').classList.add('hidden');
-    $('acct-login').classList.add('hidden');
-    $('acct-dash').classList.remove('hidden');
+    hide('acct-loading'); hide('acct-auth'); hide('acct-reset'); show('acct-dash');
     $('dash-name').value = me.name || '';
     $('dash-email').textContent = me.email;
     $('dash-since').textContent = me.memberSince ? fmtDate(me.memberSince) : '—';
@@ -202,64 +250,97 @@
       .catch(function () { $('orders-body').innerHTML = '<p class="msg err">Could not load orders.</p>'; });
   }
 
-  // Initial state
-  fetch('/api/account/me', { credentials: 'same-origin' })
-    .then(function (r) { return r.json(); })
-    .then(function (me) { if (me.authenticated) showDash(me); else showLogin(); })
-    .catch(showLogin);
+  // ---- Initial state ----
+  if (resetToken) {
+    showReset();
+  } else {
+    fetch('/api/account/me', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (me) { if (me.authenticated) showDash(me); else showAuth(); })
+      .catch(showAuth);
+  }
 
-  // Request magic link
+  // ---- Sign in (password) ----
   $('login-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    var btn = $('li-submit');
-    btn.disabled = true;
-    msg($('login-msg'), '', 'info');
-    fetch('/api/auth/request-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ email: $('li-email').value, name: $('li-name').value }),
-    })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+    var btn = $('li-submit'); btn.disabled = true; msg($('login-msg'), '', 'info');
+    postJSON('/api/auth/login', { email: $('li-email').value, password: $('li-password').value })
       .then(function (res) {
-        if (res.ok && res.d.success) {
-          msg($('login-msg'), 'Check your email — we sent a sign-in link. It expires in 15 minutes.', 'ok');
-        } else {
-          msg($('login-msg'), res.d.error || 'Something went wrong. Please try again.', 'err');
-          btn.disabled = false;
-        }
+        if (res.ok && res.d.success) { location.href = 'account.html'; }
+        else { msg($('login-msg'), res.d.error || 'Could not sign in.', res.d.pending ? 'info' : 'err'); btn.disabled = false; }
       })
       .catch(function () { msg($('login-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });
   });
 
-  // Save name
+  // ---- Create account ----
+  $('signup-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('su-submit'); btn.disabled = true; msg($('signup-msg'), '', 'info');
+    postJSON('/api/auth/signup', { name: $('su-name').value, email: $('su-email').value, password: $('su-password').value })
+      .then(function (res) {
+        if (res.ok && res.d.success) {
+          msg($('signup-msg'), 'Almost there — check your email and click the link to confirm your account.', 'ok');
+        } else { msg($('signup-msg'), res.d.error || 'Could not create account.', 'err'); btn.disabled = false; }
+      })
+      .catch(function () { msg($('signup-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });
+  });
+
+  // ---- Forgot password ----
+  $('forgot-btn').addEventListener('click', function () {
+    var email = $('li-email').value.trim();
+    if (!email) { msg($('login-msg'), 'Enter your email above first, then tap “Forgot password?”.', 'info'); return; }
+    postJSON('/api/auth/reset-request', { email: email })
+      .then(function () { msg($('login-msg'), 'If that email has an account, a password-reset link is on its way.', 'ok'); })
+      .catch(function () { msg($('login-msg'), 'Network error. Please try again.', 'err'); });
+  });
+
+  // ---- Magic sign-in link ----
+  $('magic-btn').addEventListener('click', function () {
+    var email = $('li-email').value.trim();
+    if (!email) { msg($('login-msg'), 'Enter your email above first, then tap “Email me a sign-in link”.', 'info'); return; }
+    postJSON('/api/auth/request-link', { email: email })
+      .then(function (res) {
+        if (res.ok && res.d.success) msg($('login-msg'), 'Check your email — we sent a one-time sign-in link (expires in 15 minutes).', 'ok');
+        else msg($('login-msg'), res.d.error || 'Could not send the link.', 'err');
+      })
+      .catch(function () { msg($('login-msg'), 'Network error. Please try again.', 'err'); });
+  });
+
+  // ---- Reset: set new password ----
+  $('reset-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('rs-submit'); btn.disabled = true; msg($('reset-msg'), '', 'info');
+    postJSON('/api/auth/reset-confirm', { token: resetToken, password: $('rs-password').value })
+      .then(function (res) {
+        if (res.ok && res.d.success) { location.href = 'account.html'; }
+        else { msg($('reset-msg'), res.d.error || 'Could not reset password.', 'err'); btn.disabled = false; }
+      })
+      .catch(function () { msg($('reset-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });
+  });
+
+  // ---- Dashboard: save name ----
   $('save-name').addEventListener('click', function () {
-    fetch('/api/account/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ name: $('dash-name').value }),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { msg($('profile-msg'), d.success ? 'Saved.' : (d.error || 'Could not save.'), d.success ? 'ok' : 'err'); })
+    postJSON('/api/account/update', { name: $('dash-name').value })
+      .then(function (res) { msg($('profile-msg'), res.d.success ? 'Saved.' : (res.d.error || 'Could not save.'), res.d.success ? 'ok' : 'err'); })
       .catch(function () { msg($('profile-msg'), 'Could not save.', 'err'); });
   });
 
-  // Newsletter toggle
+  // ---- Dashboard: change password (emails a reset link) ----
+  $('change-pw').addEventListener('click', function () {
+    postJSON('/api/auth/reset-request', { email: $('dash-email').textContent })
+      .then(function () { msg($('profile-msg'), 'We’ve emailed you a link to set a new password.', 'ok'); })
+      .catch(function () { msg($('profile-msg'), 'Could not send the link.', 'err'); });
+  });
+
+  // ---- Dashboard: newsletter toggle ----
   $('dash-newsletter').addEventListener('change', function () {
     var on = $('dash-newsletter').checked;
-    fetch('/api/account/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ newsletter: on }),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { msg($('prefs-msg'), d.success ? (on ? 'Subscribed.' : 'Unsubscribed.') : (d.error || 'Could not update.'), d.success ? 'ok' : 'err'); })
+    postJSON('/api/account/update', { newsletter: on })
+      .then(function (res) { msg($('prefs-msg'), res.d.success ? (on ? 'Subscribed.' : 'Unsubscribed.') : (res.d.error || 'Could not update.'), res.d.success ? 'ok' : 'err'); })
       .catch(function () { msg($('prefs-msg'), 'Could not update.', 'err'); });
   });
 
-  // Sign out
+  // ---- Dashboard: sign out ----
   $('logout-btn').addEventListener('click', function () {
     fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
       .then(function () { location.href = 'account.html'; });
