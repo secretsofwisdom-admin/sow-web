@@ -21,7 +21,7 @@ export async function onRequestPost(context) {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Contact Form <onboarding@resend.dev>",
+        from: "Secrets of Wisdom Contact <hello@secretsofwisdom.org>",
         to: "secretsofwisdominbox@gmail.com",
         reply_to: email,
         subject: `New message from ${name}`,

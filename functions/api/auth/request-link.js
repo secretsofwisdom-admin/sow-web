@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Secrets of Wisdom <onboarding@resend.dev>",
+        from: "Secrets of Wisdom <hello@secretsofwisdom.org>",
         to: email,
         subject: "Your sign-in link · Secrets of Wisdom",
         text:
