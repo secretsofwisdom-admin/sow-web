@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account · Secrets of Wisdom · NZ</title>
+  <meta name="description" content="Sign in to your Secrets of Wisdom account to view your order history and manage your preferences." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" href="images/secrets-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="lang-switcher.js"></script>
+  <script defer src="script.js"></script>
+  <style>
+    .acct-wrap { max-width: 760px; margin: 0 auto; }
+    .acct-card {
+      background: rgba(8,8,30,0.6);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 12px;
+      padding: 28px 30px;
+      margin: 22px 0;
+    }
+    .acct-card h3 { font-family: 'Cormorant Garamond', serif; color: #C9A84C; margin: 0 0 14px; font-size: 1.5em; font-weight: 600; }
+    .acct-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid rgba(201,168,76,0.12); }
+    .acct-row:last-child { border-bottom: none; }
+    .acct-label { color: #B9B3C7; font-size: 0.92em; }
+    .acct-value { color: #EDEAE4; }
+    .muted { color: #8f8aa3; font-size: 0.9em; }
+    .msg { margin: 12px 0; padding: 11px 14px; border-radius: 8px; font-size: 0.95em; }
+    .msg.info { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3); color: #E8D48B; }
+    .msg.err  { background: rgba(180,60,60,0.15); border: 1px solid rgba(180,60,60,0.4); color: #f0b9b9; }
+    .msg.ok   { background: rgba(80,150,90,0.15); border: 1px solid rgba(80,150,90,0.4); color: #b8e6bf; }
+    .orders { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    .orders th, .orders td { text-align: left; padding: 10px 8px; border-bottom: 1px solid rgba(201,168,76,0.12); font-size: 0.95em; }
+    .orders th { color: #C9A84C; font-weight: 600; }
+    .orders td a { color: #C9A84C; }
+    .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+    .switch input { width: 20px; height: 20px; accent-color: #C9A84C; }
+    .linkbtn { background: none; border: none; color: #C9A84C; cursor: pointer; text-decoration: underline; font-size: 0.95em; padding: 0; font-family: inherit; }
+    .hidden { display: none !important; }
+    #acct-loading { text-align: center; color: #B9B3C7; padding: 30px 0; }
+    .name-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .name-edit input { margin: 0; }
+  </style>
+</head>
+<body>
+<div id="loader"><img src="images/celestial-center.jpg" alt="Loading..."></div>
+<nav>
+  <a href="index.html" class="nav-logo"><img src="images/celestial-center.jpg" alt="Secrets of Wisdom logo" /></a>
+  <button class="nav-toggle" type="button" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <a href="index.html" data-i18n="nav.home">Home</a>
+  <a href="posts.html" data-i18n="nav.posts">Posts</a>
+  <a href="about.html" data-i18n="nav.about">About</a>
+  <a href="services.html" data-i18n="nav.services">Services</a>
+  <a href="contact.html" data-i18n="nav.contact">Contact</a>
+  <a href="calculator.html" data-i18n="nav.calc">Calculator</a>
+  <a href="account.html" data-i18n="nav.account">Account</a>
+  <select class="lang-select" aria-label="Language">
+    <option value="en" selected>EN</option>
+    <option value="ru">RU</option>
+  </select>
+</nav>
+
+<header>
+  <h1 data-i18n-brand>Secrets of Wisdom · NZ</h1>
+  <p class="tagline" data-i18n="account.tagline">Your Account</p>
+</header>
+
+<section class="fade-up">
+  <div class="acct-wrap">
+
+    <div id="acct-loading">Loading…</div>
+
+    <!-- SIGNED OUT: request a magic link -->
+    <div id="acct-login" class="acct-card hidden">
+      <h3 data-i18n="account.signInHeading">Sign in</h3>
+      <p class="muted" data-i18n="account.signInIntro">Enter your email and we'll send you a secure sign-in link — no password needed. Use the same email you booked or paid with to see your orders.</p>
+      <div id="login-msg"></div>
+      <form id="login-form" autocomplete="on">
+        <label for="li-name" data-i18n="account.labelName">Name (optional)</label><br/>
+        <input id="li-name" type="text" name="name" autocomplete="name" /><br/>
+        <label for="li-email" data-i18n="account.labelEmail">Email</label><br/>
+        <input id="li-email" type="email" name="email" autocomplete="email" required /><br/>
+        <button type="submit" id="li-submit" data-i18n="account.sendLink">Send me a sign-in link</button>
+      </form>
+    </div>
+
+    <!-- SIGNED IN: dashboard -->
+    <div id="acct-dash" class="hidden">
+      <div class="acct-card">
+        <h3 data-i18n="account.profileHeading">Profile</h3>
+        <div class="acct-row">
+          <span class="acct-label" data-i18n="account.labelName">Name</span>
+          <span class="name-edit">
+            <input id="dash-name" type="text" placeholder="Your name" />
+            <button class="linkbtn" id="save-name" data-i18n="account.save">Save</button>
+          </span>
+        </div>
+        <div class="acct-row">
+          <span class="acct-label" data-i18n="account.labelEmail">Email</span>
+          <span class="acct-value" id="dash-email"></span>
+        </div>
+        <div class="acct-row">
+          <span class="acct-label" data-i18n="account.memberSince">Member since</span>
+          <span class="acct-value" id="dash-since"></span>
+        </div>
+        <div id="profile-msg"></div>
+      </div>
+
+      <div class="acct-card">
+        <h3 data-i18n="account.prefsHeading">Preferences</h3>
+        <label class="switch">
+          <input type="checkbox" id="dash-newsletter" />
+          <span data-i18n="account.newsletterLabel">Send me the newsletter — seasonal energy notes, timing tips, and occasional offers.</span>
+        </label>
+        <div id="prefs-msg"></div>
+      </div>
+
+      <div class="acct-card">
+        <h3 data-i18n="account.ordersHeading">Order history</h3>
+        <div id="orders-body">
+          <p class="muted" data-i18n="account.ordersLoading">Loading your orders…</p>
+        </div>
+        <p class="muted" style="margin-top:14px;" data-i18n="account.ordersNote">Bookings scheduled through the calendar are confirmed by email separately. Purchases made with the same email address appear here.</p>
+      </div>
+
+      <div class="cta-center" style="margin-top:6px;">
+        <button class="linkbtn" id="logout-btn" data-i18n="account.signOut">Sign out</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer data-i18n="footer">© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  function msg(el, text, kind) {
+    el.innerHTML = text ? '<div class="msg ' + kind + '">' + text + '</div>' : '';
+  }
+  function fmtDate(ms) {
+    try { return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch (e) { return ''; }
+  }
+  function fmtMoney(amount, currency) {
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format((amount || 0) / 100); }
+    catch (e) { return '$' + ((amount || 0) / 100).toFixed(2); }
+  }
+
+  // Surface magic-link errors passed back via ?error=
+  var params = new URLSearchParams(location.search);
+  var errParam = params.get('error');
+
+  function showLogin() {
+    $('acct-loading').classList.add('hidden');
+    $('acct-dash').classList.add('hidden');
+    $('acct-login').classList.remove('hidden');
+    if (errParam === 'expired') msg($('login-msg'), 'That sign-in link has expired or was already used. Please request a new one.', 'err');
+    else if (errParam === 'invalid') msg($('login-msg'), 'That sign-in link was not valid. Please request a new one.', 'err');
+  }
+
+  function showDash(me) {
+    $('acct-loading').classList.add('hidden');
+    $('acct-login').classList.add('hidden');
+    $('acct-dash').classList.remove('hidden');
+    $('dash-name').value = me.name || '';
+    $('dash-email').textContent = me.email;
+    $('dash-since').textContent = me.memberSince ? fmtDate(me.memberSince) : '—';
+    $('dash-newsletter').checked = !!me.newsletter;
+    loadOrders();
+  }
+
+  function loadOrders() {
+    fetch('/api/account/orders', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var body = $('orders-body');
+        if (d.error) { body.innerHTML = '<p class="msg err">' + d.error + '</p>'; return; }
+        var orders = d.orders || [];
+        if (!orders.length) {
+          var note = d.note === 'not_configured'
+            ? 'No orders to show yet.'
+            : 'No purchases found for this email yet. When you buy or book, your orders will appear here.';
+          body.innerHTML = '<p class="muted">' + note + '</p>';
+          return;
+        }
+        var rows = orders.map(function (o) {
+          var receipt = o.receiptUrl ? '<a href="' + o.receiptUrl + '" target="_blank" rel="noopener">Receipt</a>' : '';
+          var refunded = o.refunded ? ' <span class="muted">(refunded)</span>' : '';
+          return '<tr><td>' + fmtDate(o.date) + '</td><td>' + (o.description || 'Purchase') + refunded +
+                 '</td><td>' + fmtMoney(o.amount, o.currency) + '</td><td>' + receipt + '</td></tr>';
+        }).join('');
+        body.innerHTML =
+          '<table class="orders"><thead><tr><th>Date</th><th>Item</th><th>Amount</th><th></th></tr></thead><tbody>' +
+          rows + '</tbody></table>';
+      })
+      .catch(function () { $('orders-body').innerHTML = '<p class="msg err">Could not load orders.</p>'; });
+  }
+
+  // Initial state
+  fetch('/api/account/me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (me) { if (me.authenticated) showDash(me); else showLogin(); })
+    .catch(showLogin);
+
+  // Request magic link
+  $('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('li-submit');
+    btn.disabled = true;
+    msg($('login-msg'), '', 'info');
+    fetch('/api/auth/request-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ email: $('li-email').value, name: $('li-name').value }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (res.ok && res.d.success) {
+          msg($('login-msg'), 'Check your email — we sent a sign-in link. It expires in 15 minutes.', 'ok');
+        } else {
+          msg($('login-msg'), res.d.error || 'Something went wrong. Please try again.', 'err');
+          btn.disabled = false;
+        }
+      })
+      .catch(function () { msg($('login-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });
+  });
+
+  // Save name
+  $('save-name').addEventListener('click', function () {
+    fetch('/api/account/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ name: $('dash-name').value }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { msg($('profile-msg'), d.success ? 'Saved.' : (d.error || 'Could not save.'), d.success ? 'ok' : 'err'); })
+      .catch(function () { msg($('profile-msg'), 'Could not save.', 'err'); });
+  });
+
+  // Newsletter toggle
+  $('dash-newsletter').addEventListener('change', function () {
+    var on = $('dash-newsletter').checked;
+    fetch('/api/account/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ newsletter: on }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { msg($('prefs-msg'), d.success ? (on ? 'Subscribed.' : 'Unsubscribed.') : (d.error || 'Could not update.'), d.success ? 'ok' : 'err'); })
+      .catch(function () { msg($('prefs-msg'), 'Could not update.', 'err'); });
+  });
+
+  // Sign out
+  $('logout-btn').addEventListener('click', function () {
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
+      .then(function () { location.href = 'account.html'; });
+  });
+})();
+</script>
+</body>
+</html>

@@ -3,5 +3,12 @@
   "compatibility_date": "2026-02-13",
   "assets": {
     "directory": "./"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sow-portal",
+      "database_id": "ecf8579d-5c31-4e17-9ddb-7f485aa286da"
+    }
+  ]
 }
