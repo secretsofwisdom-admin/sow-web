@@ -70,7 +70,12 @@ export function isValidEmail(email) {
 
 // --- Passwords (PBKDF2-HMAC-SHA256 via Web Crypto; native, fast) ---------------
 
-const PBKDF2_ITERATIONS = 210000;
+// Cloudflare Workers Free plan caps CPU at 10 ms/request, and PBKDF2 runs on the
+// hot path (signup, login, reset). 30k iterations of PBKDF2-HMAC-SHA256 stays
+// within budget while remaining far stronger than an unsalted/low-cost hash.
+// The iteration count is stored in each hash, so this can be raised later
+// (e.g. on the Workers Paid plan) without breaking existing passwords.
+const PBKDF2_ITERATIONS = 30000;
 const SENDER = "Secrets of Wisdom <hello@secretsofwisdom.org>";
 
 function b64encode(buf) {
