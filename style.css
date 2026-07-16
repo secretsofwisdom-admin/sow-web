@@ -406,6 +406,25 @@ section:has(.svc-card) {
   font-weight: 600;
   color: #E8D48B;
 }
+.tier-price-regular {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #B8B4AC;
+  text-decoration: line-through;
+  margin-right: 8px;
+  opacity: .8;
+}
+.tier-founding-note {
+  display: block;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #E8D48B;
+  margin-top: 4px;
+  text-align: right;
+}
 .tier-detail {
   font-size: 15px;
   color: #B8B4AC;
