@@ -25,6 +25,24 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - **Secrets (Pages):** `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `MAILERLITE_API_KEY`, optional `MAILERLITE_GROUP_ID`
 - **Setup notes:** `PORTAL_SETUP.md`
 
+## BaZi Calculator (`/calc/`)
+- `calc/` is **generated output**, not hand-written — a Flutter web build committed to this repo. `calculator.html` embeds it in an iframe.
+- Source project: `/Users/nadin_zn-lo/Claude/BaziCalculator/` (local only, no git remote).
+- Rebuild and update:
+  ```
+  cd /Users/nadin_zn-lo/Claude/BaziCalculator
+  flutter pub get
+  flutter build web --release --base-href=/calc/
+  cp web/_headers build/web/_headers
+  rm -rf /Users/nadin_zn-lo/Claude/sow-web/calc
+  cp -R build/web /Users/nadin_zn-lo/Claude/sow-web/calc
+  find /Users/nadin_zn-lo/Claude/sow-web/calc -type f -exec chmod 644 {} \;
+  ```
+- `--base-href=/calc/` must use `=`. With a space, Flutter 3.44 silently leaves it `/` and every asset 404s under `/calc/`.
+- JS build, not `--wasm` (despite `DEPLOY_WEB.md`) — parent page isn't cross-origin-isolated.
+- Security headers come from the **root `_headers`** (`/calc/*` → `X-Frame-Options: SAMEORIGIN`). Pages ignores nested `calc/_headers`. Never set DENY there — it blanks the iframe.
+- Replace the whole folder each time; asset hashes change between builds.
+
 ## TODO
 - Source files kept in `/Users/nadin_zn-lo/Claude/sample/` — copy new files from there
 
