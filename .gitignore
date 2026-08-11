@@ -5,3 +5,9 @@ Deploy_web.md
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Leftovers from synced-folder file locking
+.fuse_hidden*
+
+# Local git bundle backups
+*.bundle
