@@ -44951,9 +44951,14 @@ A.ax5.prototype={
 $1(a){return B.oj},
 $S:290}
 A.MA.prototype={
-ca(a,b){var s=null,r=A.bI(a,s,t.w).w,q=b.bC($.cB(),t.D),p=A.b([q.a,q.b,q.c],t.t_),o=q.ok
-o=o==null?s:A.aOh(B.hh,new A.po(o,s,s),s)
-return new A.CO(A.jX(A.aFV(!0,r.a.a>=900?new A.TQ(s):A.ci(A.b([B.Dj,A.eI(new A.G3(s),1)],t.p),B.E,B.A,B.R),B.ab,!0),new A.ce(s,o,s,s,s,new A.lX(B.Dc,0.85,B.bh,s,0,p,B.MJ,s),B.a4),B.bB),B.D,s)}}
+ca(a,b){var s,r,q=null,p=A.bI(a,q,t.w).w.a,o=p.a
+if(o>=900){p=p.b
+s=p>=600&&o>p}else s=!1
+r=b.bC($.cB(),t.D)
+p=A.b([r.a,r.b,r.c],t.t_)
+o=r.ok
+o=o==null?q:A.aOh(B.hh,new A.po(o,q,q),q)
+return new A.CO(A.jX(A.aFV(!0,s?new A.TQ(q):A.ci(A.b([B.Dj,A.eI(new A.G3(q),1)],t.p),B.E,B.A,B.R),B.ab,!0),new A.ce(q,o,q,q,q,new A.lX(B.Dc,0.85,B.bh,q,0,p,B.MJ,q),B.a4),B.bB),B.D,q)}}
 A.TQ.prototype={
 ca(a,b){var s,r,q,p,o,n,m,l,k,j,i,h=null,g=b.bC($.yo(),t.AJ)
 b.bC($.tv(),t.OR)
