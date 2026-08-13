@@ -43,6 +43,27 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - Security headers come from the **root `_headers`** (`/calc/*` → `X-Frame-Options: SAMEORIGIN`). Pages ignores nested `calc/_headers`. Never set DENY there — it blanks the iframe.
 - Replace the whole folder each time; asset hashes change between builds.
 
+## i18n (`lang-switcher.js` + `lang/ru.json`)
+- `data-i18n="key"` swaps `textContent`; `data-i18n-html="key"` swaps `innerHTML`.
+- If a key's value in `lang/ru.json` contains markup (`<strong>`, `<a>`, `<br/>`), the element **must** use `data-i18n-html` — otherwise the tags render as literal text after switching to RU (and the English original is flattened on switching back, since originals are cached per attribute type).
+- Audit after editing translations — script walks `ru.json` for values containing `<` and flags any page still using plain `data-i18n` for them:
+  ```
+  python3 - <<'EOF'
+  import json, re, glob
+  d = json.load(open('lang/ru.json')); hk = set()
+  def w(o, p=''):
+      if isinstance(o, dict):
+          for k, v in o.items(): w(v, p + ('.' if p else '') + k)
+      elif isinstance(o, str) and '<' in o: hk.add(p)
+  w(d)
+  for f in glob.glob('**/*.html', recursive=True):
+      if f.startswith('calc/'): continue
+      for k in re.findall(r'data-i18n="([^"]+)"', open(f, encoding='utf-8').read()):
+          if k in hk: print(f, k)
+  EOF
+  ```
+- Fixed 2026-08-13: 10 keys in `guide.html` (`guide.prepare.li1-2`, `guide.limits.li1-7`, `guide.session.during1`) and `contact.guideNudge` in `contact.html` used `data-i18n` for HTML-bearing values.
+
 ## TODO
 - Source files kept in `/Users/nadin_zn-lo/Claude/sample/` — copy new files from there
 
