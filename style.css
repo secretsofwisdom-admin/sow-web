@@ -1,43 +1,257 @@
+/* ==========================================================================
+   Secrets of Wisdom · NZ — "Imperial" design system
 
+   Ported from the BaZi calculator's imperial theme so the site and the
+   calculator read as one product. Token values are the exact constants from
+   BaziCalculator/lib/theme/imperial_tokens.dart (they were sampled from the
+   app's reference art, so don't "tidy" them into rounder numbers).
+
+   House rules carried over from the calculator:
+     - Every border is a 1px hairline. Radii only ever 6 / 8 / 10 / 24.
+     - No drop shadows. Depth comes from glows: zero offset, large blur.
+     - Colour is rationed. Gold is the only accent; everything else is a
+       near-neutral warm grey on near-black.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Font — variable, wght axis 400..800, subset to Latin + Cyrillic U+0400-045F.
+   Self-hosted rather than pulled from Google Fonts so it is byte-identical to
+   the calculator's face. Copied out of calc/ deliberately: that folder is
+   deleted and regenerated on every calculator rebuild.
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('fonts/EBGaramond-Subset.ttf') format('truetype-variations'),
+       url('fonts/EBGaramond-Subset.ttf') format('truetype');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Ground */
+  --bg-core: #1A1C1E;
+  --bg-mid: #0E1114;
+  --bg-edge: #03050A;
+
+  /* Gold ramp — the accent system */
+  --gold-bright: #F5DCA0;
+  --gold: #E3B569;
+  --gold-dim: #8A6E3E;
+  --gold-rule: #6B5730;
+
+  /* Panels */
+  --panel-fill: #15181B;
+  --panel-inner: #1B1E24;
+  --panel-border: #332C22;
+  --nav-fill: #111315;
+
+  /* Ink
+     --ink-muted is the calculator's fieldValueInk, not its fieldHintInk. The
+     hint ink (#867D6C, kept below as --ink-faint) is used there for tiny
+     readouts; on a page of paragraphs it lands at 4.38:1 on --panel-fill,
+     under the 4.5 AA floor. fieldValueInk clears it at 6.3:1. */
+  --ink: #E6DFD1;
+  --ink-title: #D6CEC0;
+  --ink-body: #B9B1A3;
+  --ink-label: #B4A07A;
+  --ink-muted: #9A9A96;
+  --ink-faint: #867D6C;   /* decorative / sub-12px only — fails AA as body text */
+  --error: #E07A6B;
+
+  /* Buttons */
+  --btn-top: #F0C669;
+  --btn-bottom: #7A4E12;
+  --btn-ink: #2A1B08;
+
+  /* Shape */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --r-pill: 24px;
+
+  /* Chrome height — shared by the nav and the calculator iframe wrapper so
+     the two can never drift apart again. */
+  --nav-h: 78px;
+
+  /* Ornament geometry, from corner_brackets.dart / ornate_panel.dart */
+  --bracket-inset: 3px;
+  --bracket-arm: 7px;
+
+  /* Strength of the ghosted galaxy wallpaper — see body::after.
+     Ceiling is .10. Above that the 12px footer line in --ink-muted drops
+     under 4.5:1 against the brightest part of the veil (.12 -> 4.37:1). */
+  --galaxy: .10;
+
+  --font-display: 'EB Garamond', Georgia, serif;
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
 body {
   margin: 0;
-  font-family: 'Lora', serif;
-  background: #0B0B2B url('images/celestial-bg.jpg') center top / cover no-repeat fixed;
-  font-size: 20px;
-  color: #EDEAE4;
-  line-height: 1.6;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.62;
+  color: var(--ink-body);
+  background: var(--bg-mid);
   overflow-x: hidden;
 }
-body.mandala-reveal {
-  background: #0B0B2B url('images/celestial-bg.jpg') center top / cover no-repeat fixed;
-}
-#mandala-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(11,11,43,0.55);
-  pointer-events: none;
-  z-index: 0;
-  animation: overlayFadeIn 5s ease-out;
-}
-/* Static readability overlay for all pages except the animated home page */
-body:not(.mandala-reveal)::before {
+
+/* Lacquer plate over the radial vignette. Gradient stops are the Flutter
+   alignment (0.05,-0.45) r=0.85 converted to CSS percentages.
+
+   Painted on a fixed pseudo-element rather than with
+   `background-attachment: fixed`, which iOS Safari ignores outright and which
+   costs a repaint on every scroll frame elsewhere. */
+body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: rgba(11,11,43,0.55);
+  z-index: -1;
   pointer-events: none;
-  z-index: 0;
-}
-@keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  background:
+    url('images/bg_lacquer.png') center center / cover no-repeat,
+    radial-gradient(circle at 52.5% 27.5%, var(--bg-core) 0%, var(--bg-mid) 40%, var(--bg-edge) 100%);
 }
 
-/* Loader */
+/* The old galaxy wallpaper, ghosted back over the lacquer.
+
+   `screen` is what makes this safe: the layer can only ADD light, so it lifts
+   stars and nebula through the lacquer grain without muting the plate or
+   pulling the gold toward purple. The calculator seam survives.
+
+   It has to sit on TOP — bg_lacquer.png is fully opaque (it carries a tRNS
+   chunk, but no pixel actually uses it), so anything underneath is invisible.
+   Both pseudo-elements are at z-index -1 in the root stacking context, and at
+   equal z-index tree order decides, so ::after paints over ::before.
+
+   Both images are cropped so their circular motif — the luopan compass in the
+   lacquer, the medallion in the veil — sits at the exact centre of its own
+   file. That is what makes `center center` correct: for a cover background a
+   circle at image-fraction c with position p lands at c*ih*s + (vh - ih*s)*p,
+   which collapses to 0.5*vh when c = p = 0.5. The scale term cancels, so the
+   two circles stay concentric at every viewport size on every page.
+
+   Do NOT try to register them with background-position offsets instead. The
+   veil's aspect is wider than any real viewport, so it has zero vertical
+   overflow and its Y position is inert; the lacquer has zero horizontal
+   overflow and its X position is inert. Dead axes on opposite sides — no pair
+   of offsets can work. See CLAUDE.md for the crop boxes.
+
+   Note this is a veil, not a scrim: the old design needed a translucent scrim
+   OVER the photo to keep prose legible. Sections are opaque panels now, so
+   only the header, the gutters and the footer ever see the backdrop. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: url('images/celestial-veil.jpg') center center / cover no-repeat;
+  opacity: var(--galaxy);
+  mix-blend-mode: screen;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+
+p { margin: 0 0 14px; }
+
+/* --------------------------------------------------------------------------
+   Ornaments
+
+   Three motifs carry most of the "same product" recognition. All pure CSS.
+   -------------------------------------------------------------------------- */
+
+/* 1. Corner brackets — four L-shaped angles, 1px, inset 3 / arm 7.
+      Drawn as eight background layers on one pseudo-element so ::after stays
+      free for whatever the component needs. */
+.brackets { position: relative; }
+.brackets::before {
+  content: '';
+  position: absolute;
+  inset: var(--bracket-inset);
+  pointer-events: none;
+  --b: var(--gold-dim);
+  background:
+    linear-gradient(var(--b), var(--b)) 0 0        / var(--bracket-arm) 1px no-repeat,
+    linear-gradient(var(--b), var(--b)) 0 0        / 1px var(--bracket-arm) no-repeat,
+    linear-gradient(var(--b), var(--b)) 100% 0     / var(--bracket-arm) 1px no-repeat,
+    linear-gradient(var(--b), var(--b)) 100% 0     / 1px var(--bracket-arm) no-repeat,
+    linear-gradient(var(--b), var(--b)) 0 100%     / var(--bracket-arm) 1px no-repeat,
+    linear-gradient(var(--b), var(--b)) 0 100%     / 1px var(--bracket-arm) no-repeat,
+    linear-gradient(var(--b), var(--b)) 100% 100%  / var(--bracket-arm) 1px no-repeat,
+    linear-gradient(var(--b), var(--b)) 100% 100%  / 1px var(--bracket-arm) no-repeat;
+  opacity: .55;
+  transition: opacity .25s ease;
+  border-radius: inherit;
+}
+
+/* 2. Divider rule broken at centre by a 45°-rotated lozenge, 9px gap each
+      side. Replaces every plain border-top used as a separator. */
+.rule {
+  position: relative;
+  height: 1px;
+  margin: 8px 0 12px;
+}
+.rule::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--gold-rule), var(--gold-rule)) left  center / calc(50% - 9px) 1px no-repeat,
+    linear-gradient(var(--gold-rule), var(--gold-rule)) right center / calc(50% - 9px) 1px no-repeat;
+}
+.rule::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* 3. Double frame — a second hairline inset 4px from the outer border.
+      Used sparingly; on hero/featured elements only. */
+.double-frame { position: relative; }
+.double-frame::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--gold-rule);
+  border-radius: var(--r-sm);
+  pointer-events: none;
+  opacity: .5;
+}
+
+/* Engraved caption — the calculator's most recognisable typographic move.
+   14px / 600 / 1.4 tracking, uppercase, gold-bright. */
+.caption {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Loader
+   -------------------------------------------------------------------------- */
 #loader {
   position: fixed;
   inset: 0;
-  background: #0B0B2B;
+  background: var(--bg-mid);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,30 +259,36 @@ body:not(.mandala-reveal)::before {
   transition: opacity 1s ease;
 }
 #loader img {
-  max-width: 200px;
+  max-width: 180px;
   animation: loaderPulse 2s ease-in-out infinite;
 }
 @keyframes loaderPulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%, 100% { opacity: .6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
 }
 
-/* Navigation */
+/* --------------------------------------------------------------------------
+   Navigation — the calculator's bottom nav bar, flipped to the top:
+   flat #111315, a single gold hairline edge, no blur, no shadow.
+   -------------------------------------------------------------------------- */
 nav {
   position: fixed;
-  top: 0; left: 0; width: 100%;
-  background-color: rgba(8,8,30,0.9);
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: var(--nav-h);
+  box-sizing: border-box;
+  background: var(--nav-fill);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  backdrop-filter: blur(8px);
+  padding: 8px 10px;
   z-index: 1000;
-  border-bottom: 1px solid rgba(201,168,76,0.15);
+  border-bottom: 1px solid var(--gold-rule);
 }
 .nav-logo {
   position: absolute;
-  left: 16px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
   margin: 0;
@@ -76,315 +296,374 @@ nav {
   line-height: 0;
   border: none;
 }
-.nav-logo:hover {
-  border: none;
-}
+.nav-logo:hover { border: none; }
+/* sow_medallion.png is a transparent round PNG that carries its own gold rim
+   — so no border here, or it draws a second ring outside the artwork. */
 .nav-logo img {
-  height: 80px;
-  width: 80px;
-  object-fit: cover;
-  border-radius: 50%;
+  height: 58px;
+  width: 58px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(227, 181, 105, .22));
 }
 nav a {
   text-decoration: none;
-  color: #C9A84C;
-  font-weight: 500;
-  font-size: 22px;
-  margin: 0 20px;
-  padding: 4px 4px;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  margin: 0 16px;
+  padding: 6px 2px;
   text-transform: uppercase;
-  transition: color 0.3s ease, border-color 0.3s ease;
+  border-bottom: 1px solid transparent;
+  transition: color .25s ease, border-color .25s ease;
 }
-nav a:hover {
-  color: #E8D48B;
-  border-bottom: 2px solid #E8D48B;
+nav a:hover,
+nav a.is-current {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold-dim);
 }
 .nav-yt {
   display: flex;
   align-items: center;
-  font-size: 14px !important;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 12px !important;
+  letter-spacing: 1.2px;
 }
-.nav-yt:hover svg { fill: #FF3333; }
+.nav-yt svg { fill: var(--gold-dim); transition: fill .25s ease; }
+.nav-yt:hover svg { fill: var(--gold-bright); }
 
-/* Header */
+/* --------------------------------------------------------------------------
+   Page header
+   -------------------------------------------------------------------------- */
 header {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 100px 20px 40px;
-  animation: fadeIn 1.5s ease-out;
+  padding: calc(var(--nav-h) + 46px) 20px 30px;
+  animation: fadeIn 1.2s ease-out;
 }
 header h1 {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 46px;
+  font-size: 52px;
+  font-weight: 500;
+  letter-spacing: .5px;
+  color: var(--gold-bright);
   margin: 0;
-  text-shadow: 0 0 30px rgba(201,168,76,0.3), 0 2px 12px rgba(0,0,0,0.8);
+  /* Engraved wordmark glow — app_header.dart: gold @35%, blur 18. */
+  text-shadow: 0 0 18px rgba(227, 181, 105, .35);
 }
 header p {
-  font-style: italic;
-  font-size: 18px;
-  color: #B8B4AC;
-  margin-top: 10px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  font-size: 20px;
+  color: var(--gold);
+  opacity: .85;
+  letter-spacing: .4px;
+  margin: 10px 0 0;
 }
-/* Subtitle highlight — keeps the tagline (.tagline) untouched */
+/* The old stylesheet wrapped the subtitle in a frosted pill to fight the
+   galaxy photo for legibility. Nothing to fight now — it reads as plain
+   engraved text, the way the calculator's subtitle does. */
 header p:not(.tagline) {
-  display: inline-block;
-  color: #EDEAE4;
-  background: rgba(11,11,43,0.5);
-  padding: 8px 24px;
-  border-radius: 24px;
-  border: 1px solid rgba(201,168,76,0.28);
-  backdrop-filter: blur(3px);
-  text-shadow: 0 0 4px rgba(0,0,0,0.95), 0 2px 10px rgba(0,0,0,0.95);
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
 }
 .tagline {
-  font-size: 16px;
-  font-weight: 500;
-  font-style: normal;
-  color: #E8D48B;
-  letter-spacing: 1px;
-  margin-top: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  color: var(--gold);
+  opacity: .9;
+  margin-top: 14px;
 }
 
-/* Hero image (index page) */
+/* Hero medallion — the artwork's own rim is the frame; the glow sits under it. */
 .hero-image {
   display: block;
-  max-width: 360px;
-  margin: 30px auto 0;
-  border-radius: 50%;
-  box-shadow: 0 0 40px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.1);
+  width: 100%;
+  max-width: 300px;
+  margin: 34px auto 0;
+  filter: drop-shadow(0 0 30px rgba(227, 181, 105, .22));
 }
 
-/* Fade-up animations */
+/* --------------------------------------------------------------------------
+   Fade-up reveal (script.js IntersectionObserver)
+   -------------------------------------------------------------------------- */
 .fade-up {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 1s ease-out, transform 1s ease-out;
+  transform: translateY(24px);
+  transition: opacity .9s ease-out, transform .9s ease-out;
 }
 .fade-up.visible {
   opacity: 1;
   transform: translateY(0);
 }
+@media (prefers-reduced-motion: reduce) {
+  .fade-up { opacity: 1; transform: none; transition: none; }
+  header, #loader img { animation: none; }
+}
 
-/* Sections */
+/* --------------------------------------------------------------------------
+   Panels — the one primitive everything else is built from.
+   OrnatePanel: r=10, panelFill, 1px panelBorder, no shadow.
+   -------------------------------------------------------------------------- */
 section {
   position: relative;
   z-index: 1;
-  max-width: 900px;
-  margin: 80px auto;
-  padding: 30px 40px;
-  background: rgba(11,11,43,0.6);
-  border: 1px solid rgba(201,168,76,0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(6px);
+  max-width: 880px;
+  margin: 56px auto;
+  padding: 26px 34px;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+  /* Panel glow — ornate_panel.dart:125-129, blur 26 spread 1. Not a shadow:
+     zero offset, so the panel glows within the surface instead of floating. */
+  box-shadow: 0 0 26px 1px rgba(0, 0, 0, .55);
 }
-/* Service card sections: no glass background, tighter spacing */
+/* Service-card sections are bare containers — the cards carry the frame. */
 section:has(.svc-card) {
   background: none;
   border: none;
-  backdrop-filter: none;
+  box-shadow: none;
   padding: 0 20px;
-  margin: 30px auto;
+  margin: 26px auto;
 }
 
-/* Expandable service cards */
-.svc-card {
-  background-color: rgba(15,15,50,0.7);
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: 8px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
-  margin: 20px 0;
-  overflow: hidden;
-  backdrop-filter: blur(4px);
-}
-.svc-card-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 24px 28px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.svc-card-header:hover {
-  background-color: rgba(201,168,76,0.06);
-}
-.svc-meta {
-  flex: 1;
-  min-width: 0;
-}
-.svc-meta h2 {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 26px;
-  margin: 0 0 6px;
-  line-height: 1.3;
-}
-.svc-excerpt {
-  font-size: 16px;
-  color: #B8B4AC;
-  margin: 0;
-  line-height: 1.5;
-}
-.svc-toggle {
-  flex-shrink: 0;
-  align-self: center;
-  font-size: 14px;
-  padding: 8px 16px;
-  white-space: nowrap;
-}
-.svc-card .toggle-less {
-  display: none;
-}
-.svc-card.expanded .toggle-more {
-  display: none;
-}
-.svc-card.expanded .toggle-less {
-  display: inline;
-}
-.svc-card.expanded .svc-excerpt {
-  display: none;
-}
-.svc-card-body {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  padding: 0 28px;
-  transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease;
-}
-.svc-card.expanded .svc-card-body {
-  max-height: 8000px;
-  opacity: 1;
-  padding: 0 28px 28px;
-}
-.svc-card-body p {
-  margin: 0 0 14px;
-}
-.svc-pricing-heading {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 22px;
-  margin: 28px 0 12px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(201,168,76,0.15);
-}
-.tier-policy {
-  font-size: 14px;
-  color: #9A968E;
-  font-style: italic;
-  margin: 12px 0 0;
-}
-
-/* Section sub-headings */
+/* Section heading = engraved caption over a lozenge rule. */
 .section-heading {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 32px;
+  position: relative;
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--gold-bright);
   text-align: center;
-  margin: 0 0 8px;
-  text-shadow: 0 0 20px rgba(201,168,76,0.2);
+  margin: 0 0 10px;
+  padding-bottom: 15px;
+  letter-spacing: .4px;
+}
+/* The two hairlines… */
+.section-heading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 180px;
+  height: 1px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(var(--gold-rule), var(--gold-rule)) left  center / calc(50% - 9px) 1px no-repeat,
+    linear-gradient(var(--gold-rule), var(--gold-rule)) right center / calc(50% - 9px) 1px no-repeat;
+}
+/* …and the lozenge that breaks them. */
+.section-heading::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 .section-note {
   text-align: center;
   font-size: 15px;
-  color: #B8B4AC;
-  font-style: italic;
-  margin: 0 0 30px;
+  color: var(--ink-muted);
+  margin: 0 0 26px;
 }
 
-/* CTA button */
-.cta-center {
-  text-align: center;
-  margin-top: 30px;
+/* --------------------------------------------------------------------------
+   Cards
+
+   The old stylesheet had four near-identical recipes (svc / post / tier /
+   home) that had already drifted apart, plus a fifth in account.html that
+   disagreed outright. They now share one base.
+   -------------------------------------------------------------------------- */
+.svc-card,
+.post-card,
+.tier-card,
+.home-card,
+.acct-card {
+  position: relative;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+  margin: 18px 0;
+  overflow: hidden;
+  transition: border-color .25s ease, background-color .25s ease;
 }
-.btn-cta {
-  display: inline-block;
-  background-color: #C9A84C;
-  color: #0B0B2B;
-  text-decoration: none;
+.svc-card:hover,
+.post-card:hover,
+.home-card:hover {
+  border-color: var(--gold-rule);
+}
+
+/* Expandable card headers (services, posts) */
+.svc-card-header,
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 26px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+.svc-card-header:hover,
+.post-card-header:hover {
+  background-color: rgba(227, 181, 105, .045);
+}
+.post-card-header { align-items: flex-start; }
+
+.svc-meta, .post-meta { flex: 1; min-width: 0; }
+.svc-meta h2 {
+  font-size: 25px;
+  font-weight: 500;
+  color: var(--gold-bright);
+  margin: 0 0 6px;
+}
+.svc-excerpt, .post-excerpt {
+  font-size: 15px;
+  color: var(--ink-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.svc-toggle, .post-toggle {
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 12px;
+  padding: 8px 18px;
+  white-space: nowrap;
+}
+.svc-card .toggle-less,
+.post-card .toggle-less { display: none; }
+.svc-card.expanded .toggle-more,
+.post-card.expanded .toggle-more { display: none; }
+.svc-card.expanded .toggle-less,
+.post-card.expanded .toggle-less { display: inline; }
+.svc-card.expanded .svc-excerpt,
+.post-card.expanded .post-excerpt { display: none; }
+
+.svc-card-body, .post-card-body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 26px;
+  transition: max-height .5s ease, opacity .4s ease, padding .4s ease;
+}
+.svc-card.expanded .svc-card-body {
+  max-height: 8000px;
+  opacity: 1;
+  padding: 0 26px 26px;
+}
+.post-card.expanded .post-card-body {
+  max-height: 3000px;
+  opacity: 1;
+  padding: 0 26px 26px;
+}
+.svc-card-body p, .post-card-body p { margin: 0 0 14px; }
+
+.svc-pricing-heading {
+  font-size: 14px;
   font-weight: 600;
-  font-size: 17px;
-  padding: 14px 32px;
-  border-radius: 6px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  border: none;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  margin: 26px 0 14px;
+  padding-top: 20px;
+  position: relative;
 }
-.btn-cta:hover {
-  background-color: #E8D48B;
-  box-shadow: 0 0 20px rgba(201,168,76,0.4);
-  border: none;
+.svc-pricing-heading::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background:
+    linear-gradient(var(--gold-rule), var(--gold-rule)) left  center / calc(50% - 9px) 1px no-repeat,
+    linear-gradient(var(--gold-rule), var(--gold-rule)) right center / calc(50% - 9px) 1px no-repeat;
+}
+.svc-pricing-heading::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.tier-policy {
+  font-size: 14px;
+  color: var(--ink-muted);
+  margin: 12px 0 0;
 }
 
-/* Home page: services overview grid */
+/* Post thumbnails */
+.post-thumb {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+/* --gold-dim is 3.7:1 on a panel — fine for a bracket, not for a date. */
+.post-meta time {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+.post-meta h2 {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gold-bright);
+  margin: 6px 0 8px;
+}
+.post-hero {
+  width: 100%;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--panel-border);
+  margin-bottom: 20px;
+}
+
+/* Home grid */
 .home-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 18px;
   margin: 24px 0 10px;
 }
 .home-card {
   display: block;
-  background-color: rgba(15,15,50,0.7);
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: 8px;
+  margin: 0; /* the grid owns the gaps — don't add the shared card margin on top */
   padding: 22px 24px;
   text-decoration: none !important;
-  border-bottom: 1px solid rgba(201,168,76,0.2) !important;
-  transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  border-bottom: 1px solid var(--panel-border) !important;
 }
 .home-card:hover {
-  background-color: rgba(201,168,76,0.08);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-  border-color: rgba(201,168,76,0.4) !important;
+  background-color: rgba(227, 181, 105, .045);
+  border-color: var(--gold-rule) !important;
 }
 .home-card h3 {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gold-bright);
   margin: 0 0 8px;
 }
 .home-card p {
-  font-size: 16px;
-  color: #B8B4AC;
+  font-size: 15px;
+  color: var(--ink-muted);
   margin: 0;
   line-height: 1.5;
 }
 
-/* Hamburger toggle (hidden on desktop) */
-.nav-toggle {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-}
-.nav-toggle span {
-  display: block;
-  width: 26px;
-  height: 2px;
-  background-color: #C9A84C;
-  border-radius: 2px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-/* Tier pricing cards */
+/* Tier pricing cards — nested inside a service card, so they take the inset
+   fill rather than the panel fill. Same move as the calculator's timeline
+   cells sitting inside their panel. */
 .tier-card {
-  background-color: rgba(15,15,50,0.7);
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: 8px;
-  padding: 25px 30px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
-  margin: 20px 0;
-  backdrop-filter: blur(4px);
+  padding: 22px 26px;
+  background: var(--panel-inner);
 }
 .tier-header {
   display: flex;
@@ -395,40 +674,36 @@ section:has(.svc-card) {
   margin-bottom: 6px;
 }
 .tier-header h3 {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gold-bright);
   margin: 0;
 }
 .tier-price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 600;
-  color: #E8D48B;
+  color: var(--gold);
 }
 .tier-price-regular {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 400;
-  color: #B8B4AC;
+  color: var(--ink-muted);
   text-decoration: line-through;
   margin-right: 8px;
-  opacity: .8;
 }
 .tier-founding-note {
   display: block;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  font-size: 11px;
-  letter-spacing: .06em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
-  color: #E8D48B;
+  color: var(--gold);
   margin-top: 4px;
   text-align: right;
 }
 .tier-detail {
   font-size: 15px;
-  color: #B8B4AC;
-  font-style: italic;
+  color: var(--ink-muted);
   margin: 0 0 14px;
 }
 .tier-features {
@@ -440,31 +715,38 @@ section:has(.svc-card) {
   position: relative;
   padding-left: 22px;
   margin-bottom: 6px;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
 }
+/* The ✦ the old sheet used isn't in the EB Garamond subset — and the
+   calculator's own motif is better anyway: a 45°-rotated lozenge, the same
+   shape that breaks the divider rules. */
 .tier-features li::before {
-  content: '✦';
+  content: '';
   position: absolute;
-  left: 0;
-  color: #C9A84C;
-  font-size: 12px;
-  top: 3px;
+  left: 4px;
+  top: .62em;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 .tier-best {
   font-size: 14px;
-  color: #9A968E;
+  color: var(--ink-muted);
   margin: 0;
-  padding-top: 10px;
-  border-top: 1px solid rgba(201,168,76,0.1);
+  padding-top: 12px;
+  border-top: 1px solid var(--panel-border);
 }
 
 /* Suggestion list (Date Selection) */
 .suggestion-cat {
-  color: #C9A84C;
-  font-size: 16px;
-  margin: 18px 0 8px;
+  color: var(--gold);
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin: 20px 0 8px;
 }
 .suggestion-list {
   list-style: none;
@@ -485,130 +767,124 @@ section:has(.svc-card) {
   content: '·';
   position: absolute;
   left: 4px;
-  color: #C9A84C;
-  font-weight: bold;
-}
-@media (max-width: 600px) {
-  .suggestion-list { columns: 1; }
+  color: var(--gold-dim);
+  font-weight: 600;
 }
 
 /* Add-on rows */
-.addon-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
+.addon-list { display: flex; flex-direction: column; }
 .addon-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 0;
-  border-bottom: 1px solid rgba(201,168,76,0.1);
+  border-bottom: 1px solid var(--panel-border);
   gap: 20px;
 }
-.addon-row:last-child {
-  border-bottom: none;
-}
-.addon-info {
-  flex: 1;
-}
+.addon-row:last-child { border-bottom: none; }
+.addon-info { flex: 1; }
 .addon-info strong {
-  color: #C9A84C;
+  color: var(--gold-bright);
   display: block;
   font-size: 17px;
+  font-weight: 500;
   margin-bottom: 4px;
 }
-.addon-info span {
-  font-size: 15px;
-  color: #B8B4AC;
-}
+.addon-info span { font-size: 15px; color: var(--ink-muted); }
 .addon-price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 600;
-  color: #E8D48B;
+  color: var(--gold);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-/* Policy grid */
-.policy-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 20px;
-}
-.policy-item {
-  background-color: rgba(15,15,50,0.5);
-  border: 1px solid rgba(201,168,76,0.15);
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-}
-.policy-item h3 {
-  font-family: 'Cormorant Garamond', serif;
-  color: #C9A84C;
-  font-size: 20px;
-  margin: 0 0 10px;
-}
-.policy-item p {
-  font-size: 15px;
-  color: #B8B4AC;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* Buttons */
+/* --------------------------------------------------------------------------
+   Buttons — the calculator's gold gradient segment.
+   One recipe; the old sheet had two that disagreed on radius and padding.
+   -------------------------------------------------------------------------- */
+.btn-cta,
 button {
-  background-color: #C9A84C;
-  color: #0B0B2B;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
+  display: inline-block;
+  background: linear-gradient(180deg, var(--btn-top) 0%, var(--btn-bottom) 100%);
+  color: var(--btn-ink);
+  border: 1.2px solid var(--gold-bright);
+  border-radius: var(--r-sm);
+  padding: 11px 26px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 600;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter .25s ease, box-shadow .25s ease;
 }
+.btn-cta:hover,
 button:hover {
-  background-color: #E8D48B;
-  box-shadow: 0 0 15px rgba(201,168,76,0.4);
+  filter: brightness(1.1);
+  box-shadow: 0 0 22px rgba(227, 181, 105, .42);
+  border-color: var(--gold-bright);
+}
+.cta-center { text-align: center; margin-top: 28px; }
+
+/* Secondary / ghost button — for toggles that shouldn't shout. */
+.btn-ghost {
+  background: var(--panel-inner);
+  color: var(--gold);
+  border: 1px solid var(--gold-rule);
+}
+.btn-ghost:hover {
+  filter: none;
+  color: var(--gold-bright);
+  border-color: var(--gold-dim);
 }
 
-/* Form inputs */
+/* --------------------------------------------------------------------------
+   Forms — the calculator's field inset: 40px tall, r=6, panelInner fill,
+   a *gold* hairline (not the near-black panel border), corner brackets.
+   -------------------------------------------------------------------------- */
 input[type="text"],
 input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="date"],
+select,
 textarea {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  background-color: rgba(15,15,50,0.6);
-  border: 1px solid rgba(201,168,76,0.3);
-  border-radius: 4px;
-  color: #EDEAE4;
-  font-family: 'Lora', serif;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
   box-sizing: border-box;
+  min-height: 40px;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  background: var(--panel-inner);
+  border: 1px solid var(--gold-rule);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 15px;
+  transition: border-color .25s ease, box-shadow .25s ease;
 }
-input[type="text"]:focus,
-input[type="email"]:focus,
+input:focus,
+select:focus,
 textarea:focus {
   outline: none;
-  border-color: #C9A84C;
-  box-shadow: 0 0 8px rgba(201,168,76,0.2);
+  border-color: var(--gold);
+  border-width: 1.4px;
+  box-shadow: 0 0 12px rgba(227, 181, 105, .22);
 }
-textarea {
-  height: 120px;
-  resize: vertical;
-}
+::placeholder { color: var(--ink-muted); opacity: 1; }
+textarea { height: 120px; resize: vertical; }
 label {
-  color: #C9A84C;
-  font-size: 16px;
+  display: inline-block;
+  color: var(--gold);
+  opacity: .92;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .8px;
+  margin-bottom: 6px;
 }
-#form-status {
-  margin-top: 10px;
-}
-/* Honeypot field — hidden from people, visible to bots */
+#form-status { margin-top: 10px; font-size: 15px; }
+/* Honeypot — hidden from people, visible to bots. */
 .hp-field {
   position: absolute;
   left: -9999px;
@@ -617,165 +893,138 @@ label {
   overflow: hidden;
 }
 
-/* Footer */
+/* Alert variants (account portal) */
+.msg {
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-inner);
+}
+.msg.info { border-color: var(--gold-rule); color: var(--ink-body); }
+.msg.ok { border-color: var(--gold-dim); color: var(--gold-bright); }
+.msg.err { border-color: var(--error); color: var(--error); }
+
+/* --------------------------------------------------------------------------
+   Content links
+   -------------------------------------------------------------------------- */
+section a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid var(--gold-rule);
+  transition: color .25s ease, border-color .25s ease;
+}
+section a:hover {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold-dim);
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
 footer {
   position: relative;
   z-index: 1;
   text-align: center;
-  font-size: 13px;
-  color: #9A968E;
-  padding: 20px 0 40px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--ink-muted);
+  padding: 26px 0 14px;
 }
+.footer-links {
+  text-align: center;
+  padding: 0 0 30px;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.footer-links a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color .25s ease;
+}
+.footer-links a:hover { color: var(--gold-bright); }
+
 @keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Language select */
+/* --------------------------------------------------------------------------
+   Language select
+   -------------------------------------------------------------------------- */
 .lang-select {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 30px;
-  font-family: 'Lora', serif;
-  font-size: 14px;
+  right: 24px;
+  font-family: var(--font-display);
+  font-size: 12px;
   font-weight: 600;
-  color: #0B0B2B;
-  background-color: #C9A84C;
-  border: 1px solid #C9A84C;
-  border-radius: 4px;
-  padding: 6px 10px;
+  letter-spacing: 1.2px;
+  color: var(--gold);
+  background: var(--panel-inner);
+  border: 1px solid var(--gold-rule);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
   cursor: pointer;
   outline: none;
+  min-height: 0;
+  margin: 0;
+  width: auto;
+  transition: border-color .25s ease, color .25s ease;
 }
 .lang-select:hover {
-  background-color: #E8D48B;
+  color: var(--gold-bright);
+  border-color: var(--gold-dim);
 }
 .lang-select option {
-  background-color: #0B0B2B;
-  color: #EDEAE4;
+  background: var(--panel-fill);
+  color: var(--ink);
 }
 
 /* Brand stacked (RU mode) */
-[data-i18n-brand] .brand-en {
-  display: block;
-  font-size: 1em;
-}
+[data-i18n-brand] .brand-en { display: block; font-size: 1em; }
 [data-i18n-brand] .brand-ru {
   display: block;
-  font-size: 0.55em;
-  opacity: 0.75;
+  font-size: .55em;
+  opacity: .75;
   margin-top: 2px;
 }
 
-/* Post cards */
-.post-card {
-  background-color: rgba(15,15,50,0.7);
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: 8px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
-  margin: 20px 0;
-  overflow: hidden;
-  backdrop-filter: blur(4px);
-}
-.post-card-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 20px 25px;
+/* --------------------------------------------------------------------------
+   Hamburger toggle (hidden on desktop)
+   -------------------------------------------------------------------------- */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  box-shadow: none;
 }
-.post-card-header:hover {
-  background-color: rgba(201,168,76,0.06);
-}
-.post-thumb {
-  width: 120px;
-  height: 90px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-.post-meta {
-  flex: 1;
-  min-width: 0;
-}
-.post-meta time {
-  font-size: 13px;
-  color: #9A968E;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.post-meta h2 {
-  color: #C9A84C;
-  font-size: 22px;
-  margin: 6px 0 8px;
-  line-height: 1.3;
-}
-.post-excerpt {
-  font-size: 16px;
-  color: #B8B4AC;
-  margin: 0;
-  line-height: 1.5;
-}
-.post-toggle {
-  flex-shrink: 0;
-  align-self: center;
-  font-size: 14px;
-  padding: 8px 16px;
-  white-space: nowrap;
-}
-.post-card .toggle-less {
-  display: none;
-}
-.post-card.expanded .toggle-more {
-  display: none;
-}
-.post-card.expanded .toggle-less {
-  display: inline;
-}
-.post-card.expanded .post-excerpt {
-  display: none;
+.nav-toggle:hover { background: none; box-shadow: none; filter: none; }
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background-color: var(--gold);
+  transition: transform .3s ease, opacity .3s ease;
 }
 
-/* Post card body — collapsed by default */
-.post-card-body {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  padding: 0 25px;
-  transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease;
-}
-.post-card.expanded .post-card-body {
-  max-height: 3000px;
-  opacity: 1;
-  padding: 0 25px 25px;
-}
-.post-hero {
-  width: 100%;
-  border-radius: 6px;
-  margin-bottom: 20px;
-}
-.post-card-body p {
-  margin: 0 0 14px;
-}
+/* --------------------------------------------------------------------------
+   Calculator iframe wrapper
 
-/* Links within content */
-section a {
-  color: #C9A84C;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(201,168,76,0.3);
-  transition: color 0.3s ease, border-color 0.3s ease;
-}
-section a:hover {
-  color: #E8D48B;
-  border-bottom-color: #E8D48B;
-}
-
-/* Calculator iframe wrapper */
+   top/height key off --nav-h, the same token the nav uses. The old sheet
+   hard-coded 50px against a ~100px nav, so the iframe sat *under* the bar.
+   -------------------------------------------------------------------------- */
 .calc-wrapper {
   position: fixed;
-  top: 50px;
+  top: var(--nav-h);
   left: 0;
   right: 0;
   bottom: 0;
@@ -788,22 +1037,34 @@ section a:hover {
   border: none;
 }
 
-/* Responsive */
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  .suggestion-list { columns: 1; }
+}
+
 @media (max-width: 768px) {
-  header h1 {font-size: 34px;}
-  header p {font-size: 16px;}
+  :root { --nav-h: 60px; }
+
+  body { font-size: 16px; }
+  header { padding: calc(var(--nav-h) + 34px) 18px 24px; }
+  header h1 { font-size: 34px; }
+  header p { font-size: 17px; }
+  .section-heading { font-size: 25px; }
+
+  section {
+    margin: 36px 14px;
+    padding: 22px 20px;
+  }
+  section:has(.svc-card) { padding: 0 14px; margin: 22px auto; }
+
   nav {
     justify-content: flex-start;
-    padding: 12px 10px;
-    min-height: 60px;
+    padding: 10px;
   }
-  .nav-logo {
-    left: 8px;
-  }
-  .nav-logo img {
-    height: 60px;
-    width: 60px;
-  }
+  .nav-logo { left: 10px; }
+  .nav-logo img { height: 44px; width: 44px; }
   .nav-toggle {
     display: flex;
     position: absolute;
@@ -814,104 +1075,52 @@ section a:hover {
   }
   /* Collapsed: hide menu items behind the hamburger */
   nav a:not(.nav-logo),
-  nav .lang-select {
-    display: none;
-  }
+  nav .lang-select { display: none; }
   /* Expanded dropdown */
   nav.open {
     flex-direction: column;
     align-items: center;
-    padding: 80px 10px 20px;
+    padding: 72px 10px 20px;
   }
   nav.open a:not(.nav-logo) {
     display: block;
-    font-size: 18px;
-    margin: 10px 0;
+    font-size: 14px;
+    margin: 9px 0;
   }
-  nav.open .nav-yt {
-    justify-content: center;
-  }
+  nav.open .nav-yt { justify-content: center; }
   nav.open .lang-select {
     display: block;
     position: static;
     transform: none;
-    margin-top: 12px;
+    margin-top: 14px;
   }
-  nav.open .nav-toggle {
-    top: 24px;
-    transform: none;
-  }
-  /* Hamburger → X when open */
-  nav.open .nav-toggle span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-  }
-  nav.open .nav-toggle span:nth-child(2) {
-    opacity: 0;
-  }
-  nav.open .nav-toggle span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-  }
-  .hero-image {
-    max-width: 260px;
-  }
-  .post-card-header {
+  nav.open .nav-toggle { top: 18px; transform: none; }
+  /* Pin the medallion to the top of the drawer — vertically centring it
+     inside an open menu drops it into the middle of the link list. */
+  nav.open .nav-logo { top: 8px; transform: none; }
+  nav.open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+  nav.open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  .hero-image { max-width: 240px; }
+  .home-grid { grid-template-columns: 1fr; }
+
+  .post-card-header, .svc-card-header {
     flex-direction: column;
     gap: 12px;
     padding: 16px;
   }
-  .post-thumb {
-    width: 100%;
-    height: 180px;
-  }
-  .post-meta h2 {
-    font-size: 20px;
-  }
-  .post-toggle {
-    align-self: flex-start;
-  }
-  .post-card-body {
-    padding: 0 16px;
-  }
-  .post-card.expanded .post-card-body {
-    padding: 0 16px 16px;
-  }
-  .svc-card-header {
-    flex-direction: column;
-    gap: 12px;
-    padding: 18px;
-  }
-  .svc-meta h2 {
-    font-size: 22px;
-  }
-  .svc-toggle {
-    align-self: flex-start;
-  }
-  .svc-card-body {
-    padding: 0 18px;
-  }
-  .svc-card.expanded .svc-card-body {
-    padding: 0 18px 18px;
-  }
-  .section-heading {
-    font-size: 26px;
-  }
-  .tier-header {
-    flex-direction: column;
-    gap: 4px;
-  }
-  .tier-price {
-    font-size: 24px;
-  }
-  .addon-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-  .addon-price {
-    font-size: 18px;
-  }
-  .policy-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
+  .post-thumb { width: 100%; height: 180px; }
+  .post-meta h2 { font-size: 20px; }
+  .svc-meta h2 { font-size: 21px; }
+  .post-toggle, .svc-toggle { align-self: flex-start; }
+  .post-card-body, .svc-card-body { padding: 0 16px; }
+  .post-card.expanded .post-card-body,
+  .svc-card.expanded .svc-card-body { padding: 0 16px 16px; }
+
+  .tier-header { flex-direction: column; gap: 4px; }
+  .tier-price { font-size: 23px; }
+  .tier-founding-note { text-align: left; }
+  .addon-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .addon-price { font-size: 18px; }
 }

@@ -110,6 +110,21 @@
       .catch(function () { /* silently fall back to English */ });
   }
 
+  // The BaZi calculator is a Flutter app in its own document, so none of the
+  // [data-i18n] machinery above can reach it. It speaks both languages itself
+  // and reads ?lang= at startup, so handing the choice over is a matter of
+  // pointing the iframe at the right URL. A reload rather than postMessage:
+  // that needs no listener inside the app.
+  function syncCalculatorLanguage(lang) {
+    var frame = document.getElementById('calc-frame');
+    if (!frame) return;
+
+    var wanted = 'calc/index.html' + (lang === 'ru' ? '?lang=ru' : '');
+    // Compared against the attribute, not frame.src — the property is resolved
+    // to an absolute URL and would never match.
+    if (frame.getAttribute('src') !== wanted) frame.setAttribute('src', wanted);
+  }
+
   function switchTo(lang) {
     if (lang === 'ru') {
       localStorage.setItem(STORAGE_KEY, 'ru');
@@ -122,6 +137,7 @@
       localStorage.setItem(STORAGE_KEY, 'en');
       restoreEnglish();
     }
+    syncCalculatorLanguage(lang);
   }
 
   // Expose for toggle buttons
@@ -140,9 +156,13 @@
     saveOriginals();
 
     // Auto-apply saved language
-    if (localStorage.getItem(STORAGE_KEY) === 'ru') {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'ru') {
       fetchAndApply();
     }
+    // On the calculator page, before the app has loaded — a src set here is
+    // the app's first load, so it costs no extra fetch.
+    syncCalculatorLanguage(saved === 'ru' ? 'ru' : 'en');
   }
 
   if (document.readyState === 'loading') {
