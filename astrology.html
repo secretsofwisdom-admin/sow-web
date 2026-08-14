@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Payment Confirmed · Secrets of Wisdom · NZ</title>
-  <meta name="description" content="Your payment is confirmed — thank you from Secrets of Wisdom · NZ." />
+  <title>Natal Chart Calculator · Secrets of Wisdom · NZ</title>
+  <meta name="description" content="A free Western astrology calculator — natal chart wheel, house cusps, planetary placements and aspects, from Secrets of Wisdom · NZ." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Secrets of Wisdom · NZ" />
-  <meta property="og:title" content="Payment Confirmed · Secrets of Wisdom · NZ" />
-  <meta property="og:description" content="Your payment is confirmed — thank you from Secrets of Wisdom · NZ." />
-  <meta property="og:url" content="https://secretsofwisdom.org/payment-thank-you.html" />
+  <meta property="og:title" content="Natal Chart Calculator · Secrets of Wisdom · NZ" />
+  <meta property="og:description" content="A free Western astrology calculator — natal chart wheel, house cusps, planetary placements and aspects, from Secrets of Wisdom · NZ." />
+  <meta property="og:url" content="https://secretsofwisdom.org/astrology.html" />
   <meta property="og:image" content="https://secretsofwisdom.org/images/celestial-center.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Payment Confirmed · Secrets of Wisdom · NZ" />
-  <meta name="twitter:description" content="Your payment is confirmed — thank you from Secrets of Wisdom · NZ." />
+  <meta name="twitter:title" content="Natal Chart Calculator · Secrets of Wisdom · NZ" />
+  <meta name="twitter:description" content="A free Western astrology calculator — natal chart wheel, house cusps, planetary placements and aspects, from Secrets of Wisdom · NZ." />
   <meta name="twitter:image" content="https://secretsofwisdom.org/images/celestial-center.jpg" />
   <link rel="icon" type="image/png" href="images/secrets-logo.png" />
   <link rel="stylesheet" href="style.css" />
@@ -38,14 +38,13 @@
     <option value="ru">RU</option>
   </select>
 </nav>
-<section style="text-align:center; font-size:18px; line-height:1.8; padding:50px 40px; position:absolute; top:45%; left:50%; transform:translate(-50%,-50%); width:90%; max-width:900px;">
-  <h1 style="font-family:var(--font-display); font-size:3rem; color:var(--gold); margin:0 0 8px;" data-i18n="paymentThankYou.heading">Thank You</h1>
-  <p style="font-size:1.3rem; color:var(--ink-muted); margin:0 0 30px;" data-i18n="paymentThankYou.subtitle">Your payment is confirmed.</p>
-  <p data-i18n-html="paymentThankYou.message">I will be in touch with your next steps shortly.<br/>If you have any questions in the meantime, feel free to <a href="contact.html">reach out</a>.</p>
-  <p data-i18n-html="paymentThankYou.signoff">With gratitude,<br/><strong>Secrets of Wisdom</strong></p>
-  <p style="margin-top:30px;"><a href="index.html"><button data-i18n="paymentThankYou.btnHome">Back to Home</button></a></p>
-</section>
-<footer data-i18n="footer">© 2026 Secrets of Wisdom · NZ – Energy Harmony and Destiny Flow</footer>
-<div class="footer-links" style="text-align:center;padding:6px 0 22px;font-size:0.82em;font-family:system-ui,sans-serif;letter-spacing:.03em;"><a href="privacy.html" style="color:var(--gold);text-decoration:none;">Privacy</a> &middot; <a href="agreement.html" style="color:var(--gold);text-decoration:none;">Terms</a></div>
+<div class="calc-wrapper">
+  <!-- Same arrangement as calculator.html: a Flutter app in its own document,
+       so lang-switcher.js cannot reach into it the way it swaps [data-i18n]
+       text out here. It reads ?lang= on startup instead. The src is set by
+       syncCalculatorLanguage() from data-calc-src below, so this attribute is
+       only the pre-script fallback. -->
+  <iframe id="astro-frame" data-calc-src="astro/index.html" src="astro/index.html" title="Natal Chart Calculator"></iframe>
+</div>
 </body>
 </html>

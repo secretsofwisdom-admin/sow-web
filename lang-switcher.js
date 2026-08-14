@@ -110,19 +110,22 @@
       .catch(function () { /* silently fall back to English */ });
   }
 
-  // The BaZi calculator is a Flutter app in its own document, so none of the
-  // [data-i18n] machinery above can reach it. It speaks both languages itself
-  // and reads ?lang= at startup, so handing the choice over is a matter of
-  // pointing the iframe at the right URL. A reload rather than postMessage:
-  // that needs no listener inside the app.
+  // Both calculators are Flutter apps in their own documents, so none of the
+  // [data-i18n] machinery above can reach them. They speak both languages
+  // themselves and read ?lang= at startup, so handing the choice over is a
+  // matter of pointing the iframe at the right URL. A reload rather than
+  // postMessage: that needs no listener inside the app.
+  //
+  // Driven by data-calc-src rather than a hard-coded id and path, so a third
+  // calculator is a markup change and not a code change here.
   function syncCalculatorLanguage(lang) {
-    var frame = document.getElementById('calc-frame');
-    if (!frame) return;
-
-    var wanted = 'calc/index.html' + (lang === 'ru' ? '?lang=ru' : '');
-    // Compared against the attribute, not frame.src — the property is resolved
-    // to an absolute URL and would never match.
-    if (frame.getAttribute('src') !== wanted) frame.setAttribute('src', wanted);
+    document.querySelectorAll('iframe[data-calc-src]').forEach(function (frame) {
+      var base = frame.getAttribute('data-calc-src');
+      var wanted = base + (lang === 'ru' ? '?lang=ru' : '');
+      // Compared against the attribute, not frame.src — the property is
+      // resolved to an absolute URL and would never match.
+      if (frame.getAttribute('src') !== wanted) frame.setAttribute('src', wanted);
+    });
   }
 
   function switchTo(lang) {

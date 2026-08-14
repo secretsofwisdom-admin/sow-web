@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Replaced by the value of `flutter build --base-href=`. Must be written
+       with an `=`: with a space, Flutter 3.44 silently leaves it "/" and every
+       asset 404s under /astro/. -->
+  <base href="/astro/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Western natal chart calculator — placements, houses, aspects, transits and synastry.">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Natal Chart">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Natal Chart · Secrets of Wisdom</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* The page behind the canvas, so the first paint is the chart's own
+       ground rather than a white flash inside the site's dark iframe. */
+    html, body { margin: 0; padding: 0; height: 100%; background: #12100E; }
+  </style>
+</head>
+<body>
+  <!-- astronomy-engine (Don Cross, MIT), vendored rather than bundled: this
+       project has no JS build step. Its UMD wrapper assigns window.Astronomy,
+       which is what `@JS('Astronomy')` in lib/astronomy/engine_web.dart binds
+       to. Loaded synchronously and before the bootstrap so the namespace is
+       already there when the first chart is cast. -->
+  <script src="astronomy.browser.min.js"></script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

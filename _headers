@@ -5,3 +5,14 @@
   Permissions-Policy: interest-cohort=()
   Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Opener-Policy: same-origin
+
+# Must be SAMEORIGIN, never DENY — DENY blanks the iframe on astrology.html.
+# Cloudflare ignores nested _headers files, so the copy Flutter drops into
+# astro/ is inert and this block is the only one that applies.
+/astro/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: interest-cohort=()
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Opener-Policy: same-origin

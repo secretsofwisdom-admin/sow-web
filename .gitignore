@@ -11,3 +11,6 @@ Deploy_web.md
 
 # Local git bundle backups
 *.bundle
+
+# Local dev-server config for the in-app browser preview
+.claude/

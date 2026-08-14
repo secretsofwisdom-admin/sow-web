@@ -43,8 +43,27 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - Security headers come from the **root `_headers`** (`/calc/*` → `X-Frame-Options: SAMEORIGIN`). Pages ignores nested `calc/_headers`. Never set DENY there — it blanks the iframe.
 - Replace the whole folder each time; asset hashes change between builds.
 
+## Astrology Calculator (`/astro/`)
+- Same arrangement as `calc/`: **generated output**, a Flutter web build committed here. `astrology.html` embeds it in an iframe.
+- Source project: `/Users/nadin_zn-lo/Claude/AstroCalculator/` (local git repo, no remote).
+- Rebuild and update:
+  ```
+  cd /Users/nadin_zn-lo/Claude/AstroCalculator
+  flutter build web --release --base-href=/astro/
+  rm -rf /Users/nadin_zn-lo/Claude/sow-web/astro
+  cp -R build/web /Users/nadin_zn-lo/Claude/sow-web/astro
+  chmod -R a+r /Users/nadin_zn-lo/Claude/sow-web/astro
+  ```
+- `--base-href=/astro/` must use `=`, same trap as `calc/`.
+- Headers come from the **root `_headers`** (`/astro/*` → `SAMEORIGIN`). Never DENY.
+- Shared Dart was **copied** from BaziCalculator, not extracted into a package — that project is not to be modified. `city_database.dart`, `city_aliases.dart`, `text_search.dart` and `imperial_tokens.dart` now exist twice; a city fix has to be applied in both or the two calculators disagree about where someone was born.
+- `AstroCalculator/staging/` holds Imperial widgets copied but not yet ported (they still import `package:bazi_calculator/…`). Excluded from `flutter analyze`.
+- **Not yet built:** Chiron (needs a one-off JPL Horizons fetch to generate `assets/chiron.bin` — the only external network dependency in the build), transits, synastry, and the AI reading endpoint. Chiron is *omitted* from charts rather than defaulted, so its absence is visible.
+- Positions come from `astronomy-engine` (MIT), vendored at `web/astronomy.browser.min.js`. Two traps, both documented in `engine_web.dart`: `EclipticLongitude()` is **heliocentric**, and `SunPosition` returns `{elat, elon}` while `EclipticGeoMoon` returns `{lat, lon}` — reading the wrong one yields NaN silently. Positions are now finite-checked at the interop boundary.
+
 ## i18n (`lang-switcher.js` + `lang/ru.json`)
 - `data-i18n="key"` swaps `textContent`; `data-i18n-html="key"` swaps `innerHTML`.
+- `syncCalculatorLanguage()` drives **every** `iframe[data-calc-src]`, not one hard-coded id — both calculators reload with `?lang=ru`. Adding a third calculator is a markup change, not a code change. The comparison is against `getAttribute('src')`, never the `.src` property (which resolves to an absolute URL and would never match).
 - If a key's value in `lang/ru.json` contains markup (`<strong>`, `<a>`, `<br/>`), the element **must** use `data-i18n-html` — otherwise the tags render as literal text after switching to RU (and the English original is flattened on switching back, since originals are cached per attribute type).
 - Audit after editing translations — script walks `ru.json` for values containing `<` and flags any page still using plain `data-i18n` for them:
   ```
@@ -84,6 +103,7 @@ The site was re-skinned to match the calculator so the two read as one product. 
 - **Ornaments** (pure CSS, no images): `.brackets` corner angles, `.rule` hairline broken by a 45° lozenge, `.double-frame` inset second rule.
 - `--ink-muted` is the calculator's `fieldValueInk` (#9A9A96), not its `fieldHintInk`. The hint ink is `--ink-faint` and fails WCAG AA as body text — decorative and sub-12px use only.
 - `--nav-h` is shared by the nav and `.calc-wrapper`. Previously the wrapper hard-coded 50px against a ~100px nav, so the iframe sat *under* the bar.
+- **Nav collapses to the hamburger below 1220px**, in its own media block above the 768px one. Nine links need ~1005px of clear width, and the medallion and language select are absolutely positioned, so an overflowing bar slides text *under* them silently instead of wrapping. Wrapping is not an option — a two-row bar exceeds `--nav-h` and puts both iframes back underneath it. Recompute the breakpoint after adding a nav link.
 - Assets were **copied out of** `calc/`, not referenced in place — `calc/` is deleted and regenerated on every calculator rebuild.
 - The three legal pages (`privacy`, `agreement`, `readings-terms`) stay self-contained: no `style.css`, no nav. They carry a duplicate token block in an inline `<style>`, byte-identical across all three — edit all three together.
 

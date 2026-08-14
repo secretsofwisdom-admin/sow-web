@@ -1044,20 +1044,21 @@ footer {
   .suggestion-list { columns: 1; }
 }
 
-@media (max-width: 768px) {
+/* Nav collapse. Its own breakpoint, well above the 768px one below, because
+   the bar runs out of room long before the rest of the layout does: nine
+   links need about 1005px of clear width, and the logo and language select
+   are absolutely positioned, so they are overlapped rather than pushed. The
+   links are centred, which means the failure is silent — text slides under
+   the medallion instead of wrapping.
+
+   Wrapping is not the alternative: --nav-h is shared with .calc-wrapper, and a
+   two-row bar would put both calculators' iframes back underneath it.
+
+   Recompute this number after adding a nav link. Measured at 14px/1.4px
+   letter-spacing with 16px side margins, plus room for the medallion (76px)
+   and the language select (79px), with slack for font-rendering variance. */
+@media (max-width: 1220px) {
   :root { --nav-h: 60px; }
-
-  body { font-size: 16px; }
-  header { padding: calc(var(--nav-h) + 34px) 18px 24px; }
-  header h1 { font-size: 34px; }
-  header p { font-size: 17px; }
-  .section-heading { font-size: 25px; }
-
-  section {
-    margin: 36px 14px;
-    padding: 22px 20px;
-  }
-  section:has(.svc-card) { padding: 0 14px; margin: 22px auto; }
 
   nav {
     justify-content: flex-start;
@@ -1101,6 +1102,20 @@ footer {
   nav.open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
   nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
   nav.open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+}
+
+@media (max-width: 768px) {
+  body { font-size: 16px; }
+  header { padding: calc(var(--nav-h) + 34px) 18px 24px; }
+  header h1 { font-size: 34px; }
+  header p { font-size: 17px; }
+  .section-heading { font-size: 25px; }
+
+  section {
+    margin: 36px 14px;
+    padding: 22px 20px;
+  }
+  section:has(.svc-card) { padding: 0 14px; margin: 22px auto; }
 
   .hero-image { max-width: 240px; }
   .home-grid { grid-template-columns: 1fr; }
