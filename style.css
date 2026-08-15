@@ -1046,7 +1046,7 @@ footer {
 
 /* Nav collapse. Its own breakpoint, well above the 768px one below, because
    the bar runs out of room long before the rest of the layout does: nine
-   links need about 1005px of clear width, and the logo and language select
+   links need about 926px of clear width, and the logo and language select
    are absolutely positioned, so they are overlapped rather than pushed. The
    links are centred, which means the failure is silent — text slides under
    the medallion instead of wrapping.
@@ -1057,7 +1057,7 @@ footer {
    Recompute this number after adding a nav link. Measured at 14px/1.4px
    letter-spacing with 16px side margins, plus room for the medallion (76px)
    and the language select (79px), with slack for font-rendering variance. */
-@media (max-width: 1220px) {
+@media (max-width: 1100px) {
   :root { --nav-h: 60px; }
 
   nav {
