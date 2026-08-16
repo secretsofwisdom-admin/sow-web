@@ -31,6 +31,22 @@
 
   <title>bazi_calculator</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Flutter's engine sets `touch-action: none` on <body> at startup, which
+       is one of the two things that stop a visitor pinch-zooming the site:
+       touch-action applies to the element under the fingers, and this iframe
+       is full-bleed on calculator.html, so it swallows the gesture for the
+       whole page.
+
+       `pinch-zoom` hands the browser two-finger pinch and nothing else, so
+       every single-pointer gesture still reaches Flutter and the app's own
+       scrolling, dragging and tapping are untouched.
+
+       !important is load-bearing: the engine's rule is an inline style, and an
+       author !important declaration is the one thing that outranks it. */
+    body { touch-action: pinch-zoom !important; }
+  </style>
 </head>
 <body>
   <!--
@@ -42,5 +58,32 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <!-- The other half of the pinch-zoom fix.
+
+       Flutter's engine deletes *every* author <meta name="viewport"> in the
+       head at startup and appends its own, carrying
+       `maximum-scale=1.0, user-scalable=no` (see `a4q()` in main.dart.js). So
+       declaring a zoomable viewport above would simply be thrown away, and the
+       correction has to land after the engine has had its turn.
+
+       The bootstrap is async, so this runs first and the tag does not exist
+       yet; the observer catches the engine appending it. It is left connected
+       rather than disconnected on first success — writing `content` is an
+       attribute change and cannot re-trigger a childList observer, so there is
+       no loop to guard against, and a future engine that rewrites the tag
+       twice is handled for free. -->
+  <script>
+    (function () {
+      var wanted = 'width=device-width, initial-scale=1.0, ' +
+                   'minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes';
+      function restore() {
+        var meta = document.head.querySelector('meta[name="viewport"]');
+        if (meta && meta.content !== wanted) meta.content = wanted;
+      }
+      restore();
+      new MutationObserver(restore).observe(document.head, {childList: true});
+    })();
+  </script>
 </body>
 </html>

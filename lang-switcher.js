@@ -112,9 +112,16 @@
 
   // Both calculators are Flutter apps in their own documents, so none of the
   // [data-i18n] machinery above can reach them. They speak both languages
-  // themselves and read ?lang= at startup, so handing the choice over is a
-  // matter of pointing the iframe at the right URL. A reload rather than
-  // postMessage: that needs no listener inside the app.
+  // themselves and read ?lang= at startup.
+  //
+  // Two paths, and the split matters. The ?lang= URL is the *cold start* only:
+  // setting an iframe's src reloads the document, which restarts the Flutter
+  // app and throws away everything the visitor has typed. A switch made after
+  // the app is running goes over postMessage instead, so a half-filled birth
+  // form survives EN <-> RU. (It used to reload here, on the reasoning that a
+  // reload needs no listener inside the app. It also silently emptied the
+  // form's state while the browser restored the visible text, which left the
+  // Cast button dead with every field apparently filled.)
   //
   // Driven by data-calc-src rather than a hard-coded id and path, so a third
   // calculator is a markup change and not a code change here.
@@ -128,6 +135,36 @@
     });
   }
 
+  function postCalculatorLanguage(lang) {
+    document.querySelectorAll('iframe[data-calc-src]').forEach(function (frame) {
+      if (frame.contentWindow) {
+        frame.contentWindow.postMessage(
+          { source: 'sow', type: 'lang', lang: lang },
+          window.location.origin
+        );
+      }
+    });
+  }
+
+  function currentLang() {
+    return localStorage.getItem(STORAGE_KEY) === 'ru' ? 'ru' : 'en';
+  }
+
+  // A switch made while the app is still booting would arrive before its
+  // listener exists. Each calculator announces itself when it is ready, and
+  // gets told the language as it stands at that moment.
+  window.addEventListener('message', function (event) {
+    if (event.origin !== window.location.origin) return;
+    var data = event.data;
+    if (!data || data.source !== 'sow-calc' || data.type !== 'ready') return;
+    if (event.source) {
+      event.source.postMessage(
+        { source: 'sow', type: 'lang', lang: currentLang() },
+        window.location.origin
+      );
+    }
+  });
+
   function switchTo(lang) {
     if (lang === 'ru') {
       localStorage.setItem(STORAGE_KEY, 'ru');
@@ -140,7 +177,7 @@
       localStorage.setItem(STORAGE_KEY, 'en');
       restoreEnglish();
     }
-    syncCalculatorLanguage(lang);
+    postCalculatorLanguage(lang);
   }
 
   // Expose for toggle buttons

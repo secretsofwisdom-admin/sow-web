@@ -42,6 +42,7 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - JS build, not `--wasm` (despite `DEPLOY_WEB.md`) — parent page isn't cross-origin-isolated.
 - Security headers come from the **root `_headers`** (`/calc/*` → `X-Frame-Options: SAMEORIGIN`). Pages ignores nested `calc/_headers`. Never set DENY there — it blanks the iframe.
 - Replace the whole folder each time; asset hashes change between builds.
+- **No in-app language switcher.** The globe `PopupMenuButton` was removed from `_HeaderActions` in `lib/widgets/imperial/app_header.dart` (2026-08-15) — the site nav select is the only control, and it reaches the app over the postMessage channel. `localeProvider` stays: it still resolves `?lang=` on a cold start and receives the message. `locale_switch_test.dart` guards both the absence of the icon and that the site's choice still turns the UI over.
 
 ## Astrology Calculator (`/astro/`)
 - Same arrangement as `calc/`: **generated output**, a Flutter web build committed here. `astrology.html` embeds it in an iframe.
@@ -58,15 +59,34 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - Headers come from the **root `_headers`** (`/astro/*` → `SAMEORIGIN`). Never DENY.
 - Shared Dart was **copied** from BaziCalculator, not extracted into a package — that project is not to be modified. `city_database.dart`, `city_aliases.dart`, `text_search.dart` and `imperial_tokens.dart` now exist twice; a city fix has to be applied in both or the two calculators disagree about where someone was born.
 - `AstroCalculator/staging/` holds Imperial widgets copied but not yet ported (they still import `package:bazi_calculator/…`). Excluded from `flutter analyze`.
+- **The Cast button is never disabled.** `BirthFormState.missing` reports which of date / time / place is outstanding, and a failed press paints `errorText` on each one plus a summary line — a disabled button cannot say what is wrong with the form. `cityQuery` exists so a *typed but never picked* place (an apparently filled field with a null `City`) gets its own message instead of reading as empty; editing away from the picked city clears it. Covered by `birth_form_state_test.dart` and `birth_form_widget_test.dart`.
+- **Wheel is `wheelWidthFactor` (0.7) of its panel**, set in `widgets/zoomable_wheel.dart`, with `InteractiveViewer` and −/↻/+ buttons around it. `scaleEnabled: false` on purpose: **pinch belongs to the browser**, and letting the viewer claim it too means whichever grabs the gesture first leaves the other dead. `panEnabled` is off until the wheel is actually zoomed, so at rest a one-finger drag still scrolls the page. `LayoutBuilder` + `SizedBox.square`, not `FractionallySizedBox` — the wheel sits in a Column with unbounded height.
 - **Not yet built:** Chiron (needs a one-off JPL Horizons fetch to generate `assets/chiron.bin` — the only external network dependency in the build), transits, synastry, and the AI reading endpoint. Chiron is *omitted* from charts rather than defaulted, so its absence is visible.
 - Positions come from `astronomy-engine` (MIT), vendored at `web/astronomy.browser.min.js`. Two traps, both documented in `engine_web.dart`: `EclipticLongitude()` is **heliocentric**, and `SunPosition` returns `{elat, elon}` while `EclipticGeoMoon` returns `{lat, lon}` — reading the wrong one yields NaN silently. Positions are now finite-checked at the interop boundary.
 - **Backdrop:** the app paints the site's galaxy wallpaper itself (`StarfieldBackdrop`), because `.calc-wrapper` makes the iframe full-bleed and the site's own `body::after` is never visible on `astrology.html`. Same two layers, same order, same `screen` blend as `style.css`. `AstroCalculator/assets/images/celestial-veil.jpg` is a **copy** of `images/celestial-veil.jpg` — re-copy it if the site's veil is ever re-cropped or the two drift.
   - Opacity is `.18`, not the site's `--galaxy: .10`. The `.10` ceiling is a contrast limit that does not apply here (nothing but opaque panels sits over the backdrop). The limit here is attention: screen over a near-black ground passes the photo through at nearly full strength, so at `.34` the wallpaper's medallion competes with the chart wheel.
   - Flutter has no blend-mode widget — `Opacity` alpha-composites and `ShaderMask` blends the *other* way — so `_BlendMask` is a small `RenderProxyBox` doing `saveLayer` with a blended paint.
 
+## Pinch-zoom (both calculators)
+
+The site's own pages have always allowed zoom. The calculators blocked it, for **two** reasons, both injected by the Flutter engine at startup and neither visible in the source:
+
+1. It **deletes every author `<meta name="viewport">`** in `<head>` and appends its own carrying `maximum-scale=1.0, user-scalable=no` (`a4q()` in `main.dart.js`). Declaring a zoomable viewport in `web/index.html` is therefore useless — it gets thrown away.
+2. It sets `touch-action: none` on `<body>`. `touch-action` applies to the element under the fingers, and both iframes are full-bleed, so this swallowed the pinch for the *whole page*, not just the app.
+
+Fixed in each project's `web/index.html`:
+
+- a `<style>` rule `body { touch-action: pinch-zoom !important; }` — `pinch-zoom` gives the browser two-finger pinch and nothing else, so single-pointer gestures still reach Flutter and the app's own scrolling and tapping are untouched. The `!important` is what outranks the engine's inline style.
+- a script **after** `flutter_bootstrap.js` that rewrites the meta to `maximum-scale=5.0, user-scalable=yes`. It has to run after the engine, so it fixes the tag if present and otherwise watches `document.head` with a `MutationObserver`. The observer is deliberately left connected — writing `content` is an attribute change and cannot re-trigger a childList observer, so there is no loop.
+
+Both survive a rebuild because they live in `web/index.html`, which Flutter copies into `build/web`. Re-check them after a Flutter upgrade: the fix names `a4q` only in a comment, but it depends on the engine still replacing the tag exactly once.
+
 ## i18n (`lang-switcher.js` + `lang/ru.json`)
 - `data-i18n="key"` swaps `textContent`; `data-i18n-html="key"` swaps `innerHTML`.
-- `syncCalculatorLanguage()` drives **every** `iframe[data-calc-src]`, not one hard-coded id — both calculators reload with `?lang=ru`. Adding a third calculator is a markup change, not a code change. The comparison is against `getAttribute('src')`, never the `.src` property (which resolves to an absolute URL and would never match).
+- **Two paths to the calculators, and the split is load-bearing.** `syncCalculatorLanguage()` sets `?lang=ru` on `iframe[data-calc-src]` and runs **only from `init()`**, i.e. the app's cold start. `postCalculatorLanguage()` handles every later switch over `postMessage`. Both drive *every* `iframe[data-calc-src]`, not a hard-coded id, so a third calculator is a markup change, not a code change. The src comparison is against `getAttribute('src')`, never the `.src` property (which resolves to an absolute URL and would never match).
+  - Why: setting `src` **reloads the iframe**, which restarts the Flutter app and empties its form state — while the browser restores the visible text into Flutter's hidden DOM inputs. The fields looked filled, the state was gone, and "Построить карту" was dead with no explanation. Fixed 2026-08-15. Do not go back to reloading.
+  - The apps listen in `lib/utils/lang_channel*.dart` (conditional import, origin-checked) and post `{source:'sow-calc', type:'ready'}` on startup; the page answers with the current language. That handshake is what covers a switch made while the app is still booting.
+  - `BaziCalculator`'s SDK floor was raised to `>=3.5.0` for that file (`extension type` needs 3.3, `JSAny.isA` needs 3.4).
 - If a key's value in `lang/ru.json` contains markup (`<strong>`, `<a>`, `<br/>`), the element **must** use `data-i18n-html` — otherwise the tags render as literal text after switching to RU (and the English original is flattened on switching back, since originals are cached per attribute type).
 - Audit after editing translations — script walks `ru.json` for values containing `<` and flags any page still using plain `data-i18n` for them:
   ```
