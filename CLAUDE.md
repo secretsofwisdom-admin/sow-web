@@ -110,6 +110,12 @@ Both survive a rebuild because they live in `web/index.html`, which Flutter copi
           if k in hk: print(f, k)
   EOF
   ```
+- **The brand is marked non-translatable.** Every occurrence of `Secrets of Wisdom · NZ` and the bare alias `NZ` carries `translate="no" class="notranslate"` — the HTML5 attribute plus Google's older class, because Yandex honours only the class. Added 2026-08-17: Chrome's built-in Google Translate was expanding `NZ` into "Новая Зеландия" and rendering the name as "Тайны Мудрости", so the English page machine-translated to "Секреты мудрости · Родилась Новая Зеландия". Nothing in the repo ever said New Zealand.
+  - Both markers are **inherited by descendants**, so `[data-i18n-brand]` needs them only on the `<h1>`; the `.brand-en` / `.brand-ru` spans that `lang-switcher.js` injects, and the plain text `restoreEnglish()` puts back, are covered without touching the script or `brand.*` in `ru.json`.
+  - Wrapping the brand inside a translatable string forces that key onto `data-i18n-html` — that is why `footer`, `index.welcome`, `index.meetHeading`, `about.heading`, `about.p1` and `about.bio` moved. `footer` is one key on **nine** pages: convert all nine together or the stragglers print raw `<span …>` in Russian.
+  - The markers cannot reach `<head>`, so every page also carries `<meta name="google" content="notranslate" />` right after the charset meta — that is what keeps the **tab title** from being translated, and it switches Chrome's auto-translate off for the whole site. The trade was accepted knowingly: visitors on a third language lose browser translation and get the site's own EN/RU select instead. Both layers are kept — the meta stops the offer, the per-element markers still hold if someone starts a translation by hand.
+  - The three legal pages carry the same markers by hand (crest `div`, intro paragraph, footer line) — no i18n there.
+
 - Fixed 2026-08-13: 10 keys in `guide.html` (`guide.prepare.li1-2`, `guide.limits.li1-7`, `guide.session.during1`) and `contact.guideNudge` in `contact.html` used `data-i18n` for HTML-bearing values.
 
 ## Design system — "Imperial"

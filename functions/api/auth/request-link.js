@@ -57,7 +57,7 @@ export async function onRequestPost(context) {
           `If you didn't request this, you can safely ignore this email.`,
         html:
           `<div style="font-family:Georgia,'Times New Roman',serif;background:#0B0B2B;color:#EDEAE4;padding:32px;border-radius:10px;max-width:520px;margin:auto;">` +
-          `<h2 style="color:#C9A84C;font-weight:normal;">Secrets of Wisdom · NZ</h2>` +
+          `<h2 style="color:#C9A84C;font-weight:normal;" translate="no" class="notranslate">Secrets of Wisdom · NZ</h2>` +
           `<p>Use the button below to sign in to your account. This link expires in 15 minutes and can be used once.</p>` +
           `<p style="text-align:center;margin:28px 0;"><a href="${link}" style="display:inline-block;padding:13px 26px;background:#C9A84C;color:#0B0B2B;text-decoration:none;border-radius:6px;font-weight:bold;">Sign in</a></p>` +
           `<p style="font-size:13px;color:#B9B3C7;">Or paste this address into your browser:<br><span style="color:#C9A84C;">${link}</span></p>` +
