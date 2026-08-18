@@ -26,7 +26,8 @@
     html, body { margin: 0; padding: 0; height: 100%; background: #12100E; }
 
     /* Flutter's engine sets `touch-action: none` on <body> at startup, which
-       is one of the two things that stop a visitor pinch-zooming the site:
+       is one of the two things that stop a touchscreen pinch-zoom (a
+       trackpad pinch is blocked elsewhere; see the wheel listener below):
        touch-action applies to the element under the fingers, and this iframe
        is full-bleed, so it swallows the gesture for the whole page.
 
@@ -38,6 +39,29 @@
        author !important declaration is the one thing that outranks it. */
     body { touch-action: pinch-zoom !important; }
   </style>
+
+  <!-- Third piece of the zoom fix, this one for pointing devices.
+
+       A trackpad pinch is not a touch gesture — Chrome and Firefox deliver it
+       as a wheel event carrying ctrlKey — so the touch-action rule above does
+       nothing for it. The engine registers a NON-PASSIVE wheel listener on
+       <flutter-view> and preventDefaults every wheel event it sees (`ai_` in
+       main.dart.js). That branch is taken whenever the app is framed and owns
+       its whole document, which is exactly how the site embeds it, so the
+       browser's own zoom was being cancelled on every pinch.
+
+       Stopping the event during the capture phase on window keeps it away from
+       that listener, which sits on a descendant, so nothing cancels it and the
+       browser zooms. Do NOT call preventDefault here: that would kill the zoom
+       just as surely as Flutter did.
+
+       Only ctrlKey events are diverted, so ordinary two-finger scrolling still
+       reaches Flutter and the app's own scrolling is untouched. -->
+  <script>
+    addEventListener('wheel', function (e) {
+      if (e.ctrlKey) e.stopPropagation();
+    }, {capture: true});
+  </script>
 </head>
 <body>
   <!-- astronomy-engine (Don Cross, MIT), vendored rather than bundled: this

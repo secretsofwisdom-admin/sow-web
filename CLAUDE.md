@@ -56,6 +56,7 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
   chmod -R a+r /Users/nadin_zn-lo/Claude/sow-web/astro
   ```
 - `--base-href=/astro/` must use `=`, same trap as `calc/`.
+- **`main.dart.js` carries no content hash**, so a browser that has seen the page keeps serving the old app after a deploy. Hard-refresh when checking a rebuild — locally too; a second server on a fresh port is the reliable way to be sure you are looking at the new bundle.
 - Headers come from the **root `_headers`** (`/astro/*` → `SAMEORIGIN`). Never DENY.
 - Shared Dart was **copied** from BaziCalculator, not extracted into a package — that project is not to be modified. `city_database.dart`, `city_aliases.dart`, `text_search.dart` and `imperial_tokens.dart` now exist twice; a city fix has to be applied in both or the two calculators disagree about where someone was born.
 - `AstroCalculator/staging/` holds Imperial widgets copied but not yet ported (they still import `package:bazi_calculator/…`). Excluded from `flutter analyze`.
@@ -75,17 +76,29 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 
 ## Pinch-zoom (both calculators)
 
-The site's own pages have always allowed zoom. The calculators blocked it, for **two** reasons, both injected by the Flutter engine at startup and neither visible in the source:
+The site's own pages have always allowed zoom. The calculators blocked it, for **three** reasons, all injected by the Flutter engine at runtime and none visible in the source. The first two block a **touchscreen** pinch; the third blocks a **trackpad** pinch, which is a different gesture on a different event and was missed on the first pass.
 
 1. It **deletes every author `<meta name="viewport">`** in `<head>` and appends its own carrying `maximum-scale=1.0, user-scalable=no` (`a4q()` in `main.dart.js`). Declaring a zoomable viewport in `web/index.html` is therefore useless — it gets thrown away.
 2. It sets `touch-action: none` on `<body>`. `touch-action` applies to the element under the fingers, and both iframes are full-bleed, so this swallowed the pinch for the *whole page*, not just the app.
+3. It **cancels every `wheel` event** — `A.aMB("wheel", handler, !1, q)` registers a *non-passive* listener on `<flutter-view>`, and the handler ends in a bare `a.preventDefault()` on both branches unless Dart has called `allowPlatformDefault(true)`, which neither app does. The guarded branch is `if (framed && fullPageEmbedder)`, and both hold here: each build owns its whole document and the site loads it in an iframe.
+
+Reason 3 is the one that matters on a laptop. **A trackpad pinch is not a touch gesture** — Chrome and Firefox deliver it as a `wheel` event carrying `ctrlKey`. `touch-action` never sees it and the viewport meta is ignored for desktop zoom, so fixes 1 and 2 could not have helped, and the page stayed unzoomable on a trackpad long after touch pinch worked.
 
 Fixed in each project's `web/index.html`:
 
 - a `<style>` rule `body { touch-action: pinch-zoom !important; }` — `pinch-zoom` gives the browser two-finger pinch and nothing else, so single-pointer gestures still reach Flutter and the app's own scrolling and tapping are untouched. The `!important` is what outranks the engine's inline style.
 - a script **after** `flutter_bootstrap.js` that rewrites the meta to `maximum-scale=5.0, user-scalable=yes`. It has to run after the engine, so it fixes the tag if present and otherwise watches `document.head` with a `MutationObserver`. The observer is deliberately left connected — writing `content` is an attribute change and cannot re-trigger a childList observer, so there is no loop.
+- a **capture-phase** `wheel` listener on `window`, in `<head>` so it is registered before the engine boots, that calls `stopPropagation()` when `e.ctrlKey` is set. The engine's listener is on `<flutter-view>`, a descendant, so stopping the event at the first step of the propagation path means it is never invoked and nothing cancels the gesture. Two rules for that handler: it must **never** call `preventDefault()` (that would kill the zoom exactly as Flutter did), and it must test `ctrlKey` — diverting plain wheel would take the apps' own scrolling with it.
 
-Both survive a rebuild because they live in `web/index.html`, which Flutter copies into `build/web`. Re-check them after a Flutter upgrade: the fix names `a4q` only in a comment, but it depends on the engine still replacing the tag exactly once.
+Both fixes survive a rebuild because they live in `web/index.html`, which Flutter copies into `build/web`. The `calc/` and `astro/` copies here were hand-patched too, so the current fix ships without a Flutter rebuild; `diff` each against its source and only the `<base href>` line should differ.
+
+**Re-check after a Flutter upgrade.** The minified names drift between builds and are quoted in comments only — this build's meta-replacer is `aaK`, not the `a4q` the note above was written against, and the wheel handler is `ai_` in `calc/` but `abE` in `astro/`. Grep for behaviour, not names:
+
+```
+python3 -c "import re;s=open('calc/main.dart.js',encoding='utf-8',errors='replace').read();[print(repr(s[m.start()-420:m.start()+200])) for m in re.finditer(r'\"wheel\"',s)]"
+```
+
+Known limit: while the page is zoomed, Flutter still consumes plain wheel, so panning may only be possible during the pinch gesture itself. If that becomes a problem the listener can also pass wheel through while `visualViewport.scale > 1` — at the cost of the app's own scrolling whenever the page is zoomed. Safari is untested: macOS Safari sends `gesturestart`/`gesturechange` for a trackpad pinch rather than `ctrlKey` wheel, and Flutter does not listen to those, so it should already zoom.
 
 ## i18n (`lang-switcher.js` + `lang/ru.json`)
 - `data-i18n="key"` swaps `textContent`; `data-i18n-html="key"` swaps `innerHTML`.
@@ -143,6 +156,7 @@ The site was re-skinned to match the calculator so the two read as one product. 
 - The three legal pages (`privacy`, `agreement`, `readings-terms`) stay self-contained: no `style.css`, no nav. They carry a duplicate token block in an inline `<style>`, byte-identical across all three — edit all three together.
 
 ## TODO
+- `SUN` / `MOON` are hardcoded English in `ChartSummary` (`AstroCalculator/lib/widgets/placement_table.dart`) — the RU chart summary reads `АСЦЕНДЕНТ`, then `SUN`, `MOON`
 - Source files kept in `/Users/nadin_zn-lo/Claude/sample/` — copy new files from there
 - `images/fire-horse.png` (3.3 MB) and `images/eclipse.png` (2.8 MB) are served as 120×90 thumbnails — needs a resize pass
 - Nav and footer are copy-pasted into 9 pages with no build step, and have drifted before; consider a JS injector or a build step
