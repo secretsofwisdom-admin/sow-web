@@ -87,7 +87,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   The other two palettes
+   The other palette
 
    Scoped to [data-theme] on <html>, set by the inline script in each page's
    <head> before first paint. The default stays in the bare :root above, so a
@@ -102,49 +102,17 @@
    in AstroCalculator/lib/theme/imperial_tokens.dart. Fix a colour in both or
    the site and the iframe disagree down the middle of the page.
 
-   Two notes on the light set, both counter-intuitive and both measured:
+   Two notes on it, both counter-intuitive and both measured:
 
    1. The gold ramp's names mean PROMINENCE, not luminance. On a pale ground
       the most emphatic gold is the darkest, so --gold-bright is the darkest
       of the four here and --gold-rule the palest — the reverse of the dark
-      sets. Authoring light with the dark ordering is the likeliest source of
+      set. Authoring light with the dark ordering is the likeliest source of
       "it looks wrong and I can't say why".
    2. --gold-rule is the most-used token in this sheet (21 uses) and is
       entirely hairlines. A prettier value like #C9B183 measures 1.99:1 on the
       panel and every rule, bracket and double-frame silently vanishes.
    -------------------------------------------------------------------------- */
-
-html[data-theme="lifted"] {
-  --bg-core: #2A2D31;
-  --bg-mid: #1C2025;
-  --bg-edge: #0E1116;
-
-  --gold-bright: #FBE7B8;
-  --gold: #EFC782;
-  --gold-dim: #A88A55;
-  --gold-rule: #87703F;
-
-  --panel-fill: #24282D;
-  --panel-inner: #2B3038;
-  --panel-border: #4A4136;
-  --nav-fill: #1F2226;
-
-  --ink: #F2ECE0;
-  --ink-title: #E6DFD1;
-  --ink-body: #CFC7B8;
-  --ink-label: #CDB78C;
-  --ink-muted: #B3B2AC;
-  --ink-faint: #9C9382;   /* 4.88:1 — still decorative / sub-12px only */
-  --error: #EC8A79;
-
-  --btn-top: #F5D083;
-  --btn-bottom: #8A5A18;
-  --btn-ink: #241704;
-
-  /* --galaxy is deliberately NOT redeclared: it inherits .10 from :root.
-     The brighter ground makes the veil's additive contribution smaller, so
-     the imperial ceiling is conservative here — measured, not assumed. */
-}
 
 html[data-theme="light"] {
   --bg-core: #FBF6EC;
@@ -180,12 +148,30 @@ html[data-theme="light"] {
   --btn-bottom: #513806;
   --btn-ink: #FFF8EC;
 
-  /* Ceiling re-measured for this ground; the .10 above does not transfer,
-     because in light mode the veil DARKENS and the constraint flips sign.
-     Against the 12px footer line in --ink-muted over --bg-mid:
-       .10 -> 5.10   .14 -> 4.61   .16 -> 4.38   .18 -> 4.19
-     .16 is the absolute ceiling, .14 the working value. */
-  --galaxy: .14;
+  /* Re-measured against celestial-veil-light.jpg once it existed; an earlier
+     .14 here was set from a modelled veil and did not survive the real one.
+
+     The constraint is a DIFFERENT one from the .10 above, and it only looks
+     like the same number by coincidence: there the veil adds light and the
+     risk is washing out pale text, here `multiply` removes it and the risk is
+     darkening the ground under dark text. Sign flipped, same locus — the 12px
+     footer line in --ink-muted. So this is declared, not inherited: if :root's
+     .10 ever moves for a dark-side reason, light must not follow it.
+
+     Against that footer line, glyph-scale integration over a 6x12 box (the
+     statistic the dark side's .10 was set with) and raw worst pixel:
+                 glyph   raw
+       .10        5.16   4.62
+       .12        5.05   4.46   <- raw dips under AA here
+       .14        4.92   4.30
+       .16        4.77   4.15
+     Glyph-scale alone would allow ~.20. It is set at .10 because the shipping
+     dark backdrop measures 5.61 glyph / 5.43 raw and so clears AA on BOTH
+     metrics, and light running at .14 would make this the one place on the
+     site with sub-4.5 backdrop pixels under text. Matching the stricter
+     standard the rest of the site already meets costs almost nothing here:
+     the medallion, nebula and spirals all still read at .10. */
+  --galaxy: .10;
 }
 
 /* --------------------------------------------------------------------------
@@ -256,26 +242,41 @@ body::after {
   mix-blend-mode: screen;
 }
 
-/* Light mode: no lacquer, no veil.
+/* Light mode: no lacquer, and the tonal opposite of the veil.
 
    bg_lacquer.png is FULLY OPAQUE — it carries a tRNS chunk but no pixel uses
    it — so on a pale ground it is not a texture, it is a dark slab covering
    the page. The calculator's own token file says the same thing about its
    `backgroundPlate`, and BaZi's two light themes already solve it by leaving
-   that null. Same answer here: drop the plate, keep the vignette.
-
-   The veil comes off too, for now. `screen` can only ADD light, so over
-   parchment it washes to a faint smear rather than reading as stars —
-   measured, not guessed. The fix is a separate inverted-and-warm-tinted
-   asset composited with `multiply`, which is its own step; until that asset
-   exists, referencing it here would 404 on every light page load. Light mode
-   ships on the vignette alone and gains the veil later. */
+   that null. Same answer here: drop the plate, keep the vignette. */
 html[data-theme="light"] body::before {
   background: radial-gradient(circle at 52.5% 27.5%,
               var(--bg-core) 0%, var(--bg-mid) 40%, var(--bg-edge) 100%);
 }
+
+/* The veil has to be a DIFFERENT FILE here, not the same one re-blended.
+   `screen` can only add light, so over parchment the photo washes to a faint
+   smear; and multiplying the photo as-is paints a dark galaxy on a pale page,
+   which is a negative, not a backdrop. What light mode needs is the tonal
+   opposite, and that is what celestial-veil-light.jpg is —
+   scripts/make_light_veil.py derives it and documents why the chroma is
+   thrown away rather than merely inverted.
+
+   `multiply` is the mirror of `screen`: it can only REMOVE light, so it can
+   never blow out the parchment or push the gold toward a colour it is not.
+   The asset is built to exploit that — empty sky is pure white, and multiply
+   by white is a no-op, so most of the frame is left exactly as the vignette
+   above painted it instead of being uniformly muddied.
+
+   Only the image and the blend change. `center center / cover no-repeat` are
+   separate longhands already set by the shorthand above, so they carry over,
+   and with them the concentric-medallion invariant: the light veil is the
+   same 1280x696 crop, per-pixel-derived, so its medallion is still at the
+   dead centre of the file. --galaxy lands on .10 here too, but for the
+   opposite reason; the measurement is in the [data-theme="light"] block. */
 html[data-theme="light"] body::after {
-  content: none;
+  background-image: url('images/celestial-veil-light.jpg');
+  mix-blend-mode: multiply;
 }
 
 h1, h2, h3 {

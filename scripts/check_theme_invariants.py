@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only invariants for the three-theme system.
+"""Read-only invariants for the theme system.
 
 Run from the repo root:  python3 scripts/check_theme_invariants.py
 
@@ -44,10 +44,10 @@ def read(p):
     return (ROOT / p).read_text(encoding="utf-8")
 
 
-# --- check 6: every themed token exists in both [data-theme] blocks -------
+# --- check 6: every themed token exists in the [data-theme] block --------
 # Colours only, and deliberately so. Radii, font stack, --nav-h and the
-# bracket geometry are shared across all three palettes; --galaxy is an
-# opacity that a palette may legitimately inherit (lifted does). Demanding
+# bracket geometry are shared across the palettes; --galaxy is an
+# opacity that a palette may legitimately declare or inherit. Demanding
 # those here would be demanding duplication for its own sake, and an earlier
 # draft that did so flagged correct CSS twice in a row.
 #
@@ -74,7 +74,7 @@ def check_tokens():
     want = _themed(root.group(1))
 
     problems = []
-    for theme in ("lifted", "light"):
+    for theme in ("light",):
         blk = re.search(r'html\[data-theme="%s"\] \{(.*?)^\}' % theme, css, re.S | re.M)
         if not blk:
             return report("6 token parity", None, f"no [data-theme={theme}] block yet")
@@ -144,7 +144,19 @@ def check_nav():
 #
 # One page left un-stamped, or stamped differently, re-opens the hole for
 # exactly that page — which is the kind of thing that survives review.
+#
+# The stamp is the first 8 hex of md5(style.css), NOT a date. A date-based
+# stamp only busts the cache on the first edit of any given day: the second
+# edit that day produces the same stamp, the URL does not change, and the hole
+# this check exists to close is silently open again. Deriving it from the file
+# means the check can verify rather than merely compare — a style.css edit that
+# forgets to restamp fails here instead of shipping.
+def css_stamp():
+    return hashlib.md5((ROOT / "style.css").read_bytes()).hexdigest()[:8]
+
+
 def check_css_version():
+    want = css_stamp()
     stamps = {}
     for page in NAV_PAGES:
         html = read(page)
@@ -153,12 +165,17 @@ def check_css_version():
             stamps[page] = "NO-LINK"
         else:
             stamps[page] = m.group(2) or "UNSTAMPED"
-    uniq = set(stamps.values())
+
     bad = sorted(p for p, v in stamps.items() if v in ("NO-LINK", "UNSTAMPED"))
     if bad:
         return report("7b css version stamp", False, f"unstamped: {bad}")
-    report("7b css version stamp", len(uniq) == 1,
-           "" if len(uniq) == 1 else f"mixed stamps: {stamps}")
+
+    stale = sorted(p for p, v in stamps.items() if v != want)
+    report("7b css version stamp", not stale,
+           "" if not stale else
+           f"style.css hashes to {want}; these carry something else: "
+           + ", ".join(f"{p}={stamps[p]}" for p in stale)
+           + "\n      restamp with:  python3 scripts/stamp_css.py")
 
 
 # --- check 8: legal pages' <style> blocks identical ------------------------

@@ -14,7 +14,7 @@
  */
 (function () {
   var STORAGE_KEY = 'sow-theme';
-  var THEMES = ['imperial', 'lifted', 'light'];
+  var THEMES = ['imperial', 'light'];
   var DEFAULT = 'imperial';
 
   function current() {

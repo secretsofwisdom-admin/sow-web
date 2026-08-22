@@ -5,7 +5,7 @@
   // reading the store directly avoids a load-order dependency between the two
   // scripts for a single string.
   const THEME_KEY = 'sow-theme';
-  const THEMES = ['imperial', 'lifted', 'light'];
+  const THEMES = ['imperial', 'light'];
   let translations = null;
   var originals = {};       // key → original textContent
   var originalsHtml = {};   // key → original innerHTML
