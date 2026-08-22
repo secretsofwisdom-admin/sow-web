@@ -22,8 +22,18 @@
 
   <style>
     /* The page behind the canvas, so the first paint is the chart's own
-       ground rather than a white flash inside the site's dark iframe. */
+       ground rather than a white flash inside the site's dark iframe.
+
+       #12100E matches no token (neither bgMid #0E1114 nor bgCore #1A1C1E).
+       It is shipped behaviour and deliberately left alone; this is not the
+       change that should alter it.
+
+       The two overrides are the same fix mirrored: under the light palette a
+       #12100E first paint is a *dark* flash inside a pale page, which is
+       exactly as wrong. Each value is that palette's own bgMid. */
     html, body { margin: 0; padding: 0; height: 100%; background: #12100E; }
+    html[data-theme="lifted"], html[data-theme="lifted"] body { background: #1C2025; }
+    html[data-theme="light"],  html[data-theme="light"]  body { background: #F2EADB; }
 
     /* Flutter's engine sets `touch-action: none` on <body> at startup, which
        is one of the two things that stop a touchscreen pinch-zoom (a
@@ -39,6 +49,23 @@
        author !important declaration is the one thing that outranks it. */
     body { touch-action: pinch-zoom !important; }
   </style>
+
+  <!-- First paint happens before Flutter boots, so the ground has to be
+       chosen here rather than by the app.
+
+       Reads this document's own `?theme=`, NOT localStorage: the embedding
+       site owns the stored preference and hands it over on the iframe URL,
+       so there is exactly one authority. Reading localStorage here would
+       make the app a second one, racing the page on every load.
+
+       Deliberately a separate block from the zoom patches below, which are
+       load-bearing and must not be disturbed. -->
+  <script>
+    (function () {
+      var m = /[?&]theme=(lifted|light)/.exec(location.search);
+      if (m) document.documentElement.dataset.theme = m[1];
+    })();
+  </script>
 
   <!-- Third piece of the zoom fix, this one for pointing devices.
 

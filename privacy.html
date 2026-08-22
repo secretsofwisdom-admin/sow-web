@@ -9,7 +9,17 @@
 <meta property="og:title" content="Privacy Policy · Secrets of Wisdom · NZ" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://secretsofwisdom.org/privacy.html" />
-<style>
+<script>/* Palette before first paint. Must be synchronous and inline: a
+     deferred script runs after parse, by which time the wrong ground has
+     already been painted. try/catch is required — localStorage throws in
+     Safari private mode, and an uncaught throw here blocks the parser
+     before the stylesheet loads.
+
+     The first and only script on these pages. Inline, dependency-free and
+     four lines, so "self-contained" still holds. */
+    (function(){try{var t=localStorage.getItem('sow-theme');
+    if(t==='lifted'||t==='light')document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+  <style>
   /* Self-contained imperial theme — these pages deliberately load no
      style.css, so the tokens are repeated here. Values match
      BaziCalculator/lib/theme/imperial_tokens.dart; variable NAMES are kept
@@ -25,6 +35,30 @@
     --ink:#E6DFD1; --muted:#9A9A96; --gold:#E3B569; --gold-soft:#F5DCA0;
     --line:#6B5730; --radius:10px;
     --galaxy:.10;
+  }
+  /* The other two palettes.
+
+     These pages carry no toggle — they are footer links nobody lands on
+     first, and back returns to a page that has one. They DO follow the
+     choice, because they are the pages people actually read at length and
+     landing on a black wall of legal text after choosing light is a real
+     regression.
+
+     Names differ from style.css (--bg2/--muted/--gold-soft/--line rather
+     than --panel-inner/--ink-muted/--gold-bright/--gold-rule), so these are
+     written against this file's own vocabulary. Values are the same
+     measured palettes; see the SHARED ROLE PALETTE block in
+     AstroCalculator/lib/theme/imperial_tokens.dart. */
+  html[data-theme="lifted"]{
+    --bg:#1C2025; --bg2:#24282D; --panel:#24282D;
+    --ink:#F2ECE0; --muted:#B3B2AC; --gold:#EFC782; --gold-soft:#FBE7B8;
+    --line:#87703F;
+  }
+  html[data-theme="light"]{
+    --bg:#F2EADB; --bg2:#FDFAF3; --panel:#FDFAF3;
+    --ink:#221D15; --muted:#5A5348; --gold:#8A6224; --gold-soft:#7A5314;
+    --line:#A58750;
+    --galaxy:.14;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -42,6 +76,15 @@
       url('images/bg_lacquer.png') center center / cover no-repeat,
       radial-gradient(circle at 52.5% 27.5%,#1A1C1E 0%,#0E1114 40%,#03050A 100%);
   }
+  /* Light drops the plate and the veil. bg_lacquer.png is fully opaque, so
+     on a pale ground it is a dark slab over the page, not a texture. The
+     gradient stops are hardcoded above rather than tokenised, so this has to
+     restate the whole layer. */
+  html[data-theme="light"] body::before{
+    background:
+      radial-gradient(circle at 52.5% 27.5%,#FBF6EC 0%,#F2EADB 40%,#E3D8C4 100%);
+  }
+  html[data-theme="light"] body::after{ content:none; }
   /* The old galaxy wallpaper, ghosted over the lacquer. `screen` only adds
      light, so it never mutes the plate or shifts the gold. Must sit on top —
      bg_lacquer.png is fully opaque. Strength capped at .10: above that the

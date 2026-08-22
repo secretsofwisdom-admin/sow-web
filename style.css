@@ -87,6 +87,108 @@
 }
 
 /* --------------------------------------------------------------------------
+   The other two palettes
+
+   Scoped to [data-theme] on <html>, set by the inline script in each page's
+   <head> before first paint. The default stays in the bare :root above, so a
+   visitor who has never touched the control gets byte-identical CSS to what
+   the site has always served.
+
+   html[data-theme="x"] is specificity (0,1,1) and beats :root at (0,1,0), so
+   no !important and no ordering games. Every var() reference in this sheet
+   inherits the swap for free.
+
+   Values are shared with the calculators — see the SHARED ROLE PALETTE block
+   in AstroCalculator/lib/theme/imperial_tokens.dart. Fix a colour in both or
+   the site and the iframe disagree down the middle of the page.
+
+   Two notes on the light set, both counter-intuitive and both measured:
+
+   1. The gold ramp's names mean PROMINENCE, not luminance. On a pale ground
+      the most emphatic gold is the darkest, so --gold-bright is the darkest
+      of the four here and --gold-rule the palest — the reverse of the dark
+      sets. Authoring light with the dark ordering is the likeliest source of
+      "it looks wrong and I can't say why".
+   2. --gold-rule is the most-used token in this sheet (21 uses) and is
+      entirely hairlines. A prettier value like #C9B183 measures 1.99:1 on the
+      panel and every rule, bracket and double-frame silently vanishes.
+   -------------------------------------------------------------------------- */
+
+html[data-theme="lifted"] {
+  --bg-core: #2A2D31;
+  --bg-mid: #1C2025;
+  --bg-edge: #0E1116;
+
+  --gold-bright: #FBE7B8;
+  --gold: #EFC782;
+  --gold-dim: #A88A55;
+  --gold-rule: #87703F;
+
+  --panel-fill: #24282D;
+  --panel-inner: #2B3038;
+  --panel-border: #4A4136;
+  --nav-fill: #1F2226;
+
+  --ink: #F2ECE0;
+  --ink-title: #E6DFD1;
+  --ink-body: #CFC7B8;
+  --ink-label: #CDB78C;
+  --ink-muted: #B3B2AC;
+  --ink-faint: #9C9382;   /* 4.88:1 — still decorative / sub-12px only */
+  --error: #EC8A79;
+
+  --btn-top: #F5D083;
+  --btn-bottom: #8A5A18;
+  --btn-ink: #241704;
+
+  /* --galaxy is deliberately NOT redeclared: it inherits .10 from :root.
+     The brighter ground makes the veil's additive contribution smaller, so
+     the imperial ceiling is conservative here — measured, not assumed. */
+}
+
+html[data-theme="light"] {
+  --bg-core: #FBF6EC;
+  --bg-mid: #F2EADB;
+  /* Runs DARKER toward the edges, not brighter. The reading is "light
+     gathers at the centre"; mechanically inverting the ramp would put a
+     bright rim around the page. */
+  --bg-edge: #E3D8C4;
+
+  --gold-bright: #7A5314;  /* 6.55:1 on --panel-fill — the emphatic one */
+  --gold: #8A6224;         /* 5.23 on panel, 4.56 on --bg-mid */
+  --gold-dim: #8E7239;     /* 4.36 — stays ahead of --gold-rule, as in dark */
+  --gold-rule: #A58750;    /* 3.26 — hairlines must stay visible */
+
+  --panel-fill: #FDFAF3;
+  --panel-inner: #F3EEE2;
+  --panel-border: #D8CBB2;
+  --nav-fill: #F7F1E4;
+
+  --ink: #221D15;
+  --ink-title: #31281B;
+  --ink-body: #3D3427;
+  --ink-label: #6B5324;
+  --ink-muted: #5A5348;
+  --ink-faint: #776E5D;   /* 4.83:1 — decorative / sub-12px only */
+  --error: #9A3418;       /* deep oxide; imperial's #E07A6B is 2.4:1 here */
+
+  /* Figure and ground swap: a dark plate with pale ink. Keeping a gold plate
+     and darkening the ink tops out at 3.07:1; this measures 5.91 at the top
+     stop and 10.37 at the bottom, so it clears AA across the whole gradient
+     rather than only at one end. */
+  --btn-top: #7E5A1E;
+  --btn-bottom: #513806;
+  --btn-ink: #FFF8EC;
+
+  /* Ceiling re-measured for this ground; the .10 above does not transfer,
+     because in light mode the veil DARKENS and the constraint flips sign.
+     Against the 12px footer line in --ink-muted over --bg-mid:
+       .10 -> 5.10   .14 -> 4.61   .16 -> 4.38   .18 -> 4.19
+     .16 is the absolute ceiling, .14 the working value. */
+  --galaxy: .14;
+}
+
+/* --------------------------------------------------------------------------
    Base
    -------------------------------------------------------------------------- */
 body {
@@ -152,6 +254,28 @@ body::after {
   background: url('images/celestial-veil.jpg') center center / cover no-repeat;
   opacity: var(--galaxy);
   mix-blend-mode: screen;
+}
+
+/* Light mode: no lacquer, no veil.
+
+   bg_lacquer.png is FULLY OPAQUE — it carries a tRNS chunk but no pixel uses
+   it — so on a pale ground it is not a texture, it is a dark slab covering
+   the page. The calculator's own token file says the same thing about its
+   `backgroundPlate`, and BaZi's two light themes already solve it by leaving
+   that null. Same answer here: drop the plate, keep the vignette.
+
+   The veil comes off too, for now. `screen` can only ADD light, so over
+   parchment it washes to a faint smear rather than reading as stars —
+   measured, not guessed. The fix is a separate inverted-and-warm-tinted
+   asset composited with `multiply`, which is its own step; until that asset
+   exists, referencing it here would 404 on every light page load. Light mode
+   ships on the vignette alone and gains the veil later. */
+html[data-theme="light"] body::before {
+  background: radial-gradient(circle at 52.5% 27.5%,
+              var(--bg-core) 0%, var(--bg-mid) 40%, var(--bg-edge) 100%);
+}
+html[data-theme="light"] body::after {
+  content: none;
 }
 
 h1, h2, h3 {
@@ -954,7 +1078,59 @@ footer {
 /* --------------------------------------------------------------------------
    Language select
    -------------------------------------------------------------------------- */
-.lang-select {
+/* Both nav selects, one container.
+
+   The language select was absolutely positioned on its own; a second one
+   beside it would need its own right offset kept in sync by hand. The
+   container owns the position, the selects sit in a flex row inside it, and
+   the whole right-hand block has one width for the collapse budget below to
+   reason about.
+
+   .lang-select keeps its absolute positioning as a fallback for any page
+   whose markup has not been wrapped yet — the override is scoped to
+   .nav-controls, so both arrangements render correctly during the rollout. */
+.nav-controls {
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.nav-controls .lang-select,
+.nav-controls .theme-select {
+  position: static;
+  transform: none;
+  top: auto;
+  right: auto;
+}
+/* Both selects drop the native dropdown arrow and draw a compact caret
+   instead. That is worth ~16px each, and the nav's collapse budget is tight
+   enough that it decides whether a 1280px laptop keeps the full menu.
+
+   Measured: nav is justify-content:center with the logo and controls
+   absolutely positioned, so the links are CENTRED and the clearance
+   condition is `viewport > linkRun + 2*controlsWidth + 48`, not the sum
+   recorded in CLAUDE.md. The doubling is what makes these pixels matter.
+
+   Widths are fixed so the budget is a constant rather than a function of the
+   widest option string the browser happens to render. */
+.lang-select,
+.theme-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23A58750' d='M0 0h8L4 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  padding-right: 15px;
+}
+/* No fixed width: the option text is the real floor ("LIGHT" needs ~42px at
+   this size), so a declared width either does nothing or clips. These are
+   content-sized, and the padding above is what was actually tuned. */
+
+.lang-select,
+.theme-select {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -967,7 +1143,7 @@ footer {
   background: var(--panel-inner);
   border: 1px solid var(--gold-rule);
   border-radius: var(--r-sm);
-  padding: 7px 10px;
+  padding: 7px 8px;
   cursor: pointer;
   outline: none;
   min-height: 0;
@@ -975,11 +1151,13 @@ footer {
   width: auto;
   transition: border-color .25s ease, color .25s ease;
 }
-.lang-select:hover {
+.lang-select:hover,
+.theme-select:hover {
   color: var(--gold-bright);
   border-color: var(--gold-dim);
 }
-.lang-select option {
+.lang-select option,
+.theme-select option {
   background: var(--panel-fill);
   color: var(--ink);
 }
@@ -1057,7 +1235,33 @@ footer {
    Recompute this number after adding a nav link. Measured at 14px/1.4px
    letter-spacing with 16px side margins, plus room for the medallion (76px)
    and the language select (79px), with slack for font-rendering variance. */
-@media (max-width: 1100px) {
+/* Nav collapses to the hamburger below this width.
+   Recomputed 2026-08-21 for the theme select. CLAUDE.md recorded the budget
+   as a sum (926 + 76 + 79 = 1081 -> 1100), but `nav` is
+   justify-content:center with the logo and controls absolutely positioned,
+   so the links are CENTRED and the clearance condition is
+
+       viewport > linkRun + 2*controlsWidth + 48
+
+   Controls count twice, which is why 11px shaved off them moved the
+   threshold by 22. Measured in the browser, both languages, with the
+   Russian nav actually rendered (the translations load async — measure too
+   early and you measure English twice):
+
+       EN  linkRun 893  controls 106  ->  1152
+       RU  linkRun 1006 controls 106  ->  1265
+
+   Set to 1270, the worse of the two plus slack; a 1280px laptop keeps the
+   full nav in both languages with 15px to spare.
+
+   Two things this exposed. The old 1100 was computed for English only, so
+   Russian was ALREADY colliding between 1100 and 1179 on the live site —
+   a pre-existing bug, not a regression from this change. And English now
+   collapses from 1270 rather than its own 1152, losing ~110px of range to
+   one shared breakpoint; splitting it per-language needs html[lang="ru"]
+   variants of the whole block including --nav-h, which the calc wrapper
+   depends on, and that was judged not worth the duplication. */
+@media (max-width: 1270px) {
   :root { --nav-h: 60px; }
 
   nav {
@@ -1076,6 +1280,7 @@ footer {
   }
   /* Collapsed: hide menu items behind the hamburger */
   nav a:not(.nav-logo),
+  nav .nav-controls,
   nav .lang-select { display: none; }
   /* Expanded dropdown */
   nav.open {
@@ -1094,6 +1299,13 @@ footer {
     position: static;
     transform: none;
     margin-top: 14px;
+  }
+  nav.open .nav-controls {
+    display: flex;
+    position: static;
+    transform: none;
+    margin-top: 14px;
+    justify-content: center;
   }
   nav.open .nav-toggle { top: 18px; transform: none; }
   /* Pin the medallion to the top of the drawer — vertically centring it
