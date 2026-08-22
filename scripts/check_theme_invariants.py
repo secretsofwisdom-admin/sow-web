@@ -135,6 +135,32 @@ def check_nav():
                f"{len(set(foucs.values()))} distinct variants")
 
 
+# --- check 7b: the stylesheet version stamp is uniform ---------------------
+# style.css is served with max-age=14400 while the HTML is max-age=0, so a
+# returning visitor can pair NEW markup with a FOUR-HOUR-OLD stylesheet. That
+# combination is worse than either alone: the inline script sets data-theme,
+# the cached sheet has no [data-theme] blocks to answer it, and .nav-controls
+# renders unstyled. The ?v= stamp makes the pairing impossible.
+#
+# One page left un-stamped, or stamped differently, re-opens the hole for
+# exactly that page — which is the kind of thing that survives review.
+def check_css_version():
+    stamps = {}
+    for page in NAV_PAGES:
+        html = read(page)
+        m = re.search(r'<link rel="stylesheet" href="style\.css(\?v=([^"]*))?"', html)
+        if not m:
+            stamps[page] = "NO-LINK"
+        else:
+            stamps[page] = m.group(2) or "UNSTAMPED"
+    uniq = set(stamps.values())
+    bad = sorted(p for p, v in stamps.items() if v in ("NO-LINK", "UNSTAMPED"))
+    if bad:
+        return report("7b css version stamp", False, f"unstamped: {bad}")
+    report("7b css version stamp", len(uniq) == 1,
+           "" if len(uniq) == 1 else f"mixed stamps: {stamps}")
+
+
 # --- check 8: legal pages' <style> blocks identical ------------------------
 def check_legal():
     hashes = {}
@@ -173,7 +199,7 @@ def check_assets():
     report("9 lacquer crop", size == (1480, 860), f"got {size}, want (1480, 860)")
 
 
-for fn in (check_tokens, check_nav, check_legal, check_assets):
+for fn in (check_tokens, check_nav, check_css_version, check_legal, check_assets):
     fn()
 
 print()
