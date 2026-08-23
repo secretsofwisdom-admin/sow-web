@@ -39,9 +39,12 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
   find /Users/nadin_zn-lo/Claude/sow-web/calc -type f -exec chmod 644 {} \;
   ```
 - `--base-href=/calc/` must use `=`. With a space, Flutter 3.44 silently leaves it `/` and every asset 404s under `/calc/`.
+- **`main.dart.js` carries no content hash here either**, exactly as in `astro/`. A browser that has loaded the page once keeps serving the old bundle after a rebuild — locally too, and there is no service worker to blame. Verifying a rebuild on the port you last used will show you the *previous* app and nothing will look wrong. Serve on a **fresh port**; that is a new origin and a cold cache.
 - JS build, not `--wasm` (despite `DEPLOY_WEB.md`) — parent page isn't cross-origin-isolated.
 - Security headers come from the **root `_headers`** (`/calc/*` → `X-Frame-Options: SAMEORIGIN`). Pages ignores nested `calc/_headers`. Never set DENY there — it blanks the iframe.
 - Replace the whole folder each time; asset hashes change between builds.
+- **The resting input panel carries name, gender and the unknown-hour checkbox** (2026-08-22). Gender rides the `Birth Date` caption, the checkbox shares the hour/minute row, and the name field shares the GO button's row — which is why `LayoutSpec.inputPanel` only had to grow 460 → 470. `BaziCalculator/CLAUDE.md` has the arithmetic, and the reason the time row now has *two* dimming wrappers rather than one.
+- **The subject's name prints after the 八字 badge on the `Your Chart Plot` line, at the title's own size** — not above the Ten Gods / Symbolic Stars reading. A long one shrinks to fit rather than truncating (`ShrinkToFitLine`, a render object — `BaziCalculator/CLAUDE.md` records why a `LayoutBuilder` + `Text` version measured one thing and drew another). On a phone it takes the subtitle's line instead.
 - **No in-app language switcher.** The globe `PopupMenuButton` was removed from `_HeaderActions` in `lib/widgets/imperial/app_header.dart` (2026-08-15) — the site nav select is the only control, and it reaches the app over the postMessage channel. `localeProvider` stays: it still resolves `?lang=` on a cold start and receives the message. `locale_switch_test.dart` guards both the absence of the icon and that the site's choice still turns the UI over.
 
 ## Astrology Calculator (`/astro/`)
