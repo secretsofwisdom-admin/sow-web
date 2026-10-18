@@ -1201,6 +1201,14 @@ footer {
    top/height key off --nav-h, the same token the nav uses. The old sheet
    hard-coded 50px against a ~100px nav, so the iframe sat *under* the bar.
    -------------------------------------------------------------------------- */
+/* No pull-to-refresh on the calculator pages. Once a pinch-zoomed page could
+   be dragged (2026-10-17), dragging down at its top made iPhone Safari reload
+   the page, and the cast chart and the whole form were lost (2026-10-18). */
+html:has(.calc-wrapper),
+html:has(.calc-wrapper) body {
+  overscroll-behavior: none;
+}
+
 .calc-wrapper {
   position: fixed;
   top: var(--nav-h);
