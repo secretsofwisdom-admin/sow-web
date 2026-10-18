@@ -47,7 +47,9 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
   rm -rf /Users/nadin_zn-lo/Claude/sow-web/calc
   cp -R build/web /Users/nadin_zn-lo/Claude/sow-web/calc
   find /Users/nadin_zn-lo/Claude/sow-web/calc -type f -exec chmod 644 {} \;
+  cd /Users/nadin_zn-lo/Claude/sow-web && python3 scripts/stamp_flutter.py
   ```
+- **`python3 scripts/stamp_flutter.py` after every copy into `calc/` or `astro/`** (2026-10-18). It puts a content hash on `flutter_bootstrap.js?v=` in `index.html` and on `mainJsPath` in the bootstrap. Both scripts are cached for 4 hours while `index.html` is not, so without it a returning visitor gets the new page with the old app. The dropdown-zoom fix worked on a fresh load and did nothing on the user's iPhone for exactly that reason. The script is idempotent.
 - `--base-href=/calc/` must use `=`. With a space, Flutter 3.44 silently leaves it `/` and every asset 404s under `/calc/`.
 - **`main.dart.js` carries no content hash here either**, exactly as in `astro/`. A browser that has loaded the page once keeps serving the old bundle after a rebuild — locally too, and there is no service worker to blame. Verifying a rebuild on the port you last used will show you the *previous* app and nothing will look wrong. Serve on a **fresh port**; that is a new origin and a cold cache.
 - JS build, not `--wasm` (despite `DEPLOY_WEB.md`) — parent page isn't cross-origin-isolated.
@@ -68,6 +70,7 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
   rm -rf /Users/nadin_zn-lo/Claude/sow-web/astro
   cp -R build/web /Users/nadin_zn-lo/Claude/sow-web/astro
   chmod -R a+r /Users/nadin_zn-lo/Claude/sow-web/astro
+  cd /Users/nadin_zn-lo/Claude/sow-web && python3 scripts/stamp_flutter.py
   ```
 - `--base-href=/astro/` must use `=`, same trap as `calc/`.
 - **`main.dart.js` carries no content hash**, so a browser that has seen the page keeps serving the old app after a deploy. Hard-refresh when checking a rebuild — locally too; a second server on a fresh port is the reliable way to be sure you are looking at the new bundle.
