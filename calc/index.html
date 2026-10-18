@@ -47,7 +47,31 @@
        !important is load-bearing: the engine's rule is an inline style, and an
        author !important declaration is the one thing that outranks it. */
     body { touch-action: pinch-zoom !important; }
+
+    /* ...but `pinch-zoom` alone also refuses a one-finger pan, so a page
+       zoomed in on a phone could not be moved (2026-10-17). While the page is
+       zoomed, the script below sets this class and the browser may pan too.
+       At normal size one-finger drags stay with Flutter, as above. */
+    html.sow-zoomed body { touch-action: pan-x pan-y pinch-zoom !important; }
   </style>
+  <script>
+    /* Sets html.sow-zoomed while the page is pinch-zoomed. The pinch zooms
+       the top-level page, not this iframe, so the scale is read from the
+       parent's visual viewport (same origin); opened on its own, from ours.
+       touch-action is read when a finger lands, so the switch takes effect
+       from the first touch after the pinch. */
+    (function () {
+      var vv;
+      try { vv = window.parent.visualViewport; } catch (e) {}
+      vv = vv || window.visualViewport;
+      if (!vv) return;
+      function sync() {
+        document.documentElement.classList.toggle('sow-zoomed', vv.scale > 1.01);
+      }
+      vv.addEventListener('resize', sync);
+      sync();
+    })();
+  </script>
 
   <!-- Third piece of the zoom fix, this one for pointing devices.
 

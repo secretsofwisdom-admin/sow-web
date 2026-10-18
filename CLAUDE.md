@@ -2,6 +2,7 @@
 
 ## Overview
 Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial design consultation business.
+**"NZ" (brand and `.nz` domain) = owner's initials, NOT New Zealand.** Never infer the owner's country from it.
 
 ## Infrastructure
 - **Hosting:** Cloudflare Pages (git integration, auto-deploys on push)
@@ -24,6 +25,15 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - **Database:** Cloudflare D1 `sow-portal` (id `ecf8579d-5c31-4e17-9ddb-7f485aa286da`), binding `DB`; schema in `schema.sql`
 - **Secrets (Pages):** `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `MAILERLITE_API_KEY`, optional `MAILERLITE_GROUP_ID`
 - **Setup notes:** `PORTAL_SETUP.md`
+
+## Russia mirror (`mirror/`, in progress since 2026-10-17)
+- **Why:** Russian ISPs cut connections to Cloudflare (and Hetzner, DO, OVH, AWS, Fastly) after ~16 KB; site does not open from RU without VPN. Both zones also publish ECH, which RU blocks — disabling it pending (needs CF API token; Free plan may not allow).
+- **Design:** small VPS at a neutral (non-Russian) provider whose range RU does not throttle, running Caddy as a reverse proxy `ru.secretsofwisdom.org` → `https://secretsofwisdom.org`. Relay leg is outside RU, so the mirror is always the live site — form, portal, calculators — no separate deploy. DNS record must be **grey cloud**.
+- `functions/api/_shared.js` `publicOrigin()`: honours `X-SOW-Mirror-Host` (set by Caddy) only if in `MIRROR_ORIGINS` allowlist, so e-mail sign-in/reset links point back to the mirror. Used in login, signup, request-link, reset-request.
+- Mirror sends `X-Robots-Tag: noindex`.
+- Provider not chosen yet: user's friends test public speed-test files (Vultr, Akamai/Linode, Scaleway; Hetzner as throttled control) from RU home internet.
+- Rejected: Yandex Cloud and any Russian service (user's decision); Netlify/Vercel/GitHub Pages (blocked or degraded in RU).
+- Limits: mobile internet in many RU regions runs on whitelists — no foreign site opens there regardless. Stripe (buy/checkout on AWS CloudFront, js on Fastly) is likely throttled too, and rejects Russian-issued cards anyway — hosting cannot fix payments.
 
 ## BaZi Calculator (`/calc/`)
 - `calc/` is **generated output**, not hand-written — a Flutter web build committed to this repo. `calculator.html` embeds it in an iframe.
@@ -99,6 +109,7 @@ Reason 3 is the one that matters on a laptop. **A trackpad pinch is not a touch 
 Fixed in each project's `web/index.html`:
 
 - a `<style>` rule `body { touch-action: pinch-zoom !important; }` — `pinch-zoom` gives the browser two-finger pinch and nothing else, so single-pointer gestures still reach Flutter and the app's own scrolling and tapping are untouched. The `!important` is what outranks the engine's inline style.
+- **…plus a one-finger pan, but only while zoomed** (2026-10-17). `pinch-zoom` alone also refuses panning, so on an iPhone a zoomed-in page could not be moved. An inline script toggles `html.sow-zoomed` while `visualViewport.scale > 1.01`, and `html.sow-zoomed body` gets `pan-x pan-y pinch-zoom`. It reads the **parent's** `visualViewport` (same origin; its own when opened alone): the pinch zooms `calculator.html` / `astrology.html`, not the iframe. At normal size one-finger drags stay with Flutter (the notes list still scrolls); while zoomed they move the view instead. Verified in the iOS Simulator on both pages, including taps while zoomed.
 - a script **after** `flutter_bootstrap.js` that rewrites the meta to `maximum-scale=5.0, user-scalable=yes`. It has to run after the engine, so it fixes the tag if present and otherwise watches `document.head` with a `MutationObserver`. The observer is deliberately left connected — writing `content` is an attribute change and cannot re-trigger a childList observer, so there is no loop.
 - a **capture-phase** `wheel` listener on `window`, in `<head>` so it is registered before the engine boots, that calls `stopPropagation()` when `e.ctrlKey` is set. The engine's listener is on `<flutter-view>`, a descendant, so stopping the event at the first step of the propagation path means it is never invoked and nothing cancels the gesture. Two rules for that handler: it must **never** call `preventDefault()` (that would kill the zoom exactly as Flutter did), and it must test `ctrlKey` — diverting plain wheel would take the apps' own scrolling with it.
 
