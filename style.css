@@ -1214,6 +1214,11 @@ footer {
   width: 100%;
   height: 100%;
   border: none;
+  /* Pinch and pan, but no double-tap zoom. On an iPhone, zoomed in, tapping
+     a picker's arrow twice quickly zoomed the whole page back out
+     (2026-10-18). The app's own body rules (calc/index.html) do not stop it:
+     Safari takes the double tap on this page, not the iframe's. */
+  touch-action: manipulation;
 }
 
 /* --------------------------------------------------------------------------
