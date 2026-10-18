@@ -51,8 +51,13 @@
     /* ...but `pinch-zoom` alone also refuses a one-finger pan, so a page
        zoomed in on a phone could not be moved (2026-10-17). While the page is
        zoomed, the script below sets this class and the browser may pan too.
-       At normal size one-finger drags stay with Flutter, as above. */
-    html.sow-zoomed body { touch-action: pan-x pan-y pinch-zoom !important; }
+       At normal size one-finger drags stay with Flutter, as above.
+       While a popup menu is open (the app sets html.sow-menu-open, see
+       lib/utils/menu_open_flag.dart) drags stay with Flutter even zoomed, so
+       a dropdown list scrolls (2026-10-18). */
+    html.sow-zoomed:not(.sow-menu-open) body {
+      touch-action: pan-x pan-y pinch-zoom !important;
+    }
   </style>
   <script>
     /* Sets html.sow-zoomed while the page is pinch-zoomed. The pinch zooms
