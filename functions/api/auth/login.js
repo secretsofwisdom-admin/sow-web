@@ -1,7 +1,7 @@
 // POST /api/auth/login { email, password }
 // Verifies the password and starts a session. Requires email_verified = 1,
 // so a password only works after its email confirmation has been clicked.
-import { json, isValidEmail, verifyPassword, createSession, issueToken, sendEmail, actionEmailHtml } from "../_shared.js";
+import { json, isValidEmail, verifyPassword, createSession, issueToken, sendEmail, actionEmailHtml, publicOrigin } from "../_shared.js";
 
 const VERIFY_TTL_MS = 30 * 60 * 1000;
 
@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
     if (customer.email_verified !== 1) {
       // Correct password but unconfirmed email — re-send the confirmation link.
       const token = await issueToken(env, email, "verify", VERIFY_TTL_MS);
-      const link = `${new URL(request.url).origin}/api/auth/verify?token=${token}`;
+      const link = `${publicOrigin(request)}/api/auth/verify?token=${token}`;
       await sendEmail(env, {
         to: email,
         subject: "Confirm your account · Secrets of Wisdom",

@@ -2,7 +2,7 @@
 // Creates/loads the customer, issues a single-use magic link, emails it via Resend.
 // The link uses the SAME origin the request came from, so it returns the visitor
 // to the exact domain (.org or .nz) they were already on.
-import { json, sha256hex, randomToken, isValidEmail } from "../_shared.js";
+import { json, sha256hex, randomToken, isValidEmail, publicOrigin } from "../_shared.js";
 
 const TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -38,7 +38,7 @@ export async function onRequestPost(context) {
       .bind(tokenHash, email, now + TOKEN_TTL_MS)
       .run();
 
-    const origin = new URL(request.url).origin;
+    const origin = publicOrigin(request);
     const link = `${origin}/api/auth/verify?token=${token}`;
 
     const res = await fetch("https://api.resend.com/emails", {

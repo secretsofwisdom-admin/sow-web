@@ -3,7 +3,7 @@
 // link. The password is NOT usable until the link is clicked — this proves the
 // signer controls the email, preventing takeover of an address that already has
 // orders. On confirm (verify.js), email_verified flips to 1 and login works.
-import { json, isValidEmail, passwordProblem, hashPassword, issueToken, sendEmail, actionEmailHtml, randomToken } from "../_shared.js";
+import { json, isValidEmail, passwordProblem, hashPassword, issueToken, sendEmail, actionEmailHtml, randomToken, publicOrigin } from "../_shared.js";
 
 const TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -42,7 +42,7 @@ export async function onRequestPost(context) {
     }
 
     const token = await issueToken(env, email, "verify", TOKEN_TTL_MS);
-    const link = `${new URL(request.url).origin}/api/auth/verify?token=${token}`;
+    const link = `${publicOrigin(request)}/api/auth/verify?token=${token}`;
     const ok = await sendEmail(env, {
       to: email,
       subject: "Confirm your account · Secrets of Wisdom",

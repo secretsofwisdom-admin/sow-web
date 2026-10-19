@@ -1,7 +1,7 @@
 // POST /api/auth/reset-request { email }
 // Emails a password-reset link if the account exists. Always responds success
 // (never reveals whether an email is registered).
-import { json, isValidEmail, issueToken, sendEmail, actionEmailHtml } from "../_shared.js";
+import { json, isValidEmail, issueToken, sendEmail, actionEmailHtml, publicOrigin } from "../_shared.js";
 
 const TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     const customer = await env.DB.prepare("SELECT id FROM customers WHERE email = ?").bind(email).first();
     if (customer) {
       const token = await issueToken(env, email, "reset", TOKEN_TTL_MS);
-      const link = `${new URL(request.url).origin}/account.html?reset=${token}`;
+      const link = `${publicOrigin(request)}/account.html?reset=${token}`;
       await sendEmail(env, {
         to: email,
         subject: "Reset your password · Secrets of Wisdom",

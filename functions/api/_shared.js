@@ -64,6 +64,19 @@ export async function getSessionCustomer(env, request) {
     .first();
 }
 
+// The Russia mirror (mirror/Caddyfile) proxies to the main domain, so
+// request.url always says secretsofwisdom.org there. It names itself in
+// X-SOW-Mirror-Host, and links in e-mails must point back at it: the main
+// domain does not open from Russia without a VPN. The header is spoofable,
+// so only origins in this allowlist are ever honoured.
+const MIRROR_ORIGINS = new Set(["https://ru.secretsofwisdom.org"]);
+
+export function publicOrigin(request) {
+  const mirror = `https://${request.headers.get("X-SOW-Mirror-Host") || ""}`;
+  if (MIRROR_ORIGINS.has(mirror)) return mirror;
+  return new URL(request.url).origin;
+}
+
 export function isValidEmail(email) {
   return typeof email === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }

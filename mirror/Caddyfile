@@ -1,0 +1,29 @@
+# Russia mirror: ru.secretsofwisdom.org
+#
+# Visitors in Russia cannot reach the Cloudflare edge reliably (the ISPs'
+# filters cut connections to Cloudflare's address ranges after ~16 KB).
+# This server sits on an address range they do not throttle and relays
+# every request to the main site. The relay leg runs outside Russia, so
+# nothing filters it, and the mirror is always the live site: contact
+# form, portal and calculators included, with no separate deploy.
+#
+# The DNS record for ru.secretsofwisdom.org must be "DNS only" (grey
+# cloud) in Cloudflare. Proxied (orange) would put visitors back on the
+# Cloudflare edge and defeat the whole point.
+
+ru.secretsofwisdom.org {
+	encode zstd gzip
+
+	# A copy of the site must not compete with the original in search.
+	header X-Robots-Tag "noindex"
+
+	reverse_proxy https://secretsofwisdom.org {
+		header_up Host {upstream_hostport}
+		# Read by publicOrigin() in functions/api/_shared.js, so that
+		# sign-in links in e-mails come back to this mirror.
+		header_up X-SOW-Mirror-Host ru.secretsofwisdom.org
+
+		# Any absolute redirect to the main domain must stay on the mirror.
+		header_down Location "^https://secretsofwisdom\.org" "https://ru.secretsofwisdom.org"
+	}
+}
