@@ -30,6 +30,48 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>bazi_calculator</title>
+  <script>
+    /* Restart the app when the browser takes its graphics away (2026-10-18).
+       Under memory pressure iOS can drop a page's WebGL contexts — seen on
+       the user's iPhone in Chrome after zooming: a blink, then the chart
+       frozen on screen and nothing responding. Flutter does not come back
+       from it: forced in the iOS Simulator, the app stayed dead for good.
+       Flutter never drops a context itself (no loseContext in the engine),
+       so every loss is the browser's, and reloading this iframe is the way
+       back; the app restores its form and chart from sessionStorage
+       (lib/providers/session_memory.dart). At most three reloads a minute,
+       so a page that keeps losing its graphics does not loop forever.
+       Must run before flutter_bootstrap.js creates its canvases. */
+    (function () {
+      var KEY = 'sow-gl-reloads';
+      var pending = false;
+      function recover() {
+        if (pending) return;
+        pending = true;
+        var now = Date.now(), recent = [];
+        try {
+          recent = JSON.parse(sessionStorage.getItem(KEY) || '[]')
+            .filter(function (t) { return now - t < 60000; });
+        } catch (e) {}
+        if (recent.length >= 3) return;
+        recent.push(now);
+        try { sessionStorage.setItem(KEY, JSON.stringify(recent)); } catch (e) {}
+        setTimeout(function () { location.reload(); }, 300);
+      }
+      [window.HTMLCanvasElement, window.OffscreenCanvas].forEach(function (C) {
+        if (!C) return;
+        var getContext = C.prototype.getContext;
+        C.prototype.getContext = function (type) {
+          var context = getContext.apply(this, arguments);
+          if (context && /webgl/.test(type) && !this.__sowWatched) {
+            this.__sowWatched = true;
+            this.addEventListener('webglcontextlost', recover);
+          }
+          return context;
+        };
+      });
+    })();
+  </script>
   <link rel="manifest" href="manifest.json">
 
   <style>
@@ -110,7 +152,7 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js?v=5bf99554" async></script>
+  <script src="flutter_bootstrap.js?v=d67f10b7" async></script>
 
   <!-- The other half of the pinch-zoom fix.
 
