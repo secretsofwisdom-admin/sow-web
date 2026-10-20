@@ -42,7 +42,7 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
   ```
   cd /Users/nadin_zn-lo/Claude/BaziCalculator
   flutter pub get
-  flutter build web --release --base-href=/calc/
+  flutter build web --release --base-href=/calc/ --no-web-resources-cdn
   cp web/_headers build/web/_headers
   rm -rf /Users/nadin_zn-lo/Claude/sow-web/calc
   cp -R build/web /Users/nadin_zn-lo/Claude/sow-web/calc
@@ -51,6 +51,8 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
   ```
 - **`python3 scripts/stamp_flutter.py` after every copy into `calc/` or `astro/`** (2026-10-18). It puts a content hash on `flutter_bootstrap.js?v=` in `index.html` and on `mainJsPath` in the bootstrap. Both scripts are cached for 4 hours while `index.html` is not, so without it a returning visitor gets the new page with the old app. The dropdown-zoom fix worked on a fresh load and did nothing on the user's iPhone for exactly that reason. The script is idempotent.
 - `--base-href=/calc/` must use `=`. With a space, Flutter 3.44 silently leaves it `/` and every asset 404s under `/calc/`.
+- **`--no-web-resources-cdn` is required** (2026-10-18). Without it CanvasKit (the engine's drawing code, ~3 MB gzipped) loads from `www.gstatic.com` and the copy in `calc/canvaskit/` sits unused. The app also bundles its own `Roboto` family purely so the engine stops fetching Roboto from `fonts.gstatic.com` (the site's "no Google Fonts" rule). Check after a rebuild: the network log should show no `gstatic` requests on a normal load.
+- **Body font subset** (2026-10-18): Noto Sans SC was 2 × 10.5 MB, 12 of the 15 MB a first visit downloaded. Now 2 × 1.3 MB: the app's own Chinese text plus the 3,755 common GB2312 characters, so typed Chinese names still render. Details and the re-cut script in `BaziCalculator/CLAUDE.md`.
 - **`main.dart.js` carries no content hash here either**, exactly as in `astro/`. A browser that has loaded the page once keeps serving the old bundle after a rebuild — locally too, and there is no service worker to blame. Verifying a rebuild on the port you last used will show you the *previous* app and nothing will look wrong. Serve on a **fresh port**; that is a new origin and a cold cache.
 - JS build, not `--wasm` (despite `DEPLOY_WEB.md`) — parent page isn't cross-origin-isolated.
 - Security headers come from the **root `_headers`** (`/calc/*` → `X-Frame-Options: SAMEORIGIN`). Pages ignores nested `calc/_headers`. Never set DENY there — it blanks the iframe.
