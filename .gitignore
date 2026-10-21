@@ -14,3 +14,6 @@ Deploy_web.md
 
 # Local dev-server config for the in-app browser preview
 .claude/
+
+# Local wrangler dev state
+.wrangler/

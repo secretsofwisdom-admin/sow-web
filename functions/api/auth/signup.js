@@ -1,8 +1,10 @@
 // POST /api/auth/signup { name, email, password }
 // Creates (or claims) an account with a password, then emails a confirmation
-// link. The password is NOT usable until the link is clicked — this proves the
-// signer controls the email, preventing takeover of an address that already has
-// orders. On confirm (verify.js), email_verified flips to 1 and login works.
+// link. The password is NOT written to the account here: its hash rides on the
+// confirmation token and verify.js applies it only when that exact link is
+// clicked. Writing it straight onto the row (as this file once did) let anyone
+// sign up with a stranger's address: the stranger's next ordinary sign-in link
+// marked the address verified, and the intruder's password started working.
 import { json, isValidEmail, passwordProblem, hashPassword, issueToken, sendEmail, actionEmailHtml, randomToken, publicOrigin } from "../_shared.js";
 
 const TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -31,19 +33,27 @@ export async function onRequestPost(context) {
     const now = Date.now();
 
     if (!existing) {
+      // No password on the row yet; it arrives with the confirmation click.
       await env.DB
-        .prepare("INSERT INTO customers (id, email, name, newsletter, created_at, password_hash, email_verified) VALUES (?, ?, ?, 0, ?, ?, 0)")
-        .bind(randomToken(16), email, name || null, now, passwordHash).run();
-    } else {
-      // Claim / (re)set password on an existing account; require re-confirmation.
-      await env.DB
-        .prepare("UPDATE customers SET password_hash = ?, email_verified = 0, name = COALESCE(NULLIF(?, ''), name) WHERE email = ?")
-        .bind(passwordHash, name, email).run();
+        .prepare("INSERT INTO customers (id, email, name, newsletter, created_at, password_hash, email_verified) VALUES (?, ?, ?, 0, ?, NULL, 0)")
+        .bind(randomToken(16), email, name || null, now).run();
     }
+    // An existing account is left exactly as it is: its owner may be signing
+    // in by link today, and nothing an unconfirmed visitor sends may change that.
 
-    const token = await issueToken(env, email, "verify", TOKEN_TTL_MS);
+    const token = await issueToken(env, email, "verify", TOKEN_TTL_MS, passwordHash);
     const link = `${publicOrigin(request)}/api/auth/verify?token=${token}`;
-    const ok = await sendEmail(env, {
+    const ok = await sendEmail(env, existing && existing.email_verified === 1 ? {
+      to: email,
+      subject: "Set a password for your account · Secrets of Wisdom",
+      text: `Someone asked to set a password for the Secrets of Wisdom account that uses this address.\n\nIf it was you, confirm with this link (expires in 30 minutes):\n\n${link}\n\nIf it wasn't you, ignore this email. Nothing changes until the link is clicked.`,
+      html: actionEmailHtml({
+        intro: "Someone asked to set a password for the account that uses this address. If it was you, confirm below. This link expires in 30 minutes.",
+        buttonLabel: "Confirm new password",
+        link,
+        note: "If it wasn't you, ignore this email. Nothing changes until the link is clicked.",
+      }),
+    } : {
       to: email,
       subject: "Confirm your account · Secrets of Wisdom",
       text: `Welcome to Secrets of Wisdom.\n\nConfirm your account and finish signing in with this link (expires in 30 minutes):\n\n${link}\n\nIf you didn't create an account, you can ignore this email.`,

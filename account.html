@@ -54,6 +54,22 @@
     #acct-loading { text-align: center; color: var(--ink-muted); padding: 30px 0; }
     .name-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .name-edit input { margin: 0; }
+    /* Saved birth charts. Rows are built with createElement / textContent only:
+       names and notes are user input. */
+    .prof-search { margin: 0 0 10px; }
+    .prof-list { list-style: none; margin: 0; padding: 0; }
+    .prof-item { padding: 12px 0; border-bottom: 1px solid var(--panel-border); }
+    .prof-item:last-child { border-bottom: none; }
+    .prof-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .prof-name { color: var(--ink); font-size: 1.08em; overflow-wrap: anywhere; }
+    .prof-badge { color: var(--gold-bright); border: 1px solid var(--gold-dim); border-radius: var(--r-pill); padding: 0 9px; font-size: 0.72em; letter-spacing: 1.2px; text-transform: uppercase; }
+    .prof-meta { color: var(--ink-muted); font-size: 0.9em; margin-top: 2px; }
+    .prof-note { color: var(--ink-body); font-size: 0.92em; margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .prof-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+    .prof-actions a { color: var(--gold); font-size: 0.95em; }
+    .prof-edit { display: grid; gap: 8px; margin-top: 10px; }
+    .prof-edit input, .prof-edit textarea { margin: 0; width: 100%; box-sizing: border-box; }
+    .prof-edit textarea { min-height: 80px; resize: vertical; font-family: inherit; }
   </style>
 </head>
 <body>
@@ -167,6 +183,14 @@
         <div id="profile-msg"></div>
       </div>
 
+      <div class="acct-card" id="prof-card">
+        <h3 data-i18n="account.profiles.heading">Saved birth charts</h3>
+        <p class="lead" data-i18n="account.profiles.lead">Birth data you keep for the BaZi calculator: your own, marked as main, and anyone else's. Charts are saved from inside the calculator.</p>
+        <input id="prof-search" class="prof-search hidden" type="search" />
+        <ul id="prof-list" class="prof-list"></ul>
+        <div id="prof-msg"></div>
+      </div>
+
       <div class="acct-card">
         <h3 data-i18n="account.prefsHeading">Preferences</h3>
         <label class="switch">
@@ -200,7 +224,21 @@
   var $ = function (id) { return document.getElementById(id); };
   function show(id) { $(id).classList.remove('hidden'); }
   function hide(id) { $(id).classList.add('hidden'); }
-  function msg(el, text, kind) { el.innerHTML = text ? '<div class="msg ' + kind + '">' + text + '</div>' : ''; }
+  // Text only: messages can carry server strings, so never innerHTML.
+  function msg(el, text, kind) {
+    el.textContent = '';
+    if (!text) return;
+    var box = document.createElement('div');
+    box.className = 'msg ' + kind;
+    box.textContent = text;
+    el.appendChild(box);
+  }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
   function fmtDate(ms) {
     try { return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
     catch (e) { return ''; }
@@ -221,6 +259,12 @@
   var params = new URLSearchParams(location.search);
   var errParam = params.get('error');
   var resetToken = params.get('reset');
+  // ?next= returns the visitor to the page that sent them here (the
+  // calculator's "Sign in"). Only these page names are accepted, so the
+  // parameter cannot send anyone to another site.
+  var NEXT_PAGES = ['calculator.html', 'astrology.html'];
+  var nextPage = NEXT_PAGES.indexOf(params.get('next')) > -1 ? params.get('next') : null;
+  var afterSignIn = nextPage || 'account.html';
 
   function showAuth() {
     hide('acct-loading'); hide('acct-dash'); hide('acct-reset'); show('acct-auth');
@@ -238,35 +282,214 @@
     $('dash-email').textContent = me.email;
     $('dash-since').textContent = me.memberSince ? fmtDate(me.memberSince) : '—';
     $('dash-newsletter').checked = !!me.newsletter;
+    loadProfiles();
     loadOrders();
   }
 
   function loadOrders() {
+    var body = $('orders-body');
+    function say(text, cls) { body.textContent = ''; body.appendChild(el('p', cls, text)); }
     fetch('/api/account/orders', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        var body = $('orders-body');
-        if (d.error) { body.innerHTML = '<p class="msg err">' + d.error + '</p>'; return; }
+        if (d.error) { say(d.error, 'msg err'); return; }
         var orders = d.orders || [];
         if (!orders.length) {
-          var note = d.note === 'not_configured'
+          say(d.note === 'not_configured'
             ? 'No orders to show yet.'
-            : 'No purchases found for this email yet. When you buy or book, your orders will appear here.';
-          body.innerHTML = '<p class="muted">' + note + '</p>';
+            : 'No purchases found for this email yet. When you buy or book, your orders will appear here.', 'muted');
           return;
         }
-        var rows = orders.map(function (o) {
-          var receipt = o.receiptUrl ? '<a href="' + o.receiptUrl + '" target="_blank" rel="noopener">Receipt</a>' : '';
-          var refunded = o.refunded ? ' <span class="muted">(refunded)</span>' : '';
-          return '<tr><td>' + fmtDate(o.date) + '</td><td>' + (o.description || 'Purchase') + refunded +
-                 '</td><td>' + fmtMoney(o.amount, o.currency) + '</td><td>' + receipt + '</td></tr>';
-        }).join('');
-        body.innerHTML =
-          '<table class="orders"><thead><tr><th>Date</th><th>Item</th><th>Amount</th><th></th></tr></thead><tbody>' +
-          rows + '</tbody></table>';
+        var table = el('table', 'orders');
+        var head = el('tr');
+        ['Date', 'Item', 'Amount', ''].forEach(function (h) { head.appendChild(el('th', null, h)); });
+        table.appendChild(el('thead')).appendChild(head);
+        var tbody = table.appendChild(el('tbody'));
+        orders.forEach(function (o) {
+          var tr = el('tr');
+          tr.appendChild(el('td', null, fmtDate(o.date)));
+          var item = el('td', null, o.description || 'Purchase');
+          if (o.refunded) { item.appendChild(document.createTextNode(' ')); item.appendChild(el('span', 'muted', '(refunded)')); }
+          tr.appendChild(item);
+          tr.appendChild(el('td', null, fmtMoney(o.amount, o.currency)));
+          var rc = el('td');
+          if (o.receiptUrl && /^https:\/\//.test(o.receiptUrl)) {
+            var a = el('a', null, 'Receipt');
+            a.href = o.receiptUrl; a.target = '_blank'; a.rel = 'noopener';
+            rc.appendChild(a);
+          }
+          tr.appendChild(rc);
+          tbody.appendChild(tr);
+        });
+        body.textContent = '';
+        body.appendChild(table);
       })
-      .catch(function () { $('orders-body').innerHTML = '<p class="msg err">Could not load orders.</p>'; });
+      .catch(function () { say('Could not load orders.', 'msg err'); });
   }
+
+  // ---- Saved birth charts (/api/profiles) ----
+  // The calculator saves them; this card lists, edits, marks main, deletes.
+  // Strings written from script follow the page language (html[lang]), and
+  // the list re-renders when lang-switcher.js flips it.
+  var PT = {
+    en: {
+      search: 'Search by name or note', main: 'Main', open: 'Open in calculator', edit: 'Edit',
+      makeMain: 'Make main', del: 'Delete', save: 'Save', cancel: 'Cancel',
+      confirmDel: 'Delete this chart for good?', yesDel: 'Yes, delete',
+      hourUnknown: 'hour unknown', lunar: 'lunar date', noteLabel: 'Note', nameLabel: 'Name',
+      empty: 'No saved charts yet. Open the calculator, enter a birth date and save it from the person icon at the top.',
+      openCalc: 'Open the calculator', noMatch: 'Nothing matches that search.',
+      loadErr: 'Could not load your saved charts.', saveErr: 'Could not save.', network: 'Network error. Please try again.'
+    },
+    ru: {
+      search: 'Поиск по имени или заметке', main: 'Основная', open: 'Открыть в калькуляторе', edit: 'Изменить',
+      makeMain: 'Сделать основной', del: 'Удалить', save: 'Сохранить', cancel: 'Отмена',
+      confirmDel: 'Удалить эту карту навсегда?', yesDel: 'Да, удалить',
+      hourUnknown: 'час неизвестен', lunar: 'лунная дата', noteLabel: 'Заметка', nameLabel: 'Имя',
+      empty: 'Сохранённых карт пока нет. Откройте калькулятор, введите дату рождения и сохраните её через значок человека вверху.',
+      openCalc: 'Открыть калькулятор', noMatch: 'По этому запросу ничего не найдено.',
+      loadErr: 'Не удалось загрузить сохранённые карты.', saveErr: 'Не удалось сохранить.', network: 'Ошибка сети. Попробуйте ещё раз.'
+    }
+  };
+  function lang() { return document.documentElement.lang === 'ru' ? 'ru' : 'en'; }
+  function t(k) { return PT[lang()][k]; }
+
+  var profiles = [];
+  var editingId = null;
+  var deletingId = null;
+
+  function sendJSON(method, url, data) {
+    return fetch(url, {
+      method: method,
+      headers: data ? { 'Content-Type': 'application/json' } : {},
+      credentials: 'same-origin',
+      body: data ? JSON.stringify(data) : undefined
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); });
+  }
+
+  function birthLine(f) {
+    if (!f) return '';
+    var parts = [];
+    try {
+      parts.push(new Date(Date.UTC(f.year, f.month - 1, f.day)).toLocaleDateString(lang() === 'ru' ? 'ru-RU' : 'en-GB',
+        { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }) + (f.lunar ? ' (' + t('lunar') + ')' : ''));
+    } catch (e) { parts.push(f.day + '.' + f.month + '.' + f.year); }
+    parts.push(f.hourUnknown ? t('hourUnknown')
+      : (f.hour < 10 ? '0' : '') + f.hour + ':' + (f.minute < 10 ? '0' : '') + f.minute);
+    // Same as the calculator's City.displayName: native is the local-language
+    // name (Москва, 北京), not a translation, so it is shown in both languages.
+    if (f.city) parts.push(f.city.name + (f.city.native ? ' (' + f.city.native + ')' : '') + ', ' + f.city.country);
+    else if (f.lat || f.lon) parts.push(f.lat + ', ' + f.lon);
+    return parts.join(' · ');
+  }
+
+  function linkBtn(text, onClick) {
+    var b = el('button', 'linkbtn', text);
+    b.type = 'button';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function renderProfiles() {
+    var list = $('prof-list');
+    var search = $('prof-search');
+    search.placeholder = t('search');
+    search.classList.toggle('hidden', profiles.length <= 10);
+    list.textContent = '';
+    if (!profiles.length) {
+      var li = el('li', 'prof-item muted', t('empty') + ' ');
+      var a = el('a', null, t('openCalc'));
+      a.href = 'calculator.html';
+      li.appendChild(a);
+      list.appendChild(li);
+      return;
+    }
+    var q = search.classList.contains('hidden') ? '' : search.value.trim().toLowerCase();
+    var shown = profiles.filter(function (p) {
+      return !q || p.name.toLowerCase().indexOf(q) > -1 || (p.note || '').toLowerCase().indexOf(q) > -1;
+    });
+    if (!shown.length) { list.appendChild(el('li', 'prof-item muted', t('noMatch'))); return; }
+    shown.forEach(function (p) { list.appendChild(profileRow(p)); });
+  }
+
+  function profileRow(p) {
+    var li = el('li', 'prof-item');
+    var head = li.appendChild(el('div', 'prof-head'));
+    head.appendChild(el('span', 'prof-name', p.name));
+    if (p.isSelf) head.appendChild(el('span', 'prof-badge', t('main')));
+    li.appendChild(el('div', 'prof-meta', birthLine(p.form)));
+    if (p.note) li.appendChild(el('div', 'prof-note', p.note));
+
+    if (editingId === p.id) {
+      var form = li.appendChild(el('form', 'prof-edit'));
+      var nm = el('input'); nm.type = 'text'; nm.maxLength = 120; nm.value = p.name; nm.setAttribute('aria-label', t('nameLabel'));
+      var nt = el('textarea'); nt.maxLength = 2000; nt.value = p.note || ''; nt.placeholder = t('noteLabel'); nt.setAttribute('aria-label', t('noteLabel'));
+      form.appendChild(nm); form.appendChild(nt);
+      var row = form.appendChild(el('div', 'prof-actions'));
+      var save = el('button', null, t('save')); save.type = 'submit';
+      row.appendChild(save);
+      row.appendChild(linkBtn(t('cancel'), function () { editingId = null; renderProfiles(); }));
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        save.disabled = true;
+        patchProfile(p.id, { name: nm.value, note: nt.value }).then(function (ok) {
+          if (ok) editingId = null;
+          else save.disabled = false;
+          renderProfiles();
+        });
+      });
+      setTimeout(function () { nm.focus(); }, 0);
+      return li;
+    }
+
+    var actions = li.appendChild(el('div', 'prof-actions'));
+    if (deletingId === p.id) {
+      actions.appendChild(el('span', 'muted', t('confirmDel')));
+      actions.appendChild(linkBtn(t('yesDel'), function () { deleteProfile(p.id); }));
+      actions.appendChild(linkBtn(t('cancel'), function () { deletingId = null; renderProfiles(); }));
+      return li;
+    }
+    var open = el('a', null, t('open'));
+    open.href = 'calculator.html?profile=' + encodeURIComponent(p.id);
+    actions.appendChild(open);
+    actions.appendChild(linkBtn(t('edit'), function () { editingId = p.id; deletingId = null; renderProfiles(); }));
+    if (!p.isSelf) actions.appendChild(linkBtn(t('makeMain'), function () { patchProfile(p.id, { isSelf: true }).then(renderProfiles); }));
+    actions.appendChild(linkBtn(t('del'), function () { deletingId = p.id; editingId = null; renderProfiles(); }));
+    return li;
+  }
+
+  function loadProfiles() {
+    return fetch('/api/profiles', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) { profiles = d.profiles || []; msg($('prof-msg'), '', 'info'); renderProfiles(); })
+      .catch(function () { msg($('prof-msg'), t('loadErr'), 'err'); });
+  }
+
+  // Resolves true on success; reloads the list so "main" moves to the top.
+  function patchProfile(id, data) {
+    msg($('prof-msg'), '', 'info');
+    return sendJSON('PATCH', '/api/profiles/' + encodeURIComponent(id), data)
+      .then(function (res) {
+        if (!res.ok) { msg($('prof-msg'), res.d.error || t('saveErr'), 'err'); return false; }
+        return loadProfiles().then(function () { return true; });
+      })
+      .catch(function () { msg($('prof-msg'), t('network'), 'err'); return false; });
+  }
+
+  function deleteProfile(id) {
+    msg($('prof-msg'), '', 'info');
+    sendJSON('DELETE', '/api/profiles/' + encodeURIComponent(id))
+      .then(function (res) {
+        deletingId = null;
+        if (!res.ok) { msg($('prof-msg'), res.d.error || t('saveErr'), 'err'); renderProfiles(); return; }
+        loadProfiles();
+      })
+      .catch(function () { msg($('prof-msg'), t('network'), 'err'); });
+  }
+
+  $('prof-search').addEventListener('input', renderProfiles);
+  new MutationObserver(function () { if (!$('acct-dash').classList.contains('hidden')) renderProfiles(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   // ---- Initial state ----
   if (resetToken) {
@@ -274,7 +497,11 @@
   } else {
     fetch('/api/account/me', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
-      .then(function (me) { if (me.authenticated) showDash(me); else showAuth(); })
+      .then(function (me) {
+        if (me.authenticated && nextPage) location.replace(nextPage);
+        else if (me.authenticated) showDash(me);
+        else showAuth();
+      })
       .catch(showAuth);
   }
 
@@ -284,7 +511,7 @@
     var btn = $('li-submit'); btn.disabled = true; msg($('login-msg'), '', 'info');
     postJSON('/api/auth/login', { email: $('li-email').value, password: $('li-password').value })
       .then(function (res) {
-        if (res.ok && res.d.success) { location.href = 'account.html'; }
+        if (res.ok && res.d.success) { location.href = afterSignIn; }
         else { msg($('login-msg'), res.d.error || 'Could not sign in.', res.d.pending ? 'info' : 'err'); btn.disabled = false; }
       })
       .catch(function () { msg($('login-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });
@@ -330,7 +557,7 @@
     var btn = $('rs-submit'); btn.disabled = true; msg($('reset-msg'), '', 'info');
     postJSON('/api/auth/reset-confirm', { token: resetToken, password: $('rs-password').value })
       .then(function (res) {
-        if (res.ok && res.d.success) { location.href = 'account.html'; }
+        if (res.ok && res.d.success) { location.href = afterSignIn; }
         else { msg($('reset-msg'), res.d.error || 'Could not reset password.', 'err'); btn.disabled = false; }
       })
       .catch(function () { msg($('reset-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });

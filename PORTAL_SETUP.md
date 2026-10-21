@@ -1,11 +1,12 @@
 # Customer Portal — Setup Guide
 
-A passwordless customer portal at **/account.html**, running entirely on your existing
+A customer portal at **/account.html**, running entirely on your existing
 Cloudflare Pages + Functions stack. **No new subscription** — Cloudflare D1 (database) and
 Workers/Functions are on the free tier, and it reuses your existing Resend key for email.
 
-What customers get: sign in with an email link (no password), view their **Stripe order
-history**, edit their **name**, and toggle the **newsletter**. Sessions are per-domain — a
+What customers get: sign in with a password or with an email link, view their **Stripe order
+history**, edit their **name**, toggle the **newsletter**, and keep **saved birth charts**
+for the BaZi calculator (their own, marked as main, plus up to 500 in all). Sessions are per-domain — a
 login on `.org` stays on `.org`, a login on `.nz` stays on `.nz`, and all navigation keeps
 them on whichever domain they entered (every link is relative).
 
@@ -14,16 +15,24 @@ them on whichever domain they entered (every link is relative).
 ## What was added
 
 ```
-schema.sql                          - D1 tables (customers, login_tokens, sessions)
+schema.sql                          - D1 tables for a fresh database (customers, login_tokens, sessions, birth_profiles)
+migrations/0002_birth_profiles.sql  - brings an existing database up to date (run once)
 wrangler.jsonc                      - D1 binding "DB" (needs your database_id)
 account.html                        - the portal page (login + dashboard)
 functions/api/_shared.js            - shared helpers (sessions, cookies, hashing)
+functions/api/auth/signup.js        - POST: create an account; the password waits on its confirmation link
+functions/api/auth/login.js         - POST: password sign-in
+functions/api/auth/reset-request.js - POST: email a password-reset link
+functions/api/auth/reset-confirm.js - POST: set the new password
 functions/api/auth/request-link.js  - POST: email a magic sign-in link
 functions/api/auth/verify.js        - GET:  validate link, start session
 functions/api/auth/logout.js        - POST: end session
 functions/api/account/me.js         - GET:  current profile
 functions/api/account/update.js     - POST: save name / newsletter (syncs to MailerLite)
 functions/api/account/orders.js     - GET:  Stripe purchase history
+functions/api/profiles/index.js     - GET / POST: saved birth charts
+functions/api/profiles/[id].js      - PATCH / DELETE: one saved chart
+functions/api/_profiles.js          - birth-chart validation shared by the two above
 functions/api/_mailerlite.js        - MailerLite subscribe/unsubscribe helper
 ```
 An **Account** link was also added to the nav on every page.
@@ -48,6 +57,15 @@ Copy the `database_id` it prints, and paste it into **wrangler.jsonc**, replacin
 ```bash
 npx wrangler d1 execute sow-portal --remote --file=./schema.sql
 ```
+
+An existing database (the live one) instead gets each file in `migrations/`, once, in order:
+
+```bash
+npx wrangler d1 execute sow-portal --remote --file=./migrations/0002_birth_profiles.sql
+```
+
+Run it **before** pushing the code that needs it: the new signup writes a column the
+old database does not have.
 
 ### 3. Bind D1 to Pages (so the live site can see it)
 
@@ -106,6 +124,13 @@ emails. Adding them later is possible but needs Cal.com API wiring.
 
 - Login links are single-use, expire in 15 minutes, and are stored **hashed** (SHA-256).
 - Sessions are random 32-byte IDs in an **httpOnly, Secure, SameSite=Lax** cookie, 30-day life.
+- A password chosen at signup is **not** written to the account until its confirmation link is
+  clicked; it waits, hashed, on that link's token. Before 2026-10-20 it was written at once, and
+  anyone could sign up with a stranger's address: the stranger's next ordinary sign-in link
+  marked the address verified, and the intruder's password started working.
+- The saved-chart endpoints refuse a change unless the `Origin` header is the site itself (or the
+  Russia mirror) and the body is JSON (`rejectCrossSite` in `_shared.js`). Every query is scoped
+  to the signed-in account, so another account's chart answers 404.
 - The cookie has no `Domain` attribute, so it never spans `.org` and `.nz` — exactly the
   per-domain behaviour you asked for.
 
@@ -120,6 +145,5 @@ npx wrangler d1 execute sow-portal --remote --command \
 
 ## Note on the "from" address
 
-Login emails currently send from `onboarding@resend.dev` (same as your contact form) until
-`secretsofwisdom.org` is verified in Resend. Once verified, update the `from:` line in
-`functions/api/auth/request-link.js` to e.g. `Secrets of Wisdom <hello@secretsofwisdom.org>`.
+All portal emails send from `Secrets of Wisdom <hello@secretsofwisdom.org>` (`SENDER` in
+`functions/api/_shared.js`; `request-link.js` repeats it inline). The domain is verified in Resend.

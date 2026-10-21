@@ -20,7 +20,7 @@ export async function onRequestGet(context) {
   const now = Date.now();
 
   const row = await env.DB
-    .prepare("SELECT email, expires_at, used, purpose FROM login_tokens WHERE token_hash = ?")
+    .prepare("SELECT email, expires_at, used, purpose, pending_hash FROM login_tokens WHERE token_hash = ?")
     .bind(tokenHash)
     .first();
 
@@ -34,8 +34,15 @@ export async function onRequestGet(context) {
   const customer = await env.DB.prepare("SELECT id FROM customers WHERE email = ?").bind(row.email).first();
   if (!customer) return redirect("/account.html?error=invalid");
 
-  // Clicking the emailed link proves ownership → mark verified (enables password login).
-  await env.DB.prepare("UPDATE customers SET email_verified = 1 WHERE id = ?").bind(customer.id).run();
+  // Clicking the emailed link proves ownership → mark verified. A password
+  // chosen at signup is applied only here, and only from its own 'verify'
+  // token; an ordinary sign-in link never carries one (signup.js explains why).
+  if (row.purpose === "verify" && row.pending_hash) {
+    await env.DB.prepare("UPDATE customers SET email_verified = 1, password_hash = ? WHERE id = ?")
+      .bind(row.pending_hash, customer.id).run();
+  } else {
+    await env.DB.prepare("UPDATE customers SET email_verified = 1 WHERE id = ?").bind(customer.id).run();
+  }
 
   const { cookie } = await createSession(env, customer.id);
   return redirect("/account.html", cookie);

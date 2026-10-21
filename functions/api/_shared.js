@@ -77,6 +77,25 @@ export function publicOrigin(request) {
   return new URL(request.url).origin;
 }
 
+// CSRF guard for state-changing requests. SameSite=Lax already keeps the
+// cookie off cross-site POSTs, but this does not depend on browser defaults:
+// the request must come from one of our own pages (the mirror counts, via
+// publicOrigin) and carry a JSON body, which a plain HTML form cannot send.
+// Returns an error Response, or null when the request may proceed.
+export function rejectCrossSite(request) {
+  const origin = request.headers.get("Origin");
+  if (!origin || origin !== publicOrigin(request)) {
+    return json({ error: "Forbidden." }, 403);
+  }
+  // DELETE carries no body, and no HTML form can send one anyway.
+  if (request.method === "DELETE") return null;
+  const type = (request.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
+  if (type !== "application/json") {
+    return json({ error: "Expected a JSON body." }, 415);
+  }
+  return null;
+}
+
 export function isValidEmail(email) {
   return typeof email === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
@@ -154,12 +173,16 @@ export async function createSession(env, customerId) {
 }
 
 // Create a single-use email token (stored hashed). Returns the raw token.
-export async function issueToken(env, email, purpose, ttlMs) {
+// pendingHash: a password chosen at signup. It rides on its own 'verify' token
+// and is written to the account only when that exact link is clicked, so a
+// stranger who signs up with someone else's address never gets a working
+// password (verify.js).
+export async function issueToken(env, email, purpose, ttlMs, pendingHash = null) {
   const token = randomToken(32);
   const tokenHash = await sha256hex(token);
   await env.DB
-    .prepare("INSERT INTO login_tokens (token_hash, email, expires_at, used, purpose) VALUES (?, ?, ?, 0, ?)")
-    .bind(tokenHash, email, Date.now() + ttlMs, purpose)
+    .prepare("INSERT INTO login_tokens (token_hash, email, expires_at, used, purpose, pending_hash) VALUES (?, ?, ?, 0, ?, ?)")
+    .bind(tokenHash, email, Date.now() + ttlMs, purpose, pendingHash)
     .run();
   return token;
 }
