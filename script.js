@@ -31,6 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// The current page's menu link (2026-11-09). Marked here rather than in the
+// markup because the eleven menus must stay byte-identical
+// (scripts/check_theme_invariants.py, check 1). Cloudflare serves pages
+// without ".html" too, and "/" is the home page, so both are normalised.
+document.addEventListener('DOMContentLoaded', () => {
+  const page = (p) => {
+    let name = p.split('/').pop() || 'index';
+    name = name.replace(/\.html$/, '');
+    return name === '' ? 'index' : name;
+  };
+  const here = page(location.pathname);
+  document.querySelectorAll('nav a[href]:not(.nav-logo)').forEach(link => {
+    const href = link.getAttribute('href');
+    if (/^[a-z]+:/i.test(href)) return; // external links (YouTube)
+    if (page(href.split(/[?#]/)[0]) === here) link.setAttribute('aria-current', 'page');
+  });
+});
+
 // Mobile hamburger navigation
 document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.querySelector('.nav-toggle');

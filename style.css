@@ -44,7 +44,14 @@
   --panel-fill: #15181B;
   --panel-inner: #1B1E24;
   --panel-border: #332C22;
-  --nav-fill: #111315;
+  --nav-fill: #111619;
+  /* Site menu (2026-11-09, the approved preview): light champagne links,
+     warm ivory on hover, soft gold for the current page, muted bronze
+     hairlines. */
+  --nav-link: #E4D3AD;
+  --nav-link-hover: #FFF0D2;
+  --nav-current: #E8BE70;
+  --nav-rule: #66543A;
 
   /* Ink
      --ink-muted is the calculator's fieldValueInk, not its fieldHintInk. The
@@ -131,6 +138,10 @@ html[data-theme="light"] {
   --panel-inner: #F3EEE2;
   --panel-border: #D8CBB2;
   --nav-fill: #F7F1E4;
+  --nav-link: #8A6224;
+  --nav-link-hover: #6B4710;
+  --nav-current: #7A5314;
+  --nav-rule: #A58750;
 
   --ink: #221D15;
   --ink-title: #31281B;
@@ -409,7 +420,7 @@ nav {
   justify-content: center;
   padding: 8px 10px;
   z-index: 1000;
-  border-bottom: 1px solid var(--gold-rule);
+  border-bottom: 1px solid var(--nav-rule);
 }
 .nav-logo {
   position: absolute;
@@ -432,20 +443,32 @@ nav {
 }
 nav a {
   text-decoration: none;
-  color: var(--gold);
-  font-size: 14px;
+  color: var(--nav-link);
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 1.4px;
-  margin: 0 16px;
+  letter-spacing: .9px;
+  margin: 0 13px;
   padding: 6px 2px;
   text-transform: uppercase;
   border-bottom: 1px solid transparent;
   transition: color .25s ease, border-color .25s ease;
 }
-nav a:hover,
-nav a.is-current {
-  color: var(--gold-bright);
-  border-bottom-color: var(--gold-dim);
+nav a:hover {
+  color: var(--nav-link-hover);
+}
+/* The current page. Marked by script.js (aria-current), so the eleven menus
+   stay byte-identical — check 1 of check_theme_invariants.py. */
+nav a[aria-current="page"] {
+  color: var(--nav-current);
+  border-bottom-color: var(--nav-current);
+}
+nav a:focus-visible,
+.nav-toggle:focus-visible,
+.lang-select:focus-visible,
+.theme-select:focus-visible {
+  outline: 2px solid var(--nav-current);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
 }
 .nav-yt {
   display: flex;
@@ -453,8 +476,8 @@ nav a.is-current {
   font-size: 12px !important;
   letter-spacing: 1.2px;
 }
-.nav-yt svg { fill: var(--gold-dim); transition: fill .25s ease; }
-.nav-yt:hover svg { fill: var(--gold-bright); }
+.nav-yt svg { fill: var(--nav-link); transition: fill .25s ease; }
+.nav-yt:hover svg { fill: var(--nav-link-hover); }
 
 /* --------------------------------------------------------------------------
    Page header
@@ -1140,9 +1163,9 @@ footer {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.2px;
-  color: var(--gold);
-  background: var(--panel-inner);
-  border: 1px solid var(--gold-rule);
+  color: var(--nav-link);
+  background: var(--nav-fill);
+  border: 1px solid var(--nav-rule);
   border-radius: var(--r-sm);
   padding: 7px 8px;
   cursor: pointer;
@@ -1154,8 +1177,8 @@ footer {
 }
 .lang-select:hover,
 .theme-select:hover {
-  color: var(--gold-bright);
-  border-color: var(--gold-dim);
+  color: var(--nav-link-hover);
+  border-color: var(--nav-link);
 }
 .lang-select option,
 .theme-select option {
@@ -1191,7 +1214,7 @@ footer {
   display: block;
   width: 24px;
   height: 1px;
-  background-color: var(--gold);
+  background-color: var(--nav-link);
   transition: transform .3s ease, opacity .3s ease;
 }
 

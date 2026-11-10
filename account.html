@@ -15,61 +15,165 @@
   <meta name="description" content="Sign in to your Secrets of Wisdom account to view your order history and manage your preferences." />
   <meta name="robots" content="noindex" />
   <link rel="icon" type="image/png" href="images/secrets-logo.png" />
-  <link rel="stylesheet" href="style.css?v=3caea977" />
+  <link rel="stylesheet" href="style.css?v=fa60f7fe" />
   <script defer src="lang-switcher.js"></script>
   <script defer src="theme-switcher.js"></script>
   <script defer src="script.js"></script>
   <style>
-    .acct-wrap { max-width: 760px; margin: 0 auto; }
-    .acct-card {
-      background: var(--panel-fill);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--r-lg);
-      padding: 28px 30px;
-      margin: 22px 0;
+    /* Account page, 2026-11-09 (approved preview): a compact title, then the
+       charts (wide) beside the profile (narrow), with no outer panel around
+       the two. Colours are page-scoped: the user's palette on the dark
+       theme, the site's light tokens on the light one. */
+    .acct-page {
+      --a-head: #E4D3AD;
+      --a-text: #E8E3D9;
+      --a-sub: #BDB6AA;
+      --a-rule: #66543A;
+      --a-panel: rgba(17, 20, 22, .94);
+      --a-inner: rgba(255, 255, 255, .03);
+      --a-gold: #E8BE70;
+      --a-gold-ink: #241A0C;
+      position: relative;
+      z-index: 1;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: calc(var(--nav-h) + 40px) 28px 56px;
+      box-sizing: border-box;
+      color: var(--a-text);
     }
-    .acct-card h3 { font-family: var(--font-display); color: var(--gold-bright); margin: 0 0 6px; font-size: 1.4em; font-weight: 500; }
-    .acct-card .lead { color: var(--ink-muted); font-size: 0.92em; margin: 0 0 16px; }
-    .acct-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--panel-border); }
-    .acct-row:last-child { border-bottom: none; }
-    .acct-label { color: var(--ink-muted); font-size: 0.92em; }
-    .acct-value { color: var(--ink); }
-    .muted { color: var(--ink-muted); font-size: 0.9em; }
-    /* Colour stays rationed: success reads gold, only errors get a hue. */
-    .msg { margin: 12px 0; padding: 11px 14px; border-radius: var(--r-md); font-size: 0.95em; }
-    .msg.info { background: var(--panel-inner); border: 1px solid var(--gold-rule); color: var(--ink-body); }
-    .msg.err  { background: var(--panel-inner); border: 1px solid var(--error); color: var(--error); }
-    .msg.ok   { background: var(--panel-inner); border: 1px solid var(--gold-dim); color: var(--gold-bright); }
-    .orders { width: 100%; border-collapse: collapse; margin-top: 6px; }
-    .orders th, .orders td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--panel-border); font-size: 0.95em; }
-    .orders th { color: var(--gold); font-weight: 600; font-size: 0.78em; letter-spacing: 1.4px; text-transform: uppercase; }
-    .orders td a { color: var(--gold); }
-    .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
-    .switch input { width: 20px; height: 20px; accent-color: var(--gold); }
-    /* A <button> that must read as a link — reset the gold-gradient button. */
-    .linkbtn { background: none; border: none; color: var(--gold); cursor: pointer; text-decoration: underline; font-size: 0.95em; letter-spacing: 0; text-transform: none; padding: 0; font-family: inherit; }
-    .linkbtn:hover { background: none; box-shadow: none; filter: none; color: var(--gold-bright); }
-    .altrow { margin-top: 14px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    html[data-theme="light"] .acct-page {
+      --a-head: var(--ink-title);
+      --a-text: var(--ink);
+      --a-sub: var(--ink-muted);
+      --a-rule: var(--gold-rule);
+      --a-panel: rgba(253, 250, 243, .96);
+      --a-inner: var(--panel-inner);
+      --a-gold: var(--btn-top);
+      --a-gold-ink: var(--btn-ink);
+    }
+    .acct-eyebrow { font-family: var(--font-display); color: var(--a-sub); font-size: 17px; letter-spacing: .3px; margin: 0 0 4px; }
+    .acct-title { font-family: var(--font-display); color: var(--a-head); font-size: 50px; font-weight: 500; line-height: 1.1; margin: 0 0 30px; }
+
+    .acct-grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(290px, 1fr); gap: 26px; align-items: start; }
+    .acct-grid.auth { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .acct-side { display: grid; gap: 22px; min-width: 0; }
+    .acct-narrow { max-width: 560px; }
+    @media (max-width: 900px) {
+      .acct-grid, .acct-grid.auth { grid-template-columns: minmax(0, 1fr); }
+      .acct-title { font-size: 38px; margin-bottom: 22px; }
+      .acct-page { padding: calc(var(--nav-h) + 26px) 16px 40px; }
+    }
+
+    .acct-page .acct-card {
+      background: var(--a-panel);
+      border: 1px solid var(--a-rule);
+      border-radius: var(--r-lg);
+      padding: 26px 30px;
+      /* style.css has a shared .acct-card rule (18px margins, overflow
+         hidden). The grid gaps space these cards, and the ⋯ menu must be
+         able to open past the card's edge. */
+      margin: 0;
+      overflow: visible;
+      transition: none;
+      min-width: 0;
+    }
+    @media (max-width: 900px) { .acct-page .acct-card { padding: 22px 18px; } }
+    .acct-card h2 { font-family: var(--font-display); color: var(--a-head); font-size: 30px; font-weight: 500; margin: 0; overflow-wrap: anywhere; }
+    .acct-card h3 { font-family: var(--font-display); color: var(--a-head); font-size: 21px; font-weight: 500; margin: 0 0 10px; }
+    .acct-card .lead { color: var(--a-text); font-size: 16px; margin: 10px 0 0; }
+    .acct-card label { color: var(--a-sub); opacity: 1; }
+    .acct-card input[type="search"] { width: 100%; box-sizing: border-box; min-height: 40px; padding: 9px 12px; margin: 0 0 6px; background: var(--a-inner); border: 1px solid var(--a-rule); border-radius: var(--r-sm); color: var(--a-text); font-family: var(--font-display); font-size: 15px; }
+    .acct-rule { border: 0; border-top: 1px solid var(--a-rule); margin: 20px 0; }
+    .muted { color: var(--a-sub); font-size: 0.92em; }
     .hidden { display: none !important; }
-    #acct-loading { text-align: center; color: var(--ink-muted); padding: 30px 0; }
-    .name-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .name-edit input { margin: 0; }
-    /* Saved birth charts. Rows are built with createElement / textContent only:
-       names and notes are user input. */
-    .prof-search { margin: 0 0 10px; }
-    .prof-list { list-style: none; margin: 0; padding: 0; }
-    .prof-item { padding: 12px 0; border-bottom: 1px solid var(--panel-border); }
-    .prof-item:last-child { border-bottom: none; }
-    .prof-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-    .prof-name { color: var(--ink); font-size: 1.08em; overflow-wrap: anywhere; }
-    .prof-badge { color: var(--gold-bright); border: 1px solid var(--gold-dim); border-radius: var(--r-pill); padding: 0 9px; font-size: 0.72em; letter-spacing: 1.2px; text-transform: uppercase; }
-    .prof-meta { color: var(--ink-muted); font-size: 0.9em; margin-top: 2px; }
-    .prof-note { color: var(--ink-body); font-size: 0.92em; margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .prof-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
-    .prof-actions a { color: var(--gold); font-size: 0.95em; }
-    .prof-edit { display: grid; gap: 8px; margin-top: 10px; }
-    .prof-edit input, .prof-edit textarea { margin: 0; width: 100%; box-sizing: border-box; }
-    .prof-edit textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+    #acct-loading { text-align: center; color: var(--a-sub); padding: 30px 0; }
+
+    /* Buttons. The site's global <button> is a gold gradient plate; here only
+       "+ New chart" is gold, every other control is a calm outline. */
+    .acct-page .btn-gold,
+    .acct-page .btn-line,
+    .acct-page .linkbtn {
+      font-family: var(--font-display);
+      text-transform: none;
+      letter-spacing: .2px;
+      box-shadow: none;
+      filter: none;
+    }
+    .acct-page .btn-gold {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--a-gold); color: var(--a-gold-ink); border: 1px solid var(--a-gold);
+      border-radius: var(--r-md); padding: 9px 18px; font-size: 17px; font-weight: 600;
+      text-decoration: none; white-space: nowrap;
+    }
+    .acct-page .btn-gold:hover { filter: brightness(1.07); box-shadow: none; border-color: var(--a-gold); }
+    .acct-page .btn-line {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: transparent; color: var(--a-head); border: 1px solid var(--a-rule);
+      border-radius: var(--r-md); padding: 8px 16px; font-size: 16px; font-weight: 500;
+      text-decoration: none; white-space: nowrap; cursor: pointer;
+    }
+    .acct-page .btn-line:hover { border-color: var(--a-head); color: var(--a-text); background: var(--a-inner); box-shadow: none; filter: none; }
+    .acct-page .btn-line.wide { display: flex; width: 100%; }
+    .acct-page .btn-dots { padding: 8px 12px; font-size: 18px; line-height: 1; letter-spacing: 1px; }
+    .acct-page .linkbtn { background: none; border: none; color: var(--a-head); cursor: pointer; text-decoration: underline; font-size: 16px; padding: 0; }
+    .acct-page .linkbtn:hover { color: var(--a-text); background: none; box-shadow: none; }
+    .acct-page :is(a, button, input, textarea, select):focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
+
+    /* Messages. Colour stays rationed: success reads gold, only errors get a hue. */
+    .msg { margin: 12px 0 0; padding: 10px 14px; border-radius: var(--r-md); font-size: 15px; overflow-wrap: anywhere; }
+    .msg.info { background: var(--a-inner); border: 1px solid var(--a-rule); color: var(--a-text); }
+    .msg.err  { background: var(--a-inner); border: 1px solid var(--error); color: var(--error); }
+    .msg.ok   { background: var(--a-inner); border: 1px solid var(--a-rule); color: var(--a-head); }
+
+    /* Signed-out forms */
+    .acct-card form { margin-top: 16px; }
+    .altrow { margin-top: 14px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+    /* My birth charts. Rows are built with createElement / textContent only:
+       names, notes and every server string are user input. */
+    .charts-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .chart-list { list-style: none; margin: 0; padding: 0; }
+    .chart-row { display: flex; justify-content: space-between; align-items: center; gap: 14px 20px; flex-wrap: wrap; padding: 18px 0; border-bottom: 1px solid var(--a-rule); }
+    .chart-row:first-child { padding-top: 4px; }
+    .chart-info { flex: 1 1 260px; min-width: 0; }
+    .chart-name-line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .chart-name { color: var(--a-head); font-family: var(--font-display); font-size: 24px; font-weight: 600; overflow-wrap: anywhere; }
+    .chart-badge { color: var(--a-head); border: 1px solid var(--a-rule); border-radius: var(--r-pill); padding: 1px 12px; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; }
+    .chart-meta { color: var(--a-text); font-size: 17px; margin-top: 6px; overflow-wrap: anywhere; }
+    .chart-place { color: var(--a-sub); font-size: 16px; margin-top: 2px; overflow-wrap: anywhere; }
+    .chart-note { color: var(--a-sub); font-size: 15px; margin-top: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .chart-actions { display: flex; gap: 10px; align-items: center; position: relative; }
+    .chart-empty { padding: 16px 0 4px; color: var(--a-sub); }
+    .chart-foot { color: var(--a-text); font-size: 15px; margin: 18px 0 0; }
+    .chart-confirm { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .chart-edit { flex: 1 1 100%; display: grid; gap: 8px; }
+    .chart-edit input, .chart-edit textarea { margin: 0; }
+    .chart-edit textarea { min-height: 80px; resize: vertical; }
+    .chart-edit .row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* The ⋯ menu: real buttons in a small list, keyboard-operable. */
+    .chart-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 220px; margin: 0; padding: 6px; list-style: none; background: var(--a-panel); border: 1px solid var(--a-rule); border-radius: var(--r-md); }
+    html:not([data-theme="light"]) .chart-menu { background: #15191C; }
+    @media (max-width: 900px) { .chart-menu { right: auto; left: 0; } }
+    .chart-menu button { display: block; width: 100%; text-align: left; background: none; border: none; border-radius: var(--r-sm); color: var(--a-text); font-family: var(--font-display); font-size: 16px; text-transform: none; letter-spacing: .2px; padding: 9px 12px; cursor: pointer; box-shadow: none; filter: none; }
+    .chart-menu button:hover, .chart-menu button:focus-visible { background: var(--a-inner); color: var(--a-head); box-shadow: none; }
+    .chart-menu button.danger { color: var(--error); }
+
+    /* Profile, newsletter, orders */
+    .pf-name { color: var(--a-head); font-family: var(--font-display); font-size: 23px; margin: 14px 0 4px; overflow-wrap: anywhere; }
+    .pf-email { color: var(--a-text); font-size: 17px; margin: 0 0 6px; overflow-wrap: anywhere; }
+    .pf-since { color: var(--a-sub); font-size: 16px; margin: 0; }
+    .pf-actions { display: grid; gap: 12px; margin-top: 20px; }
+    .pf-edit { margin-top: 14px; }
+    .pf-edit .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pf-signout { text-align: center; }
+    .switch { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: var(--a-text); font-size: 15px; letter-spacing: 0; opacity: 1; }
+    .switch input { width: 20px; height: 20px; flex: none; margin-top: 2px; accent-color: var(--a-gold); }
+    .order-list { list-style: none; margin: 0; padding: 0; }
+    .order-list li { padding: 8px 0; border-bottom: 1px solid var(--a-rule); font-size: 15px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .order-list li:last-child { border-bottom: none; }
+    .order-list a { color: var(--a-head); }
+    .order-note { font-size: 13px; color: var(--a-sub); margin: 10px 0 0; }
   </style>
 </head>
 <body>
@@ -98,101 +202,103 @@
   </span>
 </nav>
 
-<header>
-  <h1 data-i18n-brand translate="no" class="notranslate">Secrets of Wisdom · NZ</h1>
-  <p class="tagline" data-i18n="account.tagline">Your Account</p>
-</header>
+<main class="acct-page fade-up">
+  <p class="acct-eyebrow notranslate" translate="no">Secrets of Wisdom · NZ</p>
+  <h1 class="acct-title" data-i18n="account.title">Your account</h1>
 
-<section class="fade-up">
-  <div class="acct-wrap">
+  <div id="acct-loading" data-i18n="account.loading">Loading…</div>
 
-    <div id="acct-loading">Loading…</div>
-
-    <!-- SIGNED OUT: sign in + create account -->
-    <div id="acct-auth" class="hidden">
-      <div class="acct-card">
-        <h3 data-i18n="account.signInHeading">Sign in</h3>
-        <p class="lead" data-i18n="account.signInIntro">Welcome back. Sign in to see your orders and manage your preferences.</p>
-        <div id="login-msg"></div>
-        <form id="login-form" autocomplete="on">
-          <label for="li-email" data-i18n="account.labelEmail">Email</label><br/>
-          <input id="li-email" type="email" name="email" autocomplete="email" required /><br/>
-          <label for="li-password" data-i18n="account.labelPassword">Password</label><br/>
-          <input id="li-password" type="password" name="password" autocomplete="current-password" required /><br/>
-          <button type="submit" id="li-submit" data-i18n="account.signInBtn">Sign in</button>
-        </form>
-        <div class="altrow">
-          <button class="linkbtn" id="forgot-btn" data-i18n="account.forgot">Forgot password?</button>
-          <button class="linkbtn" id="magic-btn" data-i18n="account.magicLink">Email me a sign-in link instead</button>
-        </div>
-      </div>
-
-      <div class="acct-card">
-        <h3 data-i18n="account.createHeading">Create your account</h3>
-        <p class="lead" data-i18n="account.createIntro">New here? Create an account with the same email you book or pay with, so your orders appear automatically.</p>
-        <div id="signup-msg"></div>
-        <form id="signup-form" autocomplete="on">
-          <label for="su-name" data-i18n="account.labelName">Name (optional)</label><br/>
-          <input id="su-name" type="text" name="name" autocomplete="name" /><br/>
-          <label for="su-email" data-i18n="account.labelEmail">Email</label><br/>
-          <input id="su-email" type="email" name="email" autocomplete="email" required /><br/>
-          <label for="su-password" data-i18n="account.labelNewPassword">Password (at least 8 characters)</label><br/>
-          <input id="su-password" type="password" name="password" autocomplete="new-password" minlength="8" required /><br/>
-          <button type="submit" id="su-submit" data-i18n="account.createBtn">Create account</button>
-        </form>
+  <!-- SIGNED OUT: sign in + create account -->
+  <div id="acct-auth" class="acct-grid auth hidden">
+    <div class="acct-card">
+      <h2 data-i18n="account.signInHeading">Sign in</h2>
+      <p class="lead" data-i18n="account.signInIntro">Welcome back. Sign in to see your orders and manage your preferences.</p>
+      <div id="login-msg"></div>
+      <form id="login-form" autocomplete="on">
+        <label for="li-email" data-i18n="account.labelEmail">Email</label><br/>
+        <input id="li-email" type="email" name="email" autocomplete="email" required /><br/>
+        <label for="li-password" data-i18n="account.labelPassword">Password</label><br/>
+        <input id="li-password" type="password" name="password" autocomplete="current-password" required /><br/>
+        <button type="submit" class="btn-line" id="li-submit" data-i18n="account.signInBtn">Sign in</button>
+      </form>
+      <div class="altrow">
+        <button type="button" class="linkbtn" id="forgot-btn" data-i18n="account.forgot">Forgot password?</button>
+        <button type="button" class="linkbtn" id="magic-btn" data-i18n="account.magicLink">Email me a sign-in link instead</button>
       </div>
     </div>
 
-    <!-- RESET: set a new password from an emailed link -->
-    <div id="acct-reset" class="hidden">
-      <div class="acct-card">
-        <h3 data-i18n="account.resetHeading">Set a new password</h3>
-        <p class="lead" data-i18n="account.resetIntro">Choose a new password for your account.</p>
-        <div id="reset-msg"></div>
-        <form id="reset-form" autocomplete="on">
-          <label for="rs-password" data-i18n="account.labelNewPassword">New password (at least 8 characters)</label><br/>
-          <input id="rs-password" type="password" name="password" autocomplete="new-password" minlength="8" required /><br/>
-          <button type="submit" id="rs-submit" data-i18n="account.resetBtn">Set password &amp; sign in</button>
-        </form>
+    <div class="acct-card">
+      <h2 data-i18n="account.createHeading">Create your account</h2>
+      <p class="lead" data-i18n="account.createIntro">New here? Create an account with the same email you book or pay with, so your orders appear automatically.</p>
+      <div id="signup-msg"></div>
+      <form id="signup-form" autocomplete="on">
+        <label for="su-name" data-i18n="account.labelName">Name (optional)</label><br/>
+        <input id="su-name" type="text" name="name" autocomplete="name" /><br/>
+        <label for="su-email" data-i18n="account.labelEmail">Email</label><br/>
+        <input id="su-email" type="email" name="email" autocomplete="email" required /><br/>
+        <label for="su-password" data-i18n="account.labelNewPassword">Password (at least 8 characters)</label><br/>
+        <input id="su-password" type="password" name="password" autocomplete="new-password" minlength="8" required /><br/>
+        <button type="submit" class="btn-line" id="su-submit" data-i18n="account.createBtn">Create account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- RESET: set a new password from an emailed link -->
+  <div id="acct-reset" class="acct-narrow hidden">
+    <div class="acct-card">
+      <h2 data-i18n="account.resetHeading">Set a new password</h2>
+      <p class="lead" data-i18n="account.resetIntro">Choose a new password for your account.</p>
+      <div id="reset-msg"></div>
+      <form id="reset-form" autocomplete="on">
+        <label for="rs-password" data-i18n="account.labelNewPassword">New password (at least 8 characters)</label><br/>
+        <input id="rs-password" type="password" name="password" autocomplete="new-password" minlength="8" required /><br/>
+        <button type="submit" class="btn-line" id="rs-submit" data-i18n="account.resetBtn">Set password &amp; sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SIGNED IN: charts beside the profile -->
+  <div id="acct-dash" class="acct-grid hidden">
+    <div class="acct-card" id="charts-card">
+      <div class="charts-head">
+        <h2 data-i18n="account.chartsHeading">My birth charts</h2>
+        <a class="btn-gold" href="calculator.html?new=1"><span aria-hidden="true">+</span> <span data-i18n="account.newChart">New chart</span></a>
       </div>
+      <p class="lead" data-i18n="account.chartsLead">Open a saved chart or create a new one in the calculator.</p>
+      <hr class="acct-rule" />
+      <input id="chart-search" class="hidden" type="search" />
+      <ul id="chart-list" class="chart-list"></ul>
+      <div id="chart-msg"></div>
+      <p id="chart-foot" class="chart-foot hidden" data-i18n="account.mainNote">Your main chart opens automatically when you return to the calculator.</p>
     </div>
 
-    <!-- SIGNED IN: dashboard -->
-    <div id="acct-dash" class="hidden">
+    <div class="acct-side">
       <div class="acct-card">
-        <h3 data-i18n="account.profileHeading">Profile</h3>
-        <div class="acct-row">
-          <span class="acct-label" data-i18n="account.labelName">Name</span>
-          <span class="name-edit">
-            <input id="dash-name" type="text" placeholder="Your name" />
-            <button class="linkbtn" id="save-name" data-i18n="account.save">Save</button>
-          </span>
+        <h2 data-i18n="account.profileHeading">Profile</h2>
+        <div id="pf-view">
+          <p class="pf-name" id="pf-name"></p>
+          <p class="pf-email" id="pf-email"></p>
+          <p class="pf-since"><span data-i18n="account.memberSince">Member since</span> <span id="pf-since"></span></p>
+          <div class="pf-actions">
+            <button type="button" class="btn-line wide" id="edit-profile" data-i18n="account.editProfile">Edit profile</button>
+            <button type="button" class="btn-line wide" id="change-pw" data-i18n="account.changePassword">Change password</button>
+          </div>
         </div>
-        <div class="acct-row">
-          <span class="acct-label" data-i18n="account.labelEmail">Email</span>
-          <span class="acct-value" id="dash-email"></span>
-        </div>
-        <div class="acct-row">
-          <span class="acct-label" data-i18n="account.memberSince">Member since</span>
-          <span class="acct-value" id="dash-since"></span>
-        </div>
-        <div class="acct-row">
-          <span class="acct-label" data-i18n="account.password">Password</span>
-          <button class="linkbtn" id="change-pw" data-i18n="account.changePassword">Change password</button>
-        </div>
+        <form id="pf-edit" class="pf-edit hidden">
+          <label for="pf-name-input" data-i18n="account.labelName">Name</label><br/>
+          <input id="pf-name-input" type="text" maxlength="120" autocomplete="name" />
+          <div class="row">
+            <button type="submit" class="btn-line" data-i18n="account.save">Save</button>
+            <button type="button" class="linkbtn" id="pf-cancel" data-i18n="account.cancel">Cancel</button>
+          </div>
+        </form>
         <div id="profile-msg"></div>
-      </div>
-
-      <div class="acct-card" id="prof-card">
-        <h3 data-i18n="account.profiles.heading">Saved birth charts</h3>
-        <p class="lead" data-i18n="account.profiles.lead">Birth data you keep for the BaZi calculator: your own, marked as main, and anyone else's. Charts are saved from inside the calculator.</p>
-        <input id="prof-search" class="prof-search hidden" type="search" />
-        <ul id="prof-list" class="prof-list"></ul>
-        <div id="prof-msg"></div>
+        <hr class="acct-rule" />
+        <div class="pf-signout"><button type="button" class="linkbtn" id="logout-btn" data-i18n="account.signOut">Sign out</button></div>
       </div>
 
       <div class="acct-card">
-        <h3 data-i18n="account.prefsHeading">Preferences</h3>
+        <h3 data-i18n="account.newsletterHeading">Newsletter</h3>
         <label class="switch">
           <input type="checkbox" id="dash-newsletter" />
           <span data-i18n="account.newsletterLabel">Send me the newsletter — seasonal energy notes, timing tips, and occasional offers.</span>
@@ -202,19 +308,12 @@
 
       <div class="acct-card">
         <h3 data-i18n="account.ordersHeading">Order history</h3>
-        <div id="orders-body">
-          <p class="muted" data-i18n="account.ordersLoading">Loading your orders…</p>
-        </div>
-        <p class="muted" style="margin-top:14px;" data-i18n="account.ordersNote">Bookings scheduled through the calendar are confirmed by email separately. Purchases made with the same email address appear here.</p>
-      </div>
-
-      <div class="cta-center" style="margin-top:6px;">
-        <button class="linkbtn" id="logout-btn" data-i18n="account.signOut">Sign out</button>
+        <div id="orders-body"><p class="muted" data-i18n="account.ordersLoading">Loading your orders…</p></div>
+        <p class="order-note" data-i18n="account.ordersNote">Bookings scheduled through the calendar are confirmed by email separately. Purchases made with the same email address appear here.</p>
       </div>
     </div>
-
   </div>
-</section>
+</main>
 
 <footer data-i18n-html="footer">© 2026 <span translate="no" class="notranslate">Secrets of Wisdom · NZ</span> – Energy Harmony and Destiny Flow</footer>
 <div class="footer-links" style="text-align:center;padding:6px 0 22px;font-size:0.82em;font-family:system-ui,sans-serif;letter-spacing:.03em;"><a href="privacy.html" style="color:var(--gold);text-decoration:none;">Privacy</a> &middot; <a href="agreement.html" style="color:var(--gold);text-decoration:none;">Terms</a></div>
@@ -225,13 +324,14 @@
   function show(id) { $(id).classList.remove('hidden'); }
   function hide(id) { $(id).classList.add('hidden'); }
   // Text only: messages can carry server strings, so never innerHTML.
-  function msg(el, text, kind) {
-    el.textContent = '';
+  function msg(box, text, kind) {
+    box.textContent = '';
     if (!text) return;
-    var box = document.createElement('div');
-    box.className = 'msg ' + kind;
-    box.textContent = text;
-    el.appendChild(box);
+    var m = document.createElement('div');
+    m.className = 'msg ' + kind;
+    m.setAttribute('role', kind === 'err' ? 'alert' : 'status');
+    m.textContent = text;
+    box.appendChild(m);
   }
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -239,12 +339,52 @@
     if (text != null) n.textContent = text;
     return n;
   }
-  function fmtDate(ms) {
-    try { return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
-    catch (e) { return ''; }
+
+  // Strings written from script follow the page language (html[lang]);
+  // the page re-renders them when lang-switcher.js flips it.
+  var PT = {
+    en: {
+      search: 'Search by name or note', main: 'Main', open: 'Open in calculator',
+      more: 'More actions for {name}', editNameNote: 'Edit name and note',
+      makeMain: 'Make main', del: 'Delete', save: 'Save', cancel: 'Cancel',
+      confirmDel: 'Delete this chart for good?', yesDel: 'Yes, delete',
+      hourUnknown: 'hour unknown', lunar: 'lunar date', noteLabel: 'Note', nameLabel: 'Name',
+      noPlace: 'Location not specified', noName: 'No name yet',
+      empty: 'No saved charts yet. Press “New chart”, enter a birth date in the calculator and save it under “My charts”.',
+      noMatch: 'Nothing matches that search.',
+      loadErr: 'Could not load your saved charts.', saveErr: 'Could not save.', network: 'Network error. Please try again.',
+      saved: 'Saved.', linkSent: 'We’ve emailed you a link to set a new password.', linkErr: 'Could not send the link.',
+      subscribed: 'Subscribed.', unsubscribed: 'Unsubscribed.', updateErr: 'Could not update.',
+      noOrders: 'No orders yet.', ordersErr: 'Could not load orders.', receipt: 'Receipt', refunded: '(refunded)', purchase: 'Purchase'
+    },
+    ru: {
+      search: 'Поиск по имени или заметке', main: 'Основная', open: 'Открыть в калькуляторе',
+      more: 'Другие действия: {name}', editNameNote: 'Изменить имя и заметку',
+      makeMain: 'Сделать основной', del: 'Удалить', save: 'Сохранить', cancel: 'Отмена',
+      confirmDel: 'Удалить эту карту навсегда?', yesDel: 'Да, удалить',
+      hourUnknown: 'час неизвестен', lunar: 'лунная дата', noteLabel: 'Заметка', nameLabel: 'Имя',
+      noPlace: 'Место не указано', noName: 'Имя не указано',
+      empty: 'Сохранённых карт пока нет. Нажмите «Новая карта», введите дату рождения в калькуляторе и сохраните её через «Мои карты».',
+      noMatch: 'По этому запросу ничего не найдено.',
+      loadErr: 'Не удалось загрузить сохранённые карты.', saveErr: 'Не удалось сохранить.', network: 'Ошибка сети. Попробуйте ещё раз.',
+      saved: 'Сохранено.', linkSent: 'Мы отправили вам ссылку для смены пароля.', linkErr: 'Не удалось отправить ссылку.',
+      subscribed: 'Вы подписаны.', unsubscribed: 'Подписка отменена.', updateErr: 'Не удалось обновить.',
+      noOrders: 'Заказов пока нет.', ordersErr: 'Не удалось загрузить заказы.', receipt: 'Чек', refunded: '(возврат)', purchase: 'Покупка'
+    }
+  };
+  function lang() { return document.documentElement.lang === 'ru' ? 'ru' : 'en'; }
+  function t(k) { return PT[lang()][k]; }
+
+  // "09 Nov 2026" / "09 нояб. 2026" — the preview's short form.
+  function fmtDay(d) {
+    try {
+      return d.toLocaleDateString(lang() === 'ru' ? 'ru-RU' : 'en-GB',
+        { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).replace(/\s?г\.$/, '');
+    } catch (e) { return ''; }
   }
+  function fmtDate(ms) { return ms ? fmtDay(new Date(ms)) : '—'; }
   function fmtMoney(amount, currency) {
-    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format((amount || 0) / 100); }
+    try { return new Intl.NumberFormat(lang() === 'ru' ? 'ru-RU' : 'en-GB', { style: 'currency', currency: currency || 'USD' }).format((amount || 0) / 100); }
     catch (e) { return '$' + ((amount || 0) / 100).toFixed(2); }
   }
   function postJSON(url, data) {
@@ -254,6 +394,14 @@
       credentials: 'same-origin',
       body: JSON.stringify(data || {})
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); });
+  }
+  function sendJSON(method, url, data) {
+    return fetch(url, {
+      method: method,
+      headers: data ? { 'Content-Type': 'application/json' } : {},
+      credentials: 'same-origin',
+      body: data ? JSON.stringify(data) : undefined
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); });
   }
 
   var params = new URLSearchParams(location.search);
@@ -276,220 +424,257 @@
     hide('acct-loading'); hide('acct-dash'); hide('acct-auth'); show('acct-reset');
   }
 
-  function showDash(me) {
+  // ---- Profile ----
+  var me = null;
+  function renderProfile() {
+    if (!me) return;
+    $('pf-name').textContent = me.name || t('noName');
+    $('pf-email').textContent = me.email;
+    $('pf-since').textContent = fmtDate(me.memberSince);
+  }
+
+  function showDash(account) {
+    me = account;
     hide('acct-loading'); hide('acct-auth'); hide('acct-reset'); show('acct-dash');
-    $('dash-name').value = me.name || '';
-    $('dash-email').textContent = me.email;
-    $('dash-since').textContent = me.memberSince ? fmtDate(me.memberSince) : '—';
+    renderProfile();
     $('dash-newsletter').checked = !!me.newsletter;
-    loadProfiles();
+    loadCharts();
     loadOrders();
   }
 
+  // ---- Orders (compact) ----
+  var orders = null, ordersNote = null, ordersErr = false;
   function loadOrders() {
-    var body = $('orders-body');
-    function say(text, cls) { body.textContent = ''; body.appendChild(el('p', cls, text)); }
     fetch('/api/account/orders', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d.error) { say(d.error, 'msg err'); return; }
-        var orders = d.orders || [];
-        if (!orders.length) {
-          say(d.note === 'not_configured'
-            ? 'No orders to show yet.'
-            : 'No purchases found for this email yet. When you buy or book, your orders will appear here.', 'muted');
-          return;
-        }
-        var table = el('table', 'orders');
-        var head = el('tr');
-        ['Date', 'Item', 'Amount', ''].forEach(function (h) { head.appendChild(el('th', null, h)); });
-        table.appendChild(el('thead')).appendChild(head);
-        var tbody = table.appendChild(el('tbody'));
-        orders.forEach(function (o) {
-          var tr = el('tr');
-          tr.appendChild(el('td', null, fmtDate(o.date)));
-          var item = el('td', null, o.description || 'Purchase');
-          if (o.refunded) { item.appendChild(document.createTextNode(' ')); item.appendChild(el('span', 'muted', '(refunded)')); }
-          tr.appendChild(item);
-          tr.appendChild(el('td', null, fmtMoney(o.amount, o.currency)));
-          var rc = el('td');
-          if (o.receiptUrl && /^https:\/\//.test(o.receiptUrl)) {
-            var a = el('a', null, 'Receipt');
-            a.href = o.receiptUrl; a.target = '_blank'; a.rel = 'noopener';
-            rc.appendChild(a);
-          }
-          tr.appendChild(rc);
-          tbody.appendChild(tr);
-        });
-        body.textContent = '';
-        body.appendChild(table);
+        if (d.error) { ordersErr = d.error; renderOrders(); return; }
+        orders = d.orders || []; ordersNote = d.note || null; renderOrders();
       })
-      .catch(function () { say('Could not load orders.', 'msg err'); });
+      .catch(function () { ordersErr = true; renderOrders(); });
+  }
+  function renderOrders() {
+    var body = $('orders-body');
+    body.textContent = '';
+    if (ordersErr) { body.appendChild(el('p', 'msg err', typeof ordersErr === 'string' ? ordersErr : t('ordersErr'))); return; }
+    if (orders === null) return;
+    if (!orders.length) { body.appendChild(el('p', 'muted', t('noOrders'))); return; }
+    var ul = el('ul', 'order-list');
+    orders.forEach(function (o) {
+      var li = el('li');
+      var left = el('span', null, fmtDate(o.date) + ' · ' + (o.description || t('purchase')));
+      if (o.refunded) { left.appendChild(document.createTextNode(' ')); left.appendChild(el('span', 'muted', t('refunded'))); }
+      li.appendChild(left);
+      var right = el('span', null, fmtMoney(o.amount, o.currency));
+      if (o.receiptUrl && /^https:\/\//.test(o.receiptUrl)) {
+        var a = el('a', null, t('receipt'));
+        a.href = o.receiptUrl; a.target = '_blank'; a.rel = 'noopener';
+        right.appendChild(document.createTextNode(' · '));
+        right.appendChild(a);
+      }
+      li.appendChild(right);
+      ul.appendChild(li);
+    });
+    body.appendChild(ul);
   }
 
-  // ---- Saved birth charts (/api/profiles) ----
-  // The calculator saves them; this card lists, edits, marks main, deletes.
-  // Strings written from script follow the page language (html[lang]), and
-  // the list re-renders when lang-switcher.js flips it.
-  var PT = {
-    en: {
-      search: 'Search by name or note', main: 'Main', open: 'Open in calculator', edit: 'Edit',
-      makeMain: 'Make main', del: 'Delete', save: 'Save', cancel: 'Cancel',
-      confirmDel: 'Delete this chart for good?', yesDel: 'Yes, delete',
-      hourUnknown: 'hour unknown', lunar: 'lunar date', noteLabel: 'Note', nameLabel: 'Name',
-      empty: 'No saved charts yet. Open the calculator, enter a birth date and save it from the person icon at the top.',
-      openCalc: 'Open the calculator', noMatch: 'Nothing matches that search.',
-      loadErr: 'Could not load your saved charts.', saveErr: 'Could not save.', network: 'Network error. Please try again.'
-    },
-    ru: {
-      search: 'Поиск по имени или заметке', main: 'Основная', open: 'Открыть в калькуляторе', edit: 'Изменить',
-      makeMain: 'Сделать основной', del: 'Удалить', save: 'Сохранить', cancel: 'Отмена',
-      confirmDel: 'Удалить эту карту навсегда?', yesDel: 'Да, удалить',
-      hourUnknown: 'час неизвестен', lunar: 'лунная дата', noteLabel: 'Заметка', nameLabel: 'Имя',
-      empty: 'Сохранённых карт пока нет. Откройте калькулятор, введите дату рождения и сохраните её через значок человека вверху.',
-      openCalc: 'Открыть калькулятор', noMatch: 'По этому запросу ничего не найдено.',
-      loadErr: 'Не удалось загрузить сохранённые карты.', saveErr: 'Не удалось сохранить.', network: 'Ошибка сети. Попробуйте ещё раз.'
-    }
-  };
-  function lang() { return document.documentElement.lang === 'ru' ? 'ru' : 'en'; }
-  function t(k) { return PT[lang()][k]; }
-
-  var profiles = [];
+  // ---- My birth charts (/api/profiles) ----
+  // The calculator saves them; here they are opened, renamed, noted, made
+  // main and deleted.
+  var charts = [];
   var editingId = null;
   var deletingId = null;
+  var openMenu = null; // { trigger, list }
 
-  function sendJSON(method, url, data) {
-    return fetch(url, {
-      method: method,
-      headers: data ? { 'Content-Type': 'application/json' } : {},
-      credentials: 'same-origin',
-      body: data ? JSON.stringify(data) : undefined
-    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); });
-  }
-
-  function birthLine(f) {
-    if (!f) return '';
-    var parts = [];
-    try {
-      parts.push(new Date(Date.UTC(f.year, f.month - 1, f.day)).toLocaleDateString(lang() === 'ru' ? 'ru-RU' : 'en-GB',
-        { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }) + (f.lunar ? ' (' + t('lunar') + ')' : ''));
-    } catch (e) { parts.push(f.day + '.' + f.month + '.' + f.year); }
-    parts.push(f.hourUnknown ? t('hourUnknown')
+  function birthLines(f) {
+    if (!f) return { when: '', where: '' };
+    var when = [];
+    try { when.push(fmtDay(new Date(Date.UTC(f.year, f.month - 1, f.day))) + (f.lunar ? ' (' + t('lunar') + ')' : '')); }
+    catch (e) { when.push(f.day + '.' + f.month + '.' + f.year); }
+    when.push(f.hourUnknown ? t('hourUnknown')
       : (f.hour < 10 ? '0' : '') + f.hour + ':' + (f.minute < 10 ? '0' : '') + f.minute);
     // Same as the calculator's City.displayName: native is the local-language
     // name (Москва, 北京), not a translation, so it is shown in both languages.
-    if (f.city) parts.push(f.city.name + (f.city.native ? ' (' + f.city.native + ')' : '') + ', ' + f.city.country);
-    else if (f.lat || f.lon) parts.push(f.lat + ', ' + f.lon);
-    return parts.join(' · ');
+    // Coordinates are shown whenever they were entered — 0, 0 included;
+    // only a chart with no city and no coordinates has no place.
+    var where;
+    if (f.city) where = f.city.name + (f.city.native ? ' (' + f.city.native + ')' : '') + ', ' + f.city.country;
+    else if ((f.lat || '') !== '' || (f.lon || '') !== '') where = f.lat + ', ' + f.lon;
+    else where = t('noPlace');
+    return { when: when.join(' · '), where: where };
   }
 
-  function linkBtn(text, onClick) {
-    var b = el('button', 'linkbtn', text);
+  function lineBtn(text, onClick, cls) {
+    var b = el('button', cls || 'btn-line', text);
     b.type = 'button';
     b.addEventListener('click', onClick);
     return b;
   }
 
-  function renderProfiles() {
-    var list = $('prof-list');
-    var search = $('prof-search');
-    search.placeholder = t('search');
-    search.classList.toggle('hidden', profiles.length <= 10);
-    list.textContent = '';
-    if (!profiles.length) {
-      var li = el('li', 'prof-item muted', t('empty') + ' ');
-      var a = el('a', null, t('openCalc'));
-      a.href = 'calculator.html';
-      li.appendChild(a);
-      list.appendChild(li);
-      return;
-    }
-    var q = search.classList.contains('hidden') ? '' : search.value.trim().toLowerCase();
-    var shown = profiles.filter(function (p) {
-      return !q || p.name.toLowerCase().indexOf(q) > -1 || (p.note || '').toLowerCase().indexOf(q) > -1;
-    });
-    if (!shown.length) { list.appendChild(el('li', 'prof-item muted', t('noMatch'))); return; }
-    shown.forEach(function (p) { list.appendChild(profileRow(p)); });
+  function closeMenu(focusTrigger) {
+    if (!openMenu) return;
+    var m = openMenu; openMenu = null;
+    m.list.remove();
+    m.trigger.setAttribute('aria-expanded', 'false');
+    if (focusTrigger) m.trigger.focus();
   }
 
-  function profileRow(p) {
-    var li = el('li', 'prof-item');
-    var head = li.appendChild(el('div', 'prof-head'));
-    head.appendChild(el('span', 'prof-name', p.name));
-    if (p.isSelf) head.appendChild(el('span', 'prof-badge', t('main')));
-    li.appendChild(el('div', 'prof-meta', birthLine(p.form)));
-    if (p.note) li.appendChild(el('div', 'prof-note', p.note));
+  function toggleMenu(trigger, p) {
+    if (openMenu && openMenu.trigger === trigger) { closeMenu(true); return; }
+    closeMenu(false);
+    var list = el('ul', 'chart-menu');
+    list.setAttribute('role', 'menu');
+    var items = [];
+    function item(text, fn, cls) {
+      var li = el('li'); li.setAttribute('role', 'none');
+      var b = el('button', cls || null, text);
+      b.type = 'button'; b.setAttribute('role', 'menuitem'); b.tabIndex = -1;
+      b.addEventListener('click', function () { closeMenu(false); fn(); });
+      li.appendChild(b); list.appendChild(li); items.push(b);
+    }
+    item(t('editNameNote'), function () { editingId = p.id; deletingId = null; renderCharts(); });
+    if (!p.isSelf) item(t('makeMain'), function () { patchChart(p.id, { isSelf: true }).then(renderCharts); });
+    item(t('del'), function () { deletingId = p.id; editingId = null; renderCharts(); focusRow(p.id, 'confirm'); }, 'danger');
+    list.addEventListener('keydown', function (e) {
+      var i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+      else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); }
+      else if (e.key === 'Tab') { closeMenu(false); }
+    });
+    trigger.parentNode.appendChild(list);
+    trigger.setAttribute('aria-expanded', 'true');
+    openMenu = { trigger: trigger, list: list };
+    items[0].focus();
+  }
+  document.addEventListener('click', function (e) {
+    if (openMenu && !openMenu.list.contains(e.target) && e.target !== openMenu.trigger) closeMenu(false);
+  });
+
+  function focusRow(id, what) {
+    setTimeout(function () {
+      var row = document.querySelector('[data-chart="' + id + '"]');
+      if (!row) return;
+      var target = what === 'confirm' ? row.querySelector('.chart-confirm button')
+        : what === 'dots' ? row.querySelector('.btn-dots') : null;
+      if (target) target.focus();
+    }, 0);
+  }
+
+  function renderCharts() {
+    closeMenu(false);
+    var list = $('chart-list');
+    var search = $('chart-search');
+    search.placeholder = t('search');
+    search.setAttribute('aria-label', t('search'));
+    search.classList.toggle('hidden', charts.length <= 10);
+    $('chart-foot').classList.toggle('hidden', !charts.some(function (p) { return p.isSelf; }));
+    list.textContent = '';
+    if (!charts.length) { list.appendChild(el('li', 'chart-empty', t('empty'))); return; }
+    var q = search.classList.contains('hidden') ? '' : search.value.trim().toLowerCase();
+    var shown = charts.filter(function (p) {
+      return !q || p.name.toLowerCase().indexOf(q) > -1 || (p.note || '').toLowerCase().indexOf(q) > -1;
+    });
+    if (!shown.length) { list.appendChild(el('li', 'chart-empty', t('noMatch'))); return; }
+    shown.forEach(function (p) { list.appendChild(chartRow(p)); });
+  }
+
+  function chartRow(p) {
+    var li = el('li', 'chart-row');
+    li.setAttribute('data-chart', p.id);
+    var info = li.appendChild(el('div', 'chart-info'));
+    var nameLine = info.appendChild(el('div', 'chart-name-line'));
+    nameLine.appendChild(el('span', 'chart-name', p.name));
+    if (p.isSelf) nameLine.appendChild(el('span', 'chart-badge', t('main')));
+    var lines = birthLines(p.form);
+    info.appendChild(el('div', 'chart-meta', lines.when));
+    info.appendChild(el('div', 'chart-place', lines.where));
+    if (p.note) info.appendChild(el('div', 'chart-note', p.note));
 
     if (editingId === p.id) {
-      var form = li.appendChild(el('form', 'prof-edit'));
+      var form = li.appendChild(el('form', 'chart-edit'));
       var nm = el('input'); nm.type = 'text'; nm.maxLength = 120; nm.value = p.name; nm.setAttribute('aria-label', t('nameLabel'));
       var nt = el('textarea'); nt.maxLength = 2000; nt.value = p.note || ''; nt.placeholder = t('noteLabel'); nt.setAttribute('aria-label', t('noteLabel'));
       form.appendChild(nm); form.appendChild(nt);
-      var row = form.appendChild(el('div', 'prof-actions'));
-      var save = el('button', null, t('save')); save.type = 'submit';
+      var row = form.appendChild(el('div', 'row'));
+      var save = el('button', 'btn-line', t('save')); save.type = 'submit';
       row.appendChild(save);
-      row.appendChild(linkBtn(t('cancel'), function () { editingId = null; renderProfiles(); }));
+      row.appendChild(lineBtn(t('cancel'), function () { editingId = null; renderCharts(); focusRow(p.id, 'dots'); }, 'linkbtn'));
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         save.disabled = true;
-        patchProfile(p.id, { name: nm.value, note: nt.value }).then(function (ok) {
+        patchChart(p.id, { name: nm.value, note: nt.value }).then(function (ok) {
           if (ok) editingId = null;
           else save.disabled = false;
-          renderProfiles();
+          renderCharts();
+          if (ok) focusRow(p.id, 'dots');
         });
       });
       setTimeout(function () { nm.focus(); }, 0);
       return li;
     }
 
-    var actions = li.appendChild(el('div', 'prof-actions'));
     if (deletingId === p.id) {
-      actions.appendChild(el('span', 'muted', t('confirmDel')));
-      actions.appendChild(linkBtn(t('yesDel'), function () { deleteProfile(p.id); }));
-      actions.appendChild(linkBtn(t('cancel'), function () { deletingId = null; renderProfiles(); }));
+      var confirm = li.appendChild(el('div', 'chart-confirm'));
+      confirm.appendChild(el('span', 'muted', t('confirmDel')));
+      confirm.appendChild(lineBtn(t('yesDel'), function () { deleteChart(p.id); }));
+      confirm.appendChild(lineBtn(t('cancel'), function () { deletingId = null; renderCharts(); focusRow(p.id, 'dots'); }, 'linkbtn'));
       return li;
     }
-    var open = el('a', null, t('open'));
+
+    var actions = li.appendChild(el('div', 'chart-actions'));
+    var open = el('a', 'btn-line', t('open'));
     open.href = 'calculator.html?profile=' + encodeURIComponent(p.id);
     actions.appendChild(open);
-    actions.appendChild(linkBtn(t('edit'), function () { editingId = p.id; deletingId = null; renderProfiles(); }));
-    if (!p.isSelf) actions.appendChild(linkBtn(t('makeMain'), function () { patchProfile(p.id, { isSelf: true }).then(renderProfiles); }));
-    actions.appendChild(linkBtn(t('del'), function () { deletingId = p.id; editingId = null; renderProfiles(); }));
+    var dots = el('button', 'btn-line btn-dots', '⋯');
+    dots.type = 'button';
+    dots.setAttribute('aria-haspopup', 'menu');
+    dots.setAttribute('aria-expanded', 'false');
+    dots.setAttribute('aria-label', t('more').replace('{name}', p.name));
+    dots.addEventListener('click', function (e) { e.stopPropagation(); toggleMenu(dots, p); });
+    dots.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); if (!openMenu) toggleMenu(dots, p); }
+    });
+    actions.appendChild(dots);
     return li;
   }
 
-  function loadProfiles() {
+  function loadCharts() {
     return fetch('/api/profiles', { credentials: 'same-origin', cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) { profiles = d.profiles || []; msg($('prof-msg'), '', 'info'); renderProfiles(); })
-      .catch(function () { msg($('prof-msg'), t('loadErr'), 'err'); });
+      .then(function (d) { charts = d.profiles || []; msg($('chart-msg'), '', 'info'); renderCharts(); })
+      .catch(function () { msg($('chart-msg'), t('loadErr'), 'err'); });
   }
 
   // Resolves true on success; reloads the list so "main" moves to the top.
-  function patchProfile(id, data) {
-    msg($('prof-msg'), '', 'info');
+  function patchChart(id, data) {
+    msg($('chart-msg'), '', 'info');
     return sendJSON('PATCH', '/api/profiles/' + encodeURIComponent(id), data)
       .then(function (res) {
-        if (!res.ok) { msg($('prof-msg'), res.d.error || t('saveErr'), 'err'); return false; }
-        return loadProfiles().then(function () { return true; });
+        if (!res.ok) { msg($('chart-msg'), res.d.error || t('saveErr'), 'err'); return false; }
+        return loadCharts().then(function () { return true; });
       })
-      .catch(function () { msg($('prof-msg'), t('network'), 'err'); return false; });
+      .catch(function () { msg($('chart-msg'), t('network'), 'err'); return false; });
   }
 
-  function deleteProfile(id) {
-    msg($('prof-msg'), '', 'info');
+  function deleteChart(id) {
+    msg($('chart-msg'), '', 'info');
     sendJSON('DELETE', '/api/profiles/' + encodeURIComponent(id))
       .then(function (res) {
         deletingId = null;
-        if (!res.ok) { msg($('prof-msg'), res.d.error || t('saveErr'), 'err'); renderProfiles(); return; }
-        loadProfiles();
+        if (!res.ok) { msg($('chart-msg'), res.d.error || t('saveErr'), 'err'); renderCharts(); return; }
+        loadCharts();
       })
-      .catch(function () { msg($('prof-msg'), t('network'), 'err'); });
+      .catch(function () { msg($('chart-msg'), t('network'), 'err'); });
   }
 
-  $('prof-search').addEventListener('input', renderProfiles);
-  new MutationObserver(function () { if (!$('acct-dash').classList.contains('hidden')) renderProfiles(); })
-    .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  $('chart-search').addEventListener('input', renderCharts);
+  new MutationObserver(function () {
+    if ($('acct-dash').classList.contains('hidden')) return;
+    renderCharts(); renderProfile(); renderOrders();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   // ---- Initial state ----
   if (resetToken) {
@@ -497,9 +682,9 @@
   } else {
     fetch('/api/account/me', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
-      .then(function (me) {
-        if (me.authenticated && nextPage) location.replace(nextPage);
-        else if (me.authenticated) showDash(me);
+      .then(function (account) {
+        if (account.authenticated && nextPage) location.replace(nextPage);
+        else if (account.authenticated) showDash(account);
         else showAuth();
       })
       .catch(showAuth);
@@ -563,29 +748,42 @@
       .catch(function () { msg($('reset-msg'), 'Network error. Please try again.', 'err'); btn.disabled = false; });
   });
 
-  // ---- Dashboard: save name ----
-  $('save-name').addEventListener('click', function () {
-    postJSON('/api/account/update', { name: $('dash-name').value })
-      .then(function (res) { msg($('profile-msg'), res.d.success ? 'Saved.' : (res.d.error || 'Could not save.'), res.d.success ? 'ok' : 'err'); })
-      .catch(function () { msg($('profile-msg'), 'Could not save.', 'err'); });
+  // ---- Profile: edit name (the existing /api/account/update) ----
+  function editProfile(on) {
+    $('pf-view').classList.toggle('hidden', on);
+    $('pf-edit').classList.toggle('hidden', !on);
+    if (on) { $('pf-name-input').value = me.name || ''; $('pf-name-input').focus(); }
+    else $('edit-profile').focus();
+  }
+  $('edit-profile').addEventListener('click', function () { msg($('profile-msg'), '', 'info'); editProfile(true); });
+  $('pf-cancel').addEventListener('click', function () { editProfile(false); });
+  $('pf-edit').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = $('pf-name-input').value;
+    postJSON('/api/account/update', { name: name })
+      .then(function (res) {
+        if (res.d.success) { me.name = name.trim().slice(0, 120); renderProfile(); editProfile(false); msg($('profile-msg'), t('saved'), 'ok'); }
+        else msg($('profile-msg'), res.d.error || t('saveErr'), 'err');
+      })
+      .catch(function () { msg($('profile-msg'), t('saveErr'), 'err'); });
   });
 
-  // ---- Dashboard: change password (emails a reset link) ----
+  // ---- Profile: change password (emails a reset link) ----
   $('change-pw').addEventListener('click', function () {
-    postJSON('/api/auth/reset-request', { email: $('dash-email').textContent })
-      .then(function () { msg($('profile-msg'), 'We’ve emailed you a link to set a new password.', 'ok'); })
-      .catch(function () { msg($('profile-msg'), 'Could not send the link.', 'err'); });
+    postJSON('/api/auth/reset-request', { email: me.email })
+      .then(function () { msg($('profile-msg'), t('linkSent'), 'ok'); })
+      .catch(function () { msg($('profile-msg'), t('linkErr'), 'err'); });
   });
 
-  // ---- Dashboard: newsletter toggle ----
+  // ---- Newsletter ----
   $('dash-newsletter').addEventListener('change', function () {
     var on = $('dash-newsletter').checked;
     postJSON('/api/account/update', { newsletter: on })
-      .then(function (res) { msg($('prefs-msg'), res.d.success ? (on ? 'Subscribed.' : 'Unsubscribed.') : (res.d.error || 'Could not update.'), res.d.success ? 'ok' : 'err'); })
-      .catch(function () { msg($('prefs-msg'), 'Could not update.', 'err'); });
+      .then(function (res) { msg($('prefs-msg'), res.d.success ? t(on ? 'subscribed' : 'unsubscribed') : (res.d.error || t('updateErr')), res.d.success ? 'ok' : 'err'); })
+      .catch(function () { msg($('prefs-msg'), t('updateErr'), 'err'); });
   });
 
-  // ---- Dashboard: sign out ----
+  // ---- Sign out ----
   $('logout-btn').addEventListener('click', function () {
     fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
       .then(function () { location.href = 'account.html'; });
