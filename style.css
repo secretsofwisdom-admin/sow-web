@@ -433,8 +433,9 @@ nav {
   border: none;
 }
 .nav-logo:hover { border: none; }
-/* sow_medallion.png is a transparent round PNG that carries its own gold rim
-   — so no border here, or it draws a second ring outside the artwork. */
+/* sow-logo-nav.png is the owner's original logo (2026-11-10), only scaled
+   down from 1254 px: the round medallion with its smoke and roots, on a
+   transparent ground — no mask, no border, never cropped to the circle. */
 .nav-logo img {
   height: 58px;
   width: 58px;
