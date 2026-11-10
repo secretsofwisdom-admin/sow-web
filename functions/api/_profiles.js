@@ -88,8 +88,9 @@ export function profileJson(row) {
     isSelf: row.is_self === 1,
     note: row.note,
     form,
+    folderId: row.folder_id ?? null,
     updatedAt: row.updated_at,
   };
 }
 
-export const PROFILE_COLUMNS = "id, name, is_self, form, note, updated_at";
+export const PROFILE_COLUMNS = "id, name, is_self, form, note, folder_id, updated_at";

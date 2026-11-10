@@ -1,20 +1,26 @@
-// GET  /api/profiles               → { profiles: [...] }  (main first, then by name)
-// POST /api/profiles { name, form, note?, isSelf? } → the new profile
+// GET  /api/profiles               → { profiles: [...], folders: [...] }  (main first, then by name)
+// POST /api/profiles { name, form, note?, isSelf?, folderId? } → the new profile
+// Without folderId (or with one that is not the holder's own) the chart goes
+// into the default folder; see ../_folders.js. `folders` was added
+// 2026-11-09; older calculator builds read only `profiles`.
 // Saved birth data for the calculator. Requires a session.
 import { json, getSessionCustomer, randomToken, rejectCrossSite } from "../_shared.js";
 import {
   MAX_PROFILES, validateBirthForm, cleanName, cleanNote, profileJson, PROFILE_COLUMNS,
 } from "../_profiles.js";
+import { ensureFolders, defaultFolderId, folderJson, ownFolder } from "../_folders.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   try {
     const customer = await getSessionCustomer(env, request);
     if (!customer) return json({ error: "Not signed in." }, 401);
+    // Before the profiles: it files any chart that has no folder yet.
+    const folders = await ensureFolders(env, customer.id);
     const { results } = await env.DB
       .prepare(`SELECT ${PROFILE_COLUMNS} FROM birth_profiles WHERE customer_id = ? ORDER BY is_self DESC, name COLLATE NOCASE, created_at`)
       .bind(customer.id).all();
-    return json({ profiles: results.map(profileJson) }, 200, { "Cache-Control": "no-store" });
+    return json({ profiles: results.map(profileJson), folders: folders.map(folderJson) }, 200, { "Cache-Control": "no-store" });
   } catch (e) {
     return json({ error: "Server error. Please try again." }, 500);
   }
@@ -37,6 +43,7 @@ export async function onRequestPost(context) {
     const t = cleanNote(body.note);
     if (t.error) return json({ error: t.error }, 400);
     const isSelf = body.isSelf === true;
+    if (body.folderId != null && typeof body.folderId !== "string") return json({ error: "Invalid request." }, 400);
 
     const count = await env.DB
       .prepare("SELECT COUNT(*) AS n FROM birth_profiles WHERE customer_id = ?")
@@ -45,11 +52,14 @@ export async function onRequestPost(context) {
       return json({ error: "limit", message: `You can keep up to ${MAX_PROFILES} profiles.` }, 409);
     }
 
+    const folder = (await ownFolder(env, customer.id, body.folderId)) ||
+      { id: defaultFolderId(await ensureFolders(env, customer.id)) };
+
     const id = randomToken(12);
     const now = Date.now();
     const insert = env.DB
-      .prepare("INSERT INTO birth_profiles (id, customer_id, name, is_self, form, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(id, customer.id, n.name, isSelf ? 1 : 0, JSON.stringify(f.form), t.note, now, now);
+      .prepare("INSERT INTO birth_profiles (id, customer_id, name, is_self, form, note, folder_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(id, customer.id, n.name, isSelf ? 1 : 0, JSON.stringify(f.form), t.note, folder.id, now, now);
     // Only one main profile: clear the old one in the same batch.
     await env.DB.batch(isSelf
       ? [env.DB.prepare("UPDATE birth_profiles SET is_self = 0 WHERE customer_id = ? AND is_self = 1").bind(customer.id), insert]

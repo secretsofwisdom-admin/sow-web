@@ -158,6 +158,27 @@
     .chart-menu button { display: block; width: 100%; text-align: left; background: none; border: none; border-radius: var(--r-sm); color: var(--a-text); font-family: var(--font-display); font-size: 16px; text-transform: none; letter-spacing: .2px; padding: 9px 12px; cursor: pointer; box-shadow: none; filter: none; }
     .chart-menu button:hover, .chart-menu button:focus-visible { background: var(--a-inner); color: var(--a-head); box-shadow: none; }
     .chart-menu button.danger { color: var(--error); }
+    .chart-folder { color: var(--a-sub); border: 1px solid var(--a-rule); border-radius: var(--r-pill); padding: 0 10px; font-size: 13px; letter-spacing: .3px; overflow-wrap: anywhere; }
+    .chart-move { flex: 1 1 100%; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .chart-move select { margin: 0; width: auto; min-width: 200px; max-width: 100%; }
+
+    /* Folders (2026-11-09): the main chart is pinned above the tabs; each
+       other chart sits in exactly one folder. */
+    .chart-pinned:empty { display: none; }
+    .chart-pinned { border-bottom: 1px solid var(--a-rule); margin-bottom: 14px; }
+    .chart-pinned .chart-row { border-bottom: none; }
+    .folder-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; }
+    .folder-tabs:empty { display: none; }
+    .acct-page .folder-tab { background: none; border: 1px solid var(--a-rule); border-radius: var(--r-pill); color: var(--a-sub); font-family: var(--font-display); font-size: 16px; letter-spacing: .2px; text-transform: none; padding: 6px 14px; cursor: pointer; box-shadow: none; filter: none; overflow-wrap: anywhere; text-align: left; }
+    .acct-page .folder-tab:hover { color: var(--a-text); border-color: var(--a-head); background: var(--a-inner); box-shadow: none; }
+    .acct-page .folder-tab[aria-selected="true"] { color: var(--a-head); border-color: var(--a-head); background: var(--a-inner); }
+    .acct-page .folder-tab .n { color: var(--a-sub); margin-left: 6px; font-size: 14px; }
+    .acct-page .folder-tab.add { border-style: dashed; }
+    .folder-bar { display: flex; gap: 8px 18px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; color: var(--a-sub); font-size: 15px; }
+    .folder-bar:empty { display: none; }
+    .folder-bar form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0; flex: 1 1 100%; }
+    .folder-bar input { margin: 0; flex: 1 1 220px; max-width: 360px; }
+    .folder-bar .danger-text { color: var(--error); }
 
     /* Profile, newsletter, orders */
     .pf-name { color: var(--a-head); font-family: var(--font-display); font-size: 23px; margin: 14px 0 4px; overflow-wrap: anywhere; }
@@ -266,8 +287,11 @@
       </div>
       <p class="lead" data-i18n="account.chartsLead">Open a saved chart or create a new one in the calculator.</p>
       <hr class="acct-rule" />
+      <ul id="chart-main" class="chart-list chart-pinned"></ul>
+      <div id="folder-tabs" class="folder-tabs" role="tablist"></div>
+      <div id="folder-bar" class="folder-bar"></div>
       <input id="chart-search" class="hidden" type="search" />
-      <ul id="chart-list" class="chart-list"></ul>
+      <ul id="chart-list" class="chart-list" role="tabpanel"></ul>
       <div id="chart-msg"></div>
       <p id="chart-foot" class="chart-foot hidden" data-i18n="account.mainNote">Your main chart opens automatically when you return to the calculator.</p>
     </div>
@@ -355,7 +379,13 @@
       loadErr: 'Could not load your saved charts.', saveErr: 'Could not save.', network: 'Network error. Please try again.',
       saved: 'Saved.', linkSent: 'We’ve emailed you a link to set a new password.', linkErr: 'Could not send the link.',
       subscribed: 'Subscribed.', unsubscribed: 'Unsubscribed.', updateErr: 'Could not update.',
-      noOrders: 'No orders yet.', ordersErr: 'Could not load orders.', receipt: 'Receipt', refunded: '(refunded)', purchase: 'Purchase'
+      noOrders: 'No orders yet.', ordersErr: 'Could not load orders.', receipt: 'Receipt', refunded: '(refunded)', purchase: 'Purchase',
+      all: 'All', family: 'Friends & Family', clients: 'Clients', personal: 'Personal',
+      addFolder: '+ Folder', folderName: 'Folder name', create: 'Create', renameFolder: 'Rename folder', deleteFolder: 'Delete folder',
+      folderTabs: 'Folders', moveTo: 'Move to folder', move: 'Move', folderOf: 'Folder',
+      confirmFolderDel: 'Delete the folder “{name}” and its {n} for good?', confirmEmptyDel: 'Delete the empty folder “{name}”?', withMain: ' Your main chart is in it too.',
+      chartsN: ['chart', 'charts'], folderEmpty: 'This folder is empty. Move a chart here with “⋯” › “Move to folder”, or choose the folder when you save a chart in the calculator.',
+      lastFolder: 'An account keeps at least one folder.', folderLimit: 'You can keep up to 50 folders.'
     },
     ru: {
       search: 'Поиск по имени или заметке', main: 'Основная', open: 'Открыть в калькуляторе',
@@ -369,7 +399,13 @@
       loadErr: 'Не удалось загрузить сохранённые карты.', saveErr: 'Не удалось сохранить.', network: 'Ошибка сети. Попробуйте ещё раз.',
       saved: 'Сохранено.', linkSent: 'Мы отправили вам ссылку для смены пароля.', linkErr: 'Не удалось отправить ссылку.',
       subscribed: 'Вы подписаны.', unsubscribed: 'Подписка отменена.', updateErr: 'Не удалось обновить.',
-      noOrders: 'Заказов пока нет.', ordersErr: 'Не удалось загрузить заказы.', receipt: 'Чек', refunded: '(возврат)', purchase: 'Покупка'
+      noOrders: 'Заказов пока нет.', ordersErr: 'Не удалось загрузить заказы.', receipt: 'Чек', refunded: '(возврат)', purchase: 'Покупка',
+      all: 'Все', family: 'Друзья и семья', clients: 'Клиенты', personal: 'Личное',
+      addFolder: '+ Папка', folderName: 'Название папки', create: 'Создать', renameFolder: 'Переименовать папку', deleteFolder: 'Удалить папку',
+      folderTabs: 'Папки', moveTo: 'Переместить в папку', move: 'Переместить', folderOf: 'Папка',
+      confirmFolderDel: 'Удалить папку «{name}» и {n} в ней навсегда?', confirmEmptyDel: 'Удалить пустую папку «{name}»?', withMain: ' В ней и ваша основная карта.',
+      chartsN: ['карту', 'карты', 'карт'], folderEmpty: 'Эта папка пуста. Переместите сюда карту через «⋯» › «Переместить в папку» или выберите папку, когда сохраняете карту в калькуляторе.',
+      lastFolder: 'В аккаунте должна остаться хотя бы одна папка.', folderLimit: 'Можно завести не больше 50 папок.'
     }
   };
   function lang() { return document.documentElement.lang === 'ru' ? 'ru' : 'en'; }
@@ -482,8 +518,28 @@
   // The calculator saves them; here they are opened, renamed, noted, made
   // main and deleted.
   var charts = [];
+  var folders = [];          // [{ id, kind, name, count }] in the site's order
+  var activeFolder = 'all';  // 'all' or a folder id
+  var folderMode = null;     // null | 'new' | 'rename' | 'delete'
   var editingId = null;
   var deletingId = null;
+  var movingId = null;
+
+  // A starter folder keeps name null until renamed and is shown in the
+  // page's language.
+  function folderName(f) { return f ? (f.name || (f.kind && t(f.kind)) || '') : ''; }
+  function folderById(id) { for (var i = 0; i < folders.length; i++) if (folders[i].id === id) return folders[i]; return null; }
+  // The main chart is pinned above the tabs, so it is left out of the tabs
+  // and their counts.
+  function inFolder(id) { return charts.filter(function (p) { return !p.isSelf && (id === 'all' || p.folderId === id); }); }
+  function countWord(n) {
+    var w = t('chartsN');
+    if (lang() === 'ru') {
+      var m10 = n % 10, m100 = n % 100;
+      return n + ' ' + (m10 === 1 && m100 !== 11 ? w[0] : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? w[1] : w[2]);
+    }
+    return n + ' ' + (n === 1 ? w[0] : w[1]);
+  }
   var openMenu = null; // { trigger, list }
 
   function birthLines(f) {
@@ -532,9 +588,10 @@
       b.addEventListener('click', function () { closeMenu(false); fn(); });
       li.appendChild(b); list.appendChild(li); items.push(b);
     }
-    item(t('editNameNote'), function () { editingId = p.id; deletingId = null; renderCharts(); });
+    item(t('editNameNote'), function () { editingId = p.id; deletingId = null; movingId = null; renderCharts(); });
+    if (folders.length > 1) item(t('moveTo'), function () { movingId = p.id; editingId = null; deletingId = null; renderCharts(); });
     if (!p.isSelf) item(t('makeMain'), function () { patchChart(p.id, { isSelf: true }).then(renderCharts); });
-    item(t('del'), function () { deletingId = p.id; editingId = null; renderCharts(); focusRow(p.id, 'confirm'); }, 'danger');
+    item(t('del'), function () { deletingId = p.id; editingId = null; movingId = null; renderCharts(); focusRow(p.id, 'confirm'); }, 'danger');
     list.addEventListener('keydown', function (e) {
       var i = items.indexOf(document.activeElement);
       if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
@@ -565,29 +622,157 @@
 
   function renderCharts() {
     closeMenu(false);
+    if (activeFolder !== 'all' && !folderById(activeFolder)) { activeFolder = 'all'; folderMode = null; }
     var list = $('chart-list');
     var search = $('chart-search');
     search.placeholder = t('search');
     search.setAttribute('aria-label', t('search'));
     search.classList.toggle('hidden', charts.length <= 10);
-    $('chart-foot').classList.toggle('hidden', !charts.some(function (p) { return p.isSelf; }));
+    var main = null;
+    charts.forEach(function (p) { if (p.isSelf) main = p; });
+    $('chart-foot').classList.toggle('hidden', !main);
+    var pinned = $('chart-main');
+    pinned.textContent = '';
+    if (main) pinned.appendChild(chartRow(main, true));
+    renderFolderTabs();
+    renderFolderBar();
     list.textContent = '';
     if (!charts.length) { list.appendChild(el('li', 'chart-empty', t('empty'))); return; }
+    var pool = inFolder(activeFolder);
     var q = search.classList.contains('hidden') ? '' : search.value.trim().toLowerCase();
-    var shown = charts.filter(function (p) {
+    var shown = pool.filter(function (p) {
       return !q || p.name.toLowerCase().indexOf(q) > -1 || (p.note || '').toLowerCase().indexOf(q) > -1;
     });
-    if (!shown.length) { list.appendChild(el('li', 'chart-empty', t('noMatch'))); return; }
-    shown.forEach(function (p) { list.appendChild(chartRow(p)); });
+    if (!shown.length) {
+      if (q) list.appendChild(el('li', 'chart-empty', t('noMatch')));
+      else if (activeFolder !== 'all') list.appendChild(el('li', 'chart-empty', t('folderEmpty')));
+      return;
+    }
+    shown.forEach(function (p) { list.appendChild(chartRow(p, activeFolder === 'all')); });
   }
 
-  function chartRow(p) {
+  // ---- Folder tabs ----
+  function renderFolderTabs() {
+    var box = $('folder-tabs');
+    box.textContent = '';
+    if (!folders.length) return;
+    box.setAttribute('aria-label', t('folderTabs'));
+    var tabs = [];
+    function tab(id, label, n) {
+      var b = el('button', 'folder-tab');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('data-folder', id);
+      var on = activeFolder === id;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+      b.appendChild(document.createTextNode(label));
+      b.appendChild(el('span', 'n', String(n)));
+      b.addEventListener('click', function () { selectFolder(id); });
+      box.appendChild(b); tabs.push(b);
+    }
+    tab('all', t('all'), inFolder('all').length);
+    folders.forEach(function (f) { tab(f.id, folderName(f), inFolder(f.id).length); });
+    // Arrow keys move between tabs (the WAI-ARIA tabs pattern); the
+    // "+ Folder" button after them is an ordinary button.
+    box.addEventListener('keydown', function (e) {
+      var i = tabs.indexOf(document.activeElement);
+      if (i < 0) return;
+      var j = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i - 1 + tabs.length) % tabs.length
+        : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
+      if (j < 0) return;
+      e.preventDefault();
+      selectFolder(tabs[j].getAttribute('data-folder'), true);
+    });
+    var add = el('button', 'folder-tab add', t('addFolder'));
+    add.type = 'button';
+    add.addEventListener('click', function () { folderMode = 'new'; renderCharts(); focusIn('folder-bar', 'input'); });
+    box.appendChild(add);
+  }
+  function selectFolder(id, keepFocus) {
+    activeFolder = id; folderMode = null; editingId = deletingId = movingId = null;
+    renderCharts();
+    if (keepFocus) focusIn('folder-tabs', '[data-folder="' + id + '"]');
+  }
+  function focusIn(boxId, sel) {
+    setTimeout(function () { var n = $(boxId).querySelector(sel); if (n) n.focus(); }, 0);
+  }
+
+  // The line under the tabs: the open folder's Rename / Delete, or the
+  // form or confirmation one of them opened, or the new-folder form.
+  function renderFolderBar() {
+    var bar = $('folder-bar');
+    bar.textContent = '';
+    var f = folderById(activeFolder);
+    if (folderMode === 'new' || folderMode === 'rename') {
+      var form = bar.appendChild(el('form'));
+      var input = el('input'); input.type = 'text'; input.maxLength = 60;
+      input.placeholder = t('folderName'); input.setAttribute('aria-label', t('folderName'));
+      if (folderMode === 'rename' && f) input.value = folderName(f);
+      var ok = el('button', 'btn-line', folderMode === 'new' ? t('create') : t('save')); ok.type = 'submit';
+      form.appendChild(input); form.appendChild(ok);
+      form.appendChild(lineBtn(t('cancel'), function () { folderMode = null; renderCharts(); }, 'linkbtn'));
+      input.addEventListener('keydown', function (e) { if (e.key === 'Escape') { folderMode = null; renderCharts(); } });
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        ok.disabled = true;
+        var req = folderMode === 'new'
+          ? sendJSON('POST', '/api/folders', { name: input.value })
+          : sendJSON('PATCH', '/api/folders/' + encodeURIComponent(f.id), { name: input.value });
+        var creating = folderMode === 'new';
+        req.then(function (res) {
+          if (!res.ok) {
+            ok.disabled = false;
+            msg($('chart-msg'), res.d.error === 'limit' ? t('folderLimit') : (res.d.error || t('saveErr')), 'err');
+            return;
+          }
+          msg($('chart-msg'), '', 'info');
+          folderMode = null;
+          if (creating && res.d.id) activeFolder = res.d.id;
+          loadCharts();
+        }).catch(function () { ok.disabled = false; msg($('chart-msg'), t('network'), 'err'); });
+      });
+      return;
+    }
+    if (!f) return;
+    if (folderMode === 'delete') {
+      var n = charts.filter(function (p) { return p.folderId === f.id; }).length;
+      var hasMain = charts.some(function (p) { return p.isSelf && p.folderId === f.id; });
+      bar.appendChild(el('span', 'danger-text',
+        (n ? t('confirmFolderDel') : t('confirmEmptyDel')).replace('{name}', folderName(f)).replace('{n}', countWord(n)) + (hasMain ? t('withMain') : '')));
+      var yes = lineBtn(t('yesDel'), function () {
+        yes.disabled = true;
+        sendJSON('DELETE', '/api/folders/' + encodeURIComponent(f.id)).then(function (res) {
+          folderMode = null;
+          if (!res.ok) { msg($('chart-msg'), res.d.error === 'last' ? t('lastFolder') : (res.d.error || t('saveErr')), 'err'); renderCharts(); return; }
+          msg($('chart-msg'), '', 'info');
+          activeFolder = 'all';
+          loadCharts();
+        }).catch(function () { yes.disabled = false; msg($('chart-msg'), t('network'), 'err'); });
+      });
+      bar.appendChild(yes);
+      bar.appendChild(lineBtn(t('cancel'), function () { folderMode = null; renderCharts(); focusIn('folder-bar', '.linkbtn'); }, 'linkbtn'));
+      setTimeout(function () { yes.focus(); }, 0);
+      return;
+    }
+    bar.appendChild(lineBtn(t('renameFolder'), function () { folderMode = 'rename'; renderCharts(); focusIn('folder-bar', 'input'); }, 'linkbtn'));
+    if (folders.length > 1) {
+      bar.appendChild(lineBtn(t('deleteFolder'), function () { folderMode = 'delete'; renderCharts(); }, 'linkbtn'));
+    }
+  }
+
+  function chartRow(p, showFolder) {
     var li = el('li', 'chart-row');
     li.setAttribute('data-chart', p.id);
     var info = li.appendChild(el('div', 'chart-info'));
     var nameLine = info.appendChild(el('div', 'chart-name-line'));
     nameLine.appendChild(el('span', 'chart-name', p.name));
     if (p.isSelf) nameLine.appendChild(el('span', 'chart-badge', t('main')));
+    var fo = showFolder && folderById(p.folderId);
+    if (fo) {
+      var tag = nameLine.appendChild(el('span', 'chart-folder', folderName(fo)));
+      tag.setAttribute('title', t('folderOf'));
+    }
     var lines = birthLines(p.form);
     info.appendChild(el('div', 'chart-meta', lines.when));
     info.appendChild(el('div', 'chart-place', lines.where));
@@ -613,6 +798,33 @@
         });
       });
       setTimeout(function () { nm.focus(); }, 0);
+      return li;
+    }
+
+    if (movingId === p.id) {
+      var mv = li.appendChild(el('form', 'chart-move'));
+      var sel = el('select');
+      sel.setAttribute('aria-label', t('moveTo'));
+      folders.forEach(function (f) {
+        var o = el('option', null, folderName(f)); o.value = f.id;
+        if (f.id === p.folderId) o.selected = true;
+        sel.appendChild(o);
+      });
+      mv.appendChild(el('span', 'muted', t('moveTo')));
+      mv.appendChild(sel);
+      var go = el('button', 'btn-line', t('move')); go.type = 'submit';
+      mv.appendChild(go);
+      mv.appendChild(lineBtn(t('cancel'), function () { movingId = null; renderCharts(); focusRow(p.id, 'dots'); }, 'linkbtn'));
+      mv.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (sel.value === p.folderId) { movingId = null; renderCharts(); focusRow(p.id, 'dots'); return; }
+        go.disabled = true;
+        patchChart(p.id, { folderId: sel.value }).then(function (ok) {
+          if (ok) movingId = null; else go.disabled = false;
+          renderCharts();
+        });
+      });
+      setTimeout(function () { sel.focus(); }, 0);
       return li;
     }
 
@@ -644,7 +856,10 @@
   function loadCharts() {
     return fetch('/api/profiles', { credentials: 'same-origin', cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) { charts = d.profiles || []; msg($('chart-msg'), '', 'info'); renderCharts(); })
+      .then(function (d) {
+        charts = d.profiles || []; folders = d.folders || [];
+        renderCharts();
+      })
       .catch(function () { msg($('chart-msg'), t('loadErr'), 'err'); });
   }
 
