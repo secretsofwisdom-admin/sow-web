@@ -159,26 +159,112 @@
     .chart-menu button:hover, .chart-menu button:focus-visible { background: var(--a-inner); color: var(--a-head); box-shadow: none; }
     .chart-menu button.danger { color: var(--error); }
     .chart-folder { color: var(--a-sub); border: 1px solid var(--a-rule); border-radius: var(--r-pill); padding: 0 10px; font-size: 13px; letter-spacing: .3px; overflow-wrap: anywhere; }
+    .chart-menu .sub { padding: 6px 12px 2px; color: var(--a-sub); font-size: 13px; font-family: var(--a-data); }
     .chart-move { flex: 1 1 100%; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .chart-move select { margin: 0; width: auto; min-width: 200px; max-width: 100%; }
 
-    /* Folders (2026-11-09): the main chart is pinned above the tabs; each
-       other chart sits in exactly one folder. */
-    .chart-pinned:empty { display: none; }
-    .chart-pinned { border-bottom: 1px solid var(--a-rule); margin-bottom: 14px; }
-    .chart-pinned .chart-row { border-bottom: none; }
-    .folder-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; }
-    .folder-tabs:empty { display: none; }
-    .acct-page .folder-tab { background: none; border: 1px solid var(--a-rule); border-radius: var(--r-pill); color: var(--a-sub); font-family: var(--font-display); font-size: 16px; letter-spacing: .2px; text-transform: none; padding: 6px 14px; cursor: pointer; box-shadow: none; filter: none; overflow-wrap: anywhere; text-align: left; }
-    .acct-page .folder-tab:hover { color: var(--a-text); border-color: var(--a-head); background: var(--a-inner); box-shadow: none; }
-    .acct-page .folder-tab[aria-selected="true"] { color: var(--a-head); border-color: var(--a-head); background: var(--a-inner); }
-    .acct-page .folder-tab .n { color: var(--a-sub); margin-left: 6px; font-size: 14px; }
-    .acct-page .folder-tab.add { border-style: dashed; }
-    .folder-bar { display: flex; gap: 8px 18px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; color: var(--a-sub); font-size: 15px; }
+    /* ---- Chart library (2026-11-10, approved preview chart-library-v2) ----
+       Signed in, the page is a library: a centred title, two tabs (My charts
+       / My account), and one charcoal panel with the folders on the left and
+       the chart list on the right. Data (dates, notes, counts) is set in the
+       system sans-serif; names and headings keep EB Garamond. */
+    .acct-page { --a-data: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --a-lib: #14191B; --a-sel: rgba(232, 190, 112, .14); }
+    html[data-theme="light"] .acct-page { --a-lib: rgba(253, 250, 243, .97); --a-sel: rgba(138, 98, 36, .12); }
+    .lib-head { text-align: center; margin: -14px 0 24px; }
+    .lib-title { font-family: var(--font-display); color: var(--a-head); font-size: 52px; font-weight: 500; line-height: 1.1; margin: 0; }
+    .lib-sub { font-family: var(--font-display); color: var(--a-sub); font-size: 20px; margin: 4px 0 18px; }
+    .lib-tabs { display: inline-flex; border: 1px solid var(--a-rule); border-radius: var(--r-md); padding: 3px; gap: 3px; background: rgba(10, 13, 15, .55); }
+    html[data-theme="light"] .lib-tabs { background: var(--a-inner); }
+    .acct-page .lib-tab { background: none; border: 1px solid transparent; border-radius: var(--r-sm); color: var(--a-text); font-family: var(--font-display); font-size: 19px; font-weight: 500; text-transform: none; letter-spacing: .2px; padding: 8px 30px; cursor: pointer; box-shadow: none; filter: none; }
+    .acct-page .lib-tab:hover { color: var(--a-head); background: var(--a-inner); box-shadow: none; }
+    .acct-page .lib-tab[aria-selected="true"] { color: var(--a-head); background: var(--a-sel); border-color: var(--a-gold); font-weight: 600; }
+    /* The panels are <section>s: undo style.css's shared section rule
+       (880px cap, auto margins, padding, glow). */
+    .acct-page section.lib-panel { max-width: none; margin: 0; padding: 0; box-shadow: none; background: var(--a-lib); border: 1px solid var(--a-rule); border-radius: var(--r-lg); min-width: 0; }
+    #panel-charts { display: grid; grid-template-columns: 250px minmax(0, 1fr); }
+    #panel-charts.hidden { display: none; }
+
+    .lib-folders { border-right: 1px solid var(--a-rule); padding: 26px 18px 22px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .lib-folders-h { font-family: var(--font-display); color: var(--a-head); font-size: 17px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase; margin: 0 12px 12px; padding-bottom: 10px; border-bottom: 1px solid var(--a-rule); }
+    .acct-page .folder-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: var(--r-md); color: var(--a-text); font-family: var(--a-data); font-size: 16px; text-transform: none; letter-spacing: 0; padding: 9px 12px; cursor: pointer; box-shadow: none; filter: none; }
+    .acct-page .folder-btn:hover { background: var(--a-inner); color: var(--a-head); box-shadow: none; }
+    .acct-page .folder-btn[aria-current="true"] { background: var(--a-sel); color: var(--a-head); font-weight: 600; }
+    .folder-btn svg { flex: none; width: 20px; height: 20px; stroke: var(--a-gold); fill: none; stroke-width: 1.5; }
+    .folder-btn .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .folder-btn .n { color: var(--a-sub); font-size: 15px; font-variant-numeric: tabular-nums; }
+    .folder-add-wrap { margin-top: auto; padding-top: 16px; }
+    .acct-page .folder-add { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; border-top: 1px solid var(--a-rule); border-radius: 0; color: var(--a-text); font-family: var(--a-data); font-size: 16px; text-transform: none; letter-spacing: 0; padding: 14px 12px 4px; cursor: pointer; box-shadow: none; filter: none; text-align: left; }
+    .acct-page .folder-add:hover { color: var(--a-head); background: none; box-shadow: none; }
+    .folder-new { display: grid; gap: 8px; margin-top: 10px; }
+    .folder-new input { margin: 0; }
+    .folder-new .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .folder-pick { display: none; }
+
+    .lib-main { padding: 24px 28px 26px; min-width: 0; }
+    .lib-main-head { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 14px; }
+    .lib-folder-title { font-family: var(--font-display); color: var(--a-head); font-size: 34px; font-weight: 500; margin: 0; overflow-wrap: anywhere; min-width: 0; }
+    .lib-count { font-family: var(--font-display); color: var(--a-sub); font-size: 20px; }
+    .folder-tools { position: relative; display: inline-flex; }
+    .lib-main-head .btn-gold { margin-left: auto; }
+    .lib-search { position: relative; margin: 0 0 6px; }
+    .lib-search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--a-sub); fill: none; stroke-width: 1.6; pointer-events: none; }
+    .acct-card input[type="search"], .lib-search input[type="search"] { width: 100%; box-sizing: border-box; min-height: 44px; padding: 10px 14px 10px 40px; margin: 0; background: rgba(0, 0, 0, .18); border: 1px solid var(--a-rule); border-radius: var(--r-md); color: var(--a-text); font-family: var(--a-data); font-size: 16px; }
+    html[data-theme="light"] .lib-search input[type="search"] { background: var(--a-inner); }
+    .folder-bar { display: flex; gap: 8px 18px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; color: var(--a-sub); font-family: var(--a-data); font-size: 15px; }
     .folder-bar:empty { display: none; }
     .folder-bar form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0; flex: 1 1 100%; }
     .folder-bar input { margin: 0; flex: 1 1 220px; max-width: 360px; }
-    .folder-bar .danger-text { color: var(--error); }
+    .folder-bar .warn { color: var(--a-text); flex: 1 1 100%; }
+
+    /* Rows: thin rules, no cards. Name on the left, then date / place and
+       the note; they wrap under the name rather than shrink. */
+    #panel-charts .chart-row { padding: 14px 4px; }
+    #panel-charts .chart-row:first-child { padding-top: 10px; }
+    #panel-charts .chart-name { font-size: 25px; }
+    #panel-charts .chart-meta { font-family: var(--a-data); font-size: 16px; color: var(--a-text); margin-top: 4px; }
+    #panel-charts .chart-note { font-family: var(--a-data); font-size: 15px; color: var(--a-sub); margin-top: 4px; }
+    #panel-charts .chart-folder, #panel-charts .chart-badge { font-family: var(--a-data); }
+    #panel-charts .chart-empty { font-family: var(--a-data); font-size: 16px; }
+    #panel-charts .chart-foot { font-family: var(--a-data); color: var(--a-sub); }
+
+    /* My account tab: the profile, newsletter and orders cards in the same
+       panel colour. */
+    .acct-page #panel-account { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; background: none; border: none; }
+    .acct-page #panel-account.hidden { display: none; }
+    #panel-account .acct-card { background: var(--a-lib); }
+    #panel-account .acct-col { display: grid; gap: 22px; align-content: start; min-width: 0; }
+
+    @media (max-width: 1100px) {
+      #panel-charts { grid-template-columns: 210px minmax(0, 1fr); }
+      .lib-main { padding: 22px 20px; }
+    }
+    /* Narrow: the folder column becomes a labelled select above the list. */
+    @media (max-width: 760px) {
+      .lib-title { font-size: 38px; }
+      .lib-sub { font-size: 18px; }
+      .acct-page .lib-tab { padding: 8px 18px; font-size: 17px; }
+      #panel-charts { grid-template-columns: minmax(0, 1fr); }
+      .lib-folders { border-right: none; border-bottom: 1px solid var(--a-rule); padding: 16px; }
+      .lib-folders-h, .folder-nav { display: none; }
+      .folder-pick { display: grid; gap: 6px; color: var(--a-sub); font-family: var(--a-data); font-size: 15px; }
+      .folder-pick select { margin: 0; width: 100%; min-height: 44px; font-family: var(--a-data); font-size: 16px; }
+      .folder-add-wrap { margin-top: 0; padding-top: 6px; }
+      .acct-page .folder-add { border-top: none; padding: 8px 0 0; }
+      .lib-main { padding: 18px 16px 20px; }
+      .lib-folder-title { font-size: 28px; }
+      .lib-main-head .btn-gold { margin-left: 0; }
+      .acct-page #panel-account { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    /* Background: the mountain landscape, on this page only and only in the
+       dark theme. body::before is a fixed, window-sized layer, so the image
+       covers the window from the top centre and is never stretched over the
+       long list; the dark base colour fills the rest. The galaxy veil is
+       switched off here. The light theme keeps its parchment ground. */
+    html:not([data-theme="light"]) body.page-library::before {
+      background: #0B0E10 url('images/library-bg.jpg') center top / cover no-repeat;
+    }
+    html:not([data-theme="light"]) body.page-library::after { display: none; }
 
     /* Profile, newsletter, orders */
     .pf-name { color: var(--a-head); font-family: var(--font-display); font-size: 23px; margin: 14px 0 4px; overflow-wrap: anywhere; }
@@ -197,7 +283,7 @@
     .order-note { font-size: 13px; color: var(--a-sub); margin: 10px 0 0; }
   </style>
 </head>
-<body>
+<body class="page-library">
 <div id="loader"><img src="images/sow_medallion.png" alt="Loading..."></div>
 <nav>
   <a href="index.html" class="nav-logo"><img src="images/sow_medallion.png" alt="Secrets of Wisdom logo" /></a>
@@ -224,8 +310,10 @@
 </nav>
 
 <main class="acct-page fade-up">
-  <p class="acct-eyebrow notranslate" translate="no">Secrets of Wisdom · NZ</p>
-  <h1 class="acct-title" data-i18n="account.title">Your account</h1>
+  <div id="acct-plain-head">
+    <p class="acct-eyebrow notranslate" translate="no">Secrets of Wisdom · NZ</p>
+    <h1 class="acct-title" data-i18n="account.title">Your account</h1>
+  </div>
 
   <div id="acct-loading" data-i18n="account.loading">Loading…</div>
 
@@ -278,64 +366,87 @@
     </div>
   </div>
 
-  <!-- SIGNED IN: charts beside the profile -->
-  <div id="acct-dash" class="acct-grid hidden">
-    <div class="acct-card" id="charts-card">
-      <div class="charts-head">
-        <h2 data-i18n="account.chartsHeading">My birth charts</h2>
-        <a class="btn-gold" href="calculator.html?new=1"><span aria-hidden="true">+</span> <span data-i18n="account.newChart">New chart</span></a>
+  <!-- SIGNED IN: the chart library (2026-11-10) -->
+  <div id="acct-dash" class="hidden">
+    <header class="lib-head">
+      <h1 class="lib-title" data-i18n="account.libraryTitle">Chart library</h1>
+      <p class="lib-sub" data-i18n="account.librarySub">Your account</p>
+      <div class="lib-tabs" role="tablist" id="lib-tabs">
+        <button type="button" class="lib-tab" role="tab" id="tab-charts" aria-controls="panel-charts" aria-selected="true" data-i18n="account.tabCharts">My charts</button>
+        <button type="button" class="lib-tab" role="tab" id="tab-account" aria-controls="panel-account" aria-selected="false" tabindex="-1" data-i18n="account.tabAccount">My account</button>
       </div>
-      <p class="lead" data-i18n="account.chartsLead">Open a saved chart or create a new one in the calculator.</p>
-      <hr class="acct-rule" />
-      <ul id="chart-main" class="chart-list chart-pinned"></ul>
-      <div id="folder-tabs" class="folder-tabs" role="tablist"></div>
-      <div id="folder-bar" class="folder-bar"></div>
-      <input id="chart-search" class="hidden" type="search" />
-      <ul id="chart-list" class="chart-list" role="tabpanel"></ul>
-      <div id="chart-msg"></div>
-      <p id="chart-foot" class="chart-foot hidden" data-i18n="account.mainNote">Your main chart opens automatically when you return to the calculator.</p>
-    </div>
+    </header>
 
-    <div class="acct-side">
-      <div class="acct-card">
-        <h2 data-i18n="account.profileHeading">Profile</h2>
-        <div id="pf-view">
-          <p class="pf-name" id="pf-name"></p>
-          <p class="pf-email" id="pf-email"></p>
-          <p class="pf-since"><span data-i18n="account.memberSince">Member since</span> <span id="pf-since"></span></p>
-          <div class="pf-actions">
-            <button type="button" class="btn-line wide" id="edit-profile" data-i18n="account.editProfile">Edit profile</button>
-            <button type="button" class="btn-line wide" id="change-pw" data-i18n="account.changePassword">Change password</button>
-          </div>
+    <section id="panel-charts" class="lib-panel" role="tabpanel" aria-labelledby="tab-charts">
+      <aside class="lib-folders">
+        <h2 class="lib-folders-h" id="folders-h" data-i18n="account.foldersHeading">Folders</h2>
+        <div id="folder-nav" class="folder-nav" role="group" aria-labelledby="folders-h"></div>
+        <label class="folder-pick"><span data-i18n="account.folderLabel">Folder</span><select id="folder-select"></select></label>
+        <div class="folder-add-wrap">
+          <button type="button" class="folder-add" id="folder-add"><span aria-hidden="true">+</span> <span data-i18n="account.createFolder">Create folder</span></button>
+          <div id="folder-new"></div>
         </div>
-        <form id="pf-edit" class="pf-edit hidden">
-          <label for="pf-name-input" data-i18n="account.labelName">Name</label><br/>
-          <input id="pf-name-input" type="text" maxlength="120" autocomplete="name" />
-          <div class="row">
-            <button type="submit" class="btn-line" data-i18n="account.save">Save</button>
-            <button type="button" class="linkbtn" id="pf-cancel" data-i18n="account.cancel">Cancel</button>
+      </aside>
+      <div class="lib-main">
+        <div class="lib-main-head">
+          <h2 class="lib-folder-title" id="lib-folder-title"></h2>
+          <span class="lib-count" id="lib-count"></span>
+          <span class="folder-tools" id="folder-tools"></span>
+          <a class="btn-gold" href="calculator.html?new=1"><span aria-hidden="true">+</span> <span data-i18n="account.newChart">New chart</span></a>
+        </div>
+        <div id="folder-bar" class="folder-bar"></div>
+        <div class="lib-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+          <input id="chart-search" type="search" />
+        </div>
+        <div id="chart-msg"></div>
+        <ul id="chart-list" class="chart-list"></ul>
+        <p id="chart-foot" class="chart-foot hidden" data-i18n="account.mainNote">Your main chart opens automatically when you return to the calculator.</p>
+      </div>
+    </section>
+
+    <section id="panel-account" class="lib-panel hidden" role="tabpanel" aria-labelledby="tab-account">
+      <div class="acct-col">
+        <div class="acct-card">
+          <h2 data-i18n="account.profileHeading">Profile</h2>
+          <div id="pf-view">
+            <p class="pf-name" id="pf-name"></p>
+            <p class="pf-email" id="pf-email"></p>
+            <p class="pf-since"><span data-i18n="account.memberSince">Member since</span> <span id="pf-since"></span></p>
+            <div class="pf-actions">
+              <button type="button" class="btn-line wide" id="edit-profile" data-i18n="account.editProfile">Edit profile</button>
+              <button type="button" class="btn-line wide" id="change-pw" data-i18n="account.changePassword">Change password</button>
+            </div>
           </div>
-        </form>
-        <div id="profile-msg"></div>
-        <hr class="acct-rule" />
-        <div class="pf-signout"><button type="button" class="linkbtn" id="logout-btn" data-i18n="account.signOut">Sign out</button></div>
+          <form id="pf-edit" class="pf-edit hidden">
+            <label for="pf-name-input" data-i18n="account.labelName">Name</label><br/>
+            <input id="pf-name-input" type="text" maxlength="120" autocomplete="name" />
+            <div class="row">
+              <button type="submit" class="btn-line" data-i18n="account.save">Save</button>
+              <button type="button" class="linkbtn" id="pf-cancel" data-i18n="account.cancel">Cancel</button>
+            </div>
+          </form>
+          <div id="profile-msg"></div>
+          <hr class="acct-rule" />
+          <div class="pf-signout"><button type="button" class="linkbtn" id="logout-btn" data-i18n="account.signOut">Sign out</button></div>
+        </div>
       </div>
-
-      <div class="acct-card">
-        <h3 data-i18n="account.newsletterHeading">Newsletter</h3>
-        <label class="switch">
-          <input type="checkbox" id="dash-newsletter" />
-          <span data-i18n="account.newsletterLabel">Send me the newsletter — seasonal energy notes, timing tips, and occasional offers.</span>
-        </label>
-        <div id="prefs-msg"></div>
+      <div class="acct-col">
+        <div class="acct-card">
+          <h3 data-i18n="account.newsletterHeading">Newsletter</h3>
+          <label class="switch">
+            <input type="checkbox" id="dash-newsletter" />
+            <span data-i18n="account.newsletterLabel">Send me the newsletter — seasonal energy notes, timing tips, and occasional offers.</span>
+          </label>
+          <div id="prefs-msg"></div>
+        </div>
+        <div class="acct-card">
+          <h3 data-i18n="account.ordersHeading">Order history</h3>
+          <div id="orders-body"><p class="muted" data-i18n="account.ordersLoading">Loading your orders…</p></div>
+          <p class="order-note" data-i18n="account.ordersNote">Bookings scheduled through the calendar are confirmed by email separately. Purchases made with the same email address appear here.</p>
+        </div>
       </div>
-
-      <div class="acct-card">
-        <h3 data-i18n="account.ordersHeading">Order history</h3>
-        <div id="orders-body"><p class="muted" data-i18n="account.ordersLoading">Loading your orders…</p></div>
-        <p class="order-note" data-i18n="account.ordersNote">Bookings scheduled through the calendar are confirmed by email separately. Purchases made with the same email address appear here.</p>
-      </div>
-    </div>
+    </section>
   </div>
 </main>
 
@@ -368,44 +479,46 @@
   // the page re-renders them when lang-switcher.js flips it.
   var PT = {
     en: {
-      search: 'Search by name or note', main: 'Main', open: 'Open in calculator',
-      more: 'More actions for {name}', editNameNote: 'Edit name and note',
+      search: 'Search by name or note', main: 'Main', open: 'Open',
+      more: 'More actions for {name}', folderMore: 'Folder actions for {name}', editNameNote: 'Edit name and note',
       makeMain: 'Make main', del: 'Delete', save: 'Save', cancel: 'Cancel',
       confirmDel: 'Delete this chart for good?', yesDel: 'Yes, delete',
-      hourUnknown: 'hour unknown', lunar: 'lunar date', noteLabel: 'Note', nameLabel: 'Name',
+      hourUnknown: 'time unknown', lunar: 'lunar date', noteLabel: 'Note', nameLabel: 'Name',
       noPlace: 'Location not specified', noName: 'No name yet',
       empty: 'No saved charts yet. Press “New chart”, enter a birth date in the calculator and save it under “My charts”.',
-      noMatch: 'Nothing matches that search.',
+      noMatch: 'Nothing found.', folderEmpty: 'No charts here yet. Move a chart in with “⋯” › “Move to folder”, or choose this folder when you save a chart in the calculator.',
       loadErr: 'Could not load your saved charts.', saveErr: 'Could not save.', network: 'Network error. Please try again.',
       saved: 'Saved.', linkSent: 'We’ve emailed you a link to set a new password.', linkErr: 'Could not send the link.',
       subscribed: 'Subscribed.', unsubscribed: 'Unsubscribed.', updateErr: 'Could not update.',
       noOrders: 'No orders yet.', ordersErr: 'Could not load orders.', receipt: 'Receipt', refunded: '(refunded)', purchase: 'Purchase',
-      all: 'All', family: 'Friends & Family', clients: 'Clients', personal: 'Personal',
-      addFolder: '+ Folder', folderName: 'Folder name', create: 'Create', renameFolder: 'Rename folder', deleteFolder: 'Delete folder',
-      folderTabs: 'Folders', moveTo: 'Move to folder', move: 'Move', folderOf: 'Folder',
-      confirmFolderDel: 'Delete the folder “{name}” and its {n} for good?', confirmEmptyDel: 'Delete the empty folder “{name}”?', withMain: ' Your main chart is in it too.',
-      chartsN: ['chart', 'charts'], folderEmpty: 'This folder is empty. Move a chart here with “⋯” › “Move to folder”, or choose the folder when you save a chart in the calculator.',
-      lastFolder: 'An account keeps at least one folder.', folderLimit: 'You can keep up to 50 folders.'
+      allCharts: 'All charts', noFolder: 'No folder',
+      kind_personal: 'Personal', kind_family: 'Family & Friends', kind_clients: 'Clients',
+      folderName: 'Folder name', create: 'Create', renameFolder: 'Rename folder', deleteFolder: 'Delete folder',
+      moveTo: 'Move to folder', move: 'Move',
+      folderDelWarn: 'The folder “{name}” will be deleted. Charts in it: {n}. They are not deleted; they move to “No folder”.',
+      folderDelEmpty: 'Delete the empty folder “{name}”?',
+      chartsN: ['chart', 'charts'], folderLimit: 'You can keep up to 50 folders.'
     },
     ru: {
-      search: 'Поиск по имени или заметке', main: 'Основная', open: 'Открыть в калькуляторе',
-      more: 'Другие действия: {name}', editNameNote: 'Изменить имя и заметку',
+      search: 'Поиск по имени или заметке', main: 'Основная', open: 'Открыть',
+      more: 'Другие действия: {name}', folderMore: 'Действия с папкой: {name}', editNameNote: 'Изменить имя и заметку',
       makeMain: 'Сделать основной', del: 'Удалить', save: 'Сохранить', cancel: 'Отмена',
       confirmDel: 'Удалить эту карту навсегда?', yesDel: 'Да, удалить',
-      hourUnknown: 'час неизвестен', lunar: 'лунная дата', noteLabel: 'Заметка', nameLabel: 'Имя',
+      hourUnknown: 'Время неизвестно', lunar: 'лунная дата', noteLabel: 'Заметка', nameLabel: 'Имя',
       noPlace: 'Место не указано', noName: 'Имя не указано',
       empty: 'Сохранённых карт пока нет. Нажмите «Новая карта», введите дату рождения в калькуляторе и сохраните её через «Мои карты».',
-      noMatch: 'По этому запросу ничего не найдено.',
+      noMatch: 'Ничего не найдено.', folderEmpty: 'Здесь пока нет карт. Перенесите карту через «⋯» › «Переместить в папку» или выберите эту папку, когда сохраняете карту в калькуляторе.',
       loadErr: 'Не удалось загрузить сохранённые карты.', saveErr: 'Не удалось сохранить.', network: 'Ошибка сети. Попробуйте ещё раз.',
       saved: 'Сохранено.', linkSent: 'Мы отправили вам ссылку для смены пароля.', linkErr: 'Не удалось отправить ссылку.',
       subscribed: 'Вы подписаны.', unsubscribed: 'Подписка отменена.', updateErr: 'Не удалось обновить.',
       noOrders: 'Заказов пока нет.', ordersErr: 'Не удалось загрузить заказы.', receipt: 'Чек', refunded: '(возврат)', purchase: 'Покупка',
-      all: 'Все', family: 'Друзья и семья', clients: 'Клиенты', personal: 'Личное',
-      addFolder: '+ Папка', folderName: 'Название папки', create: 'Создать', renameFolder: 'Переименовать папку', deleteFolder: 'Удалить папку',
-      folderTabs: 'Папки', moveTo: 'Переместить в папку', move: 'Переместить', folderOf: 'Папка',
-      confirmFolderDel: 'Удалить папку «{name}» и {n} в ней навсегда?', confirmEmptyDel: 'Удалить пустую папку «{name}»?', withMain: ' В ней и ваша основная карта.',
-      chartsN: ['карту', 'карты', 'карт'], folderEmpty: 'Эта папка пуста. Переместите сюда карту через «⋯» › «Переместить в папку» или выберите папку, когда сохраняете карту в калькуляторе.',
-      lastFolder: 'В аккаунте должна остаться хотя бы одна папка.', folderLimit: 'Можно завести не больше 50 папок.'
+      allCharts: 'Все карты', noFolder: 'Без папки',
+      kind_personal: 'Личные', kind_family: 'Семья и друзья', kind_clients: 'Клиенты',
+      folderName: 'Название папки', create: 'Создать', renameFolder: 'Переименовать папку', deleteFolder: 'Удалить папку',
+      moveTo: 'Переместить в папку', move: 'Переместить',
+      folderDelWarn: 'Папка «{name}» будет удалена. Карт в ней: {n}. Они не удаляются, а переходят в «Без папки».',
+      folderDelEmpty: 'Удалить пустую папку «{name}»?',
+      chartsN: ['карта', 'карты', 'карт'], folderLimit: 'Можно завести не больше 50 папок.'
     }
   };
   function lang() { return document.documentElement.lang === 'ru' ? 'ru' : 'en'; }
@@ -451,13 +564,13 @@
   var afterSignIn = nextPage || 'account.html';
 
   function showAuth() {
-    hide('acct-loading'); hide('acct-dash'); hide('acct-reset'); show('acct-auth');
+    hide('acct-loading'); hide('acct-dash'); hide('acct-reset'); show('acct-auth'); show('acct-plain-head');
     if (errParam === 'expired') msg($('login-msg'), 'That link has expired or was already used. Please sign in or request a new one.', 'err');
     else if (errParam === 'invalid') msg($('login-msg'), 'That link was not valid. Please try again.', 'err');
   }
 
   function showReset() {
-    hide('acct-loading'); hide('acct-dash'); hide('acct-auth'); show('acct-reset');
+    hide('acct-loading'); hide('acct-dash'); hide('acct-auth'); show('acct-reset'); show('acct-plain-head');
   }
 
   // ---- Profile ----
@@ -471,7 +584,7 @@
 
   function showDash(account) {
     me = account;
-    hide('acct-loading'); hide('acct-auth'); hide('acct-reset'); show('acct-dash');
+    hide('acct-loading'); hide('acct-auth'); hide('acct-reset'); hide('acct-plain-head'); show('acct-dash');
     renderProfile();
     $('dash-newsletter').checked = !!me.newsletter;
     loadCharts();
@@ -514,24 +627,32 @@
     body.appendChild(ul);
   }
 
-  // ---- My birth charts (/api/profiles) ----
-  // The calculator saves them; here they are opened, renamed, noted, made
-  // main and deleted.
+  // ---- Chart library (/api/profiles, /api/folders), 2026-11-10 ----
+  // The calculator saves the charts; here they are opened, renamed, noted,
+  // filed, made main and deleted. Folder rules live on the server
+  // (functions/api/_folders.js): a chart has at most one folder, "no folder"
+  // is folderId null, and deleting a folder keeps its charts.
   var charts = [];
   var folders = [];          // [{ id, kind, name, count }] in the site's order
-  var activeFolder = 'all';  // 'all' or a folder id
-  var folderMode = null;     // null | 'new' | 'rename' | 'delete'
+  var activeFolder = 'all';  // 'all', 'none' (no folder) or a folder id
+  var folderMode = null;     // null | 'rename' | 'delete'
+  var creatingFolder = false;
   var editingId = null;
   var deletingId = null;
   var movingId = null;
+  var openMenu = null;       // { trigger, list }
 
   // A starter folder keeps name null until renamed and is shown in the
   // page's language.
-  function folderName(f) { return f ? (f.name || (f.kind && t(f.kind)) || '') : ''; }
+  function folderName(f) { return f ? (f.name || (f.kind && t('kind_' + f.kind)) || '') : ''; }
   function folderById(id) { for (var i = 0; i < folders.length; i++) if (folders[i].id === id) return folders[i]; return null; }
-  // The main chart is pinned above the tabs, so it is left out of the tabs
-  // and their counts.
-  function inFolder(id) { return charts.filter(function (p) { return !p.isSelf && (id === 'all' || p.folderId === id); }); }
+  function inFolder(id) {
+    return charts.filter(function (p) {
+      return id === 'all' || (id === 'none' ? !folderById(p.folderId) : p.folderId === id);
+    });
+  }
+  function sectionName(id) { return id === 'all' ? t('allCharts') : id === 'none' ? t('noFolder') : folderName(folderById(id)); }
+  // "1 chart" / "6 charts"; "1 карта" / "3 карты" / "6 карт".
   function countWord(n) {
     var w = t('chartsN');
     if (lang() === 'ru') {
@@ -540,7 +661,15 @@
     }
     return n + ' ' + (n === 1 ? w[0] : w[1]);
   }
-  var openMenu = null; // { trigger, list }
+  var FOLDER_SVG = 'M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z';
+  function folderIcon() {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
+    var path = document.createElementNS(ns, 'path'); path.setAttribute('d', FOLDER_SVG);
+    svg.appendChild(path);
+    return svg;
+  }
 
   function birthLines(f) {
     if (!f) return { when: '', where: '' };
@@ -557,7 +686,8 @@
     if (f.city) where = f.city.name + (f.city.native ? ' (' + f.city.native + ')' : '') + ', ' + f.city.country;
     else if ((f.lat || '') !== '' || (f.lon || '') !== '') where = f.lat + ', ' + f.lon;
     else where = t('noPlace');
-    return { when: when.join(' · '), where: where };
+    when.push(where);
+    return { when: when.join(' · ') };
   }
 
   function lineBtn(text, onClick, cls) {
@@ -567,6 +697,8 @@
     return b;
   }
 
+  // ---- Popup menus (row ⋯ and the folder's ⋯): real buttons, arrows,
+  // Home/End, Escape back to the trigger, Tab or an outside click closes.
   function closeMenu(focusTrigger) {
     if (!openMenu) return;
     var m = openMenu; openMenu = null;
@@ -574,24 +706,24 @@
     m.trigger.setAttribute('aria-expanded', 'false');
     if (focusTrigger) m.trigger.focus();
   }
-
-  function toggleMenu(trigger, p) {
+  function popup(trigger, build) {
     if (openMenu && openMenu.trigger === trigger) { closeMenu(true); return; }
     closeMenu(false);
     var list = el('ul', 'chart-menu');
     list.setAttribute('role', 'menu');
     var items = [];
-    function item(text, fn, cls) {
-      var li = el('li'); li.setAttribute('role', 'none');
-      var b = el('button', cls || null, text);
-      b.type = 'button'; b.setAttribute('role', 'menuitem'); b.tabIndex = -1;
-      b.addEventListener('click', function () { closeMenu(false); fn(); });
-      li.appendChild(b); list.appendChild(li); items.push(b);
-    }
-    item(t('editNameNote'), function () { editingId = p.id; deletingId = null; movingId = null; renderCharts(); });
-    if (folders.length > 1) item(t('moveTo'), function () { movingId = p.id; editingId = null; deletingId = null; renderCharts(); });
-    if (!p.isSelf) item(t('makeMain'), function () { patchChart(p.id, { isSelf: true }).then(renderCharts); });
-    item(t('del'), function () { deletingId = p.id; editingId = null; movingId = null; renderCharts(); focusRow(p.id, 'confirm'); }, 'danger');
+    build({
+      item: function (text, fn, cls) {
+        var li = el('li'); li.setAttribute('role', 'none');
+        var b = el('button', cls || null, text);
+        b.type = 'button'; b.setAttribute('role', 'menuitem'); b.tabIndex = -1;
+        b.addEventListener('click', function () { closeMenu(false); fn(); });
+        li.appendChild(b); list.appendChild(li); items.push(b);
+      },
+      label: function (text) {
+        var li = el('li', 'sub', text); li.setAttribute('role', 'presentation'); list.appendChild(li);
+      }
+    });
     list.addEventListener('keydown', function (e) {
       var i = items.indexOf(document.activeElement);
       if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
@@ -609,6 +741,33 @@
   document.addEventListener('click', function (e) {
     if (openMenu && !openMenu.list.contains(e.target) && e.target !== openMenu.trigger) closeMenu(false);
   });
+  function dotsButton(label, onOpen) {
+    var dots = el('button', 'btn-line btn-dots', '⋯');
+    dots.type = 'button';
+    dots.setAttribute('aria-haspopup', 'menu');
+    dots.setAttribute('aria-expanded', 'false');
+    dots.setAttribute('aria-label', label);
+    dots.addEventListener('click', function (e) { e.stopPropagation(); onOpen(dots); });
+    dots.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); if (!openMenu) onOpen(dots); }
+    });
+    return dots;
+  }
+
+  function chartMenu(trigger, p) {
+    popup(trigger, function (m) {
+      m.item(t('editNameNote'), function () { editingId = p.id; deletingId = movingId = null; renderCharts(); });
+      m.item(t('moveTo'), function () { movingId = p.id; editingId = deletingId = null; renderCharts(); });
+      if (!p.isSelf) m.item(t('makeMain'), function () { patchChart(p.id, { isSelf: true }).then(renderCharts); });
+      m.item(t('del'), function () { deletingId = p.id; editingId = movingId = null; renderCharts(); focusRow(p.id, 'confirm'); }, 'danger');
+    });
+  }
+  function folderMenu(trigger) {
+    popup(trigger, function (m) {
+      m.item(t('renameFolder'), function () { folderMode = 'rename'; renderCharts(); focusIn('folder-bar', 'input'); });
+      m.item(t('deleteFolder'), function () { folderMode = 'delete'; renderCharts(); }, 'danger');
+    });
+  }
 
   function focusRow(id, what) {
     setTimeout(function () {
@@ -619,146 +778,156 @@
       if (target) target.focus();
     }, 0);
   }
-
-  function renderCharts() {
-    closeMenu(false);
-    if (activeFolder !== 'all' && !folderById(activeFolder)) { activeFolder = 'all'; folderMode = null; }
-    var list = $('chart-list');
-    var search = $('chart-search');
-    search.placeholder = t('search');
-    search.setAttribute('aria-label', t('search'));
-    search.classList.toggle('hidden', charts.length <= 10);
-    var main = null;
-    charts.forEach(function (p) { if (p.isSelf) main = p; });
-    $('chart-foot').classList.toggle('hidden', !main);
-    var pinned = $('chart-main');
-    pinned.textContent = '';
-    if (main) pinned.appendChild(chartRow(main, true));
-    renderFolderTabs();
-    renderFolderBar();
-    list.textContent = '';
-    if (!charts.length) { list.appendChild(el('li', 'chart-empty', t('empty'))); return; }
-    var pool = inFolder(activeFolder);
-    var q = search.classList.contains('hidden') ? '' : search.value.trim().toLowerCase();
-    var shown = pool.filter(function (p) {
-      return !q || p.name.toLowerCase().indexOf(q) > -1 || (p.note || '').toLowerCase().indexOf(q) > -1;
-    });
-    if (!shown.length) {
-      if (q) list.appendChild(el('li', 'chart-empty', t('noMatch')));
-      else if (activeFolder !== 'all') list.appendChild(el('li', 'chart-empty', t('folderEmpty')));
-      return;
-    }
-    shown.forEach(function (p) { list.appendChild(chartRow(p, activeFolder === 'all')); });
-  }
-
-  // ---- Folder tabs ----
-  function renderFolderTabs() {
-    var box = $('folder-tabs');
-    box.textContent = '';
-    if (!folders.length) return;
-    box.setAttribute('aria-label', t('folderTabs'));
-    var tabs = [];
-    function tab(id, label, n) {
-      var b = el('button', 'folder-tab');
-      b.type = 'button';
-      b.setAttribute('role', 'tab');
-      b.setAttribute('data-folder', id);
-      var on = activeFolder === id;
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-      b.tabIndex = on ? 0 : -1;
-      b.appendChild(document.createTextNode(label));
-      b.appendChild(el('span', 'n', String(n)));
-      b.addEventListener('click', function () { selectFolder(id); });
-      box.appendChild(b); tabs.push(b);
-    }
-    tab('all', t('all'), inFolder('all').length);
-    folders.forEach(function (f) { tab(f.id, folderName(f), inFolder(f.id).length); });
-    // Arrow keys move between tabs (the WAI-ARIA tabs pattern); the
-    // "+ Folder" button after them is an ordinary button.
-    box.addEventListener('keydown', function (e) {
-      var i = tabs.indexOf(document.activeElement);
-      if (i < 0) return;
-      var j = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i - 1 + tabs.length) % tabs.length
-        : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
-      if (j < 0) return;
-      e.preventDefault();
-      selectFolder(tabs[j].getAttribute('data-folder'), true);
-    });
-    var add = el('button', 'folder-tab add', t('addFolder'));
-    add.type = 'button';
-    add.addEventListener('click', function () { folderMode = 'new'; renderCharts(); focusIn('folder-bar', 'input'); });
-    box.appendChild(add);
-  }
-  function selectFolder(id, keepFocus) {
-    activeFolder = id; folderMode = null; editingId = deletingId = movingId = null;
-    renderCharts();
-    if (keepFocus) focusIn('folder-tabs', '[data-folder="' + id + '"]');
-  }
   function focusIn(boxId, sel) {
     setTimeout(function () { var n = $(boxId).querySelector(sel); if (n) n.focus(); }, 0);
   }
 
-  // The line under the tabs: the open folder's Rename / Delete, or the
-  // form or confirmation one of them opened, or the new-folder form.
+  function renderCharts() {
+    closeMenu(false);
+    var unfiled = inFolder('none').length;
+    if (activeFolder === 'none' && !unfiled) activeFolder = 'all';
+    if (activeFolder !== 'all' && activeFolder !== 'none' && !folderById(activeFolder)) { activeFolder = 'all'; folderMode = null; }
+    renderFolderNav(unfiled);
+    renderFolderNew();
+
+    var pool = inFolder(activeFolder);
+    $('lib-folder-title').textContent = sectionName(activeFolder);
+    $('lib-count').textContent = countWord(pool.length);
+    var tools = $('folder-tools');
+    tools.textContent = '';
+    var f = folderById(activeFolder);
+    if (f) tools.appendChild(dotsButton(t('folderMore').replace('{name}', folderName(f)), folderMenu));
+    renderFolderBar();
+
+    var search = $('chart-search');
+    search.placeholder = t('search');
+    search.setAttribute('aria-label', t('search'));
+    $('chart-foot').classList.toggle('hidden', !charts.some(function (p) { return p.isSelf; }));
+    var list = $('chart-list');
+    list.textContent = '';
+    if (!charts.length) { list.appendChild(el('li', 'chart-empty', t('empty'))); return; }
+    var q = search.value.trim().toLowerCase();
+    var shown = pool.filter(function (p) {
+      return !q || p.name.toLowerCase().indexOf(q) > -1 || (p.note || '').toLowerCase().indexOf(q) > -1;
+    });
+    if (!shown.length) { list.appendChild(el('li', 'chart-empty', q ? t('noMatch') : t('folderEmpty'))); return; }
+    shown.forEach(function (p) { list.appendChild(chartRow(p, activeFolder === 'all')); });
+  }
+
+  // ---- Folder column (wide) and folder select (narrow) ----
+  function renderFolderNav(unfiled) {
+    var nav = $('folder-nav');
+    nav.textContent = '';
+    var entries = [['all', t('allCharts'), charts.length]];
+    folders.forEach(function (f) { entries.push([f.id, folderName(f), inFolder(f.id).length]); });
+    if (unfiled) entries.push(['none', t('noFolder'), unfiled]);
+    var buttons = [];
+    entries.forEach(function (e) {
+      var b = el('button', 'folder-btn');
+      b.type = 'button';
+      b.setAttribute('data-folder', e[0]);
+      if (activeFolder === e[0]) b.setAttribute('aria-current', 'true');
+      b.appendChild(folderIcon());
+      b.appendChild(el('span', 'nm', e[1]));
+      b.appendChild(el('span', 'n', String(e[2])));
+      b.addEventListener('click', function () { selectFolder(e[0]); });
+      nav.appendChild(b); buttons.push(b);
+    });
+    nav.onkeydown = function (ev) {
+      var i = buttons.indexOf(document.activeElement);
+      if (i < 0) return;
+      var j = ev.key === 'ArrowDown' ? (i + 1) % buttons.length : ev.key === 'ArrowUp' ? (i - 1 + buttons.length) % buttons.length
+        : ev.key === 'Home' ? 0 : ev.key === 'End' ? buttons.length - 1 : -1;
+      if (j < 0) return;
+      ev.preventDefault();
+      buttons[j].focus();
+    };
+    var sel = $('folder-select');
+    sel.textContent = '';
+    entries.forEach(function (e) {
+      var o = el('option', null, e[1] + ' (' + e[2] + ')'); o.value = e[0];
+      if (activeFolder === e[0]) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  $('folder-select').addEventListener('change', function () { selectFolder($('folder-select').value); });
+  function selectFolder(id) {
+    activeFolder = id; folderMode = null; editingId = deletingId = movingId = null;
+    $('chart-search').value = '';
+    renderCharts();
+  }
+
+  function renderFolderNew() {
+    var box = $('folder-new');
+    box.textContent = '';
+    $('folder-add').classList.toggle('hidden', creatingFolder);
+    if (!creatingFolder) return;
+    var form = box.appendChild(el('form', 'folder-new'));
+    var input = el('input'); input.type = 'text'; input.maxLength = 60;
+    input.placeholder = t('folderName'); input.setAttribute('aria-label', t('folderName'));
+    form.appendChild(input);
+    var row = form.appendChild(el('div', 'row'));
+    var ok = el('button', 'btn-line', t('create')); ok.type = 'submit';
+    row.appendChild(ok);
+    row.appendChild(lineBtn(t('cancel'), function () { creatingFolder = false; renderCharts(); $('folder-add').focus(); }, 'linkbtn'));
+    input.addEventListener('keydown', function (e) { if (e.key === 'Escape') { creatingFolder = false; renderCharts(); $('folder-add').focus(); } });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      ok.disabled = true;
+      sendJSON('POST', '/api/folders', { name: input.value }).then(function (res) {
+        if (!res.ok) { ok.disabled = false; msg($('chart-msg'), res.d.error === 'limit' ? t('folderLimit') : (res.d.error || t('saveErr')), 'err'); return; }
+        msg($('chart-msg'), '', 'info');
+        creatingFolder = false;
+        if (res.d.id) activeFolder = res.d.id;
+        loadCharts();
+      }).catch(function () { ok.disabled = false; msg($('chart-msg'), t('network'), 'err'); });
+    });
+    setTimeout(function () { input.focus(); }, 0);
+  }
+  $('folder-add').addEventListener('click', function () { creatingFolder = true; renderCharts(); });
+
+  // The line under the folder's title: the rename form or the delete warning.
   function renderFolderBar() {
     var bar = $('folder-bar');
     bar.textContent = '';
     var f = folderById(activeFolder);
-    if (folderMode === 'new' || folderMode === 'rename') {
+    if (!f || !folderMode) return;
+    if (folderMode === 'rename') {
       var form = bar.appendChild(el('form'));
       var input = el('input'); input.type = 'text'; input.maxLength = 60;
-      input.placeholder = t('folderName'); input.setAttribute('aria-label', t('folderName'));
-      if (folderMode === 'rename' && f) input.value = folderName(f);
-      var ok = el('button', 'btn-line', folderMode === 'new' ? t('create') : t('save')); ok.type = 'submit';
+      input.value = folderName(f); input.setAttribute('aria-label', t('folderName'));
+      var ok = el('button', 'btn-line', t('save')); ok.type = 'submit';
       form.appendChild(input); form.appendChild(ok);
       form.appendChild(lineBtn(t('cancel'), function () { folderMode = null; renderCharts(); }, 'linkbtn'));
       input.addEventListener('keydown', function (e) { if (e.key === 'Escape') { folderMode = null; renderCharts(); } });
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         ok.disabled = true;
-        var req = folderMode === 'new'
-          ? sendJSON('POST', '/api/folders', { name: input.value })
-          : sendJSON('PATCH', '/api/folders/' + encodeURIComponent(f.id), { name: input.value });
-        var creating = folderMode === 'new';
-        req.then(function (res) {
-          if (!res.ok) {
-            ok.disabled = false;
-            msg($('chart-msg'), res.d.error === 'limit' ? t('folderLimit') : (res.d.error || t('saveErr')), 'err');
-            return;
-          }
+        sendJSON('PATCH', '/api/folders/' + encodeURIComponent(f.id), { name: input.value }).then(function (res) {
+          if (!res.ok) { ok.disabled = false; msg($('chart-msg'), res.d.error || t('saveErr'), 'err'); return; }
           msg($('chart-msg'), '', 'info');
           folderMode = null;
-          if (creating && res.d.id) activeFolder = res.d.id;
           loadCharts();
         }).catch(function () { ok.disabled = false; msg($('chart-msg'), t('network'), 'err'); });
       });
       return;
     }
-    if (!f) return;
-    if (folderMode === 'delete') {
-      var n = charts.filter(function (p) { return p.folderId === f.id; }).length;
-      var hasMain = charts.some(function (p) { return p.isSelf && p.folderId === f.id; });
-      bar.appendChild(el('span', 'danger-text',
-        (n ? t('confirmFolderDel') : t('confirmEmptyDel')).replace('{name}', folderName(f)).replace('{n}', countWord(n)) + (hasMain ? t('withMain') : '')));
-      var yes = lineBtn(t('yesDel'), function () {
-        yes.disabled = true;
-        sendJSON('DELETE', '/api/folders/' + encodeURIComponent(f.id)).then(function (res) {
-          folderMode = null;
-          if (!res.ok) { msg($('chart-msg'), res.d.error === 'last' ? t('lastFolder') : (res.d.error || t('saveErr')), 'err'); renderCharts(); return; }
-          msg($('chart-msg'), '', 'info');
-          activeFolder = 'all';
-          loadCharts();
-        }).catch(function () { yes.disabled = false; msg($('chart-msg'), t('network'), 'err'); });
-      });
-      bar.appendChild(yes);
-      bar.appendChild(lineBtn(t('cancel'), function () { folderMode = null; renderCharts(); focusIn('folder-bar', '.linkbtn'); }, 'linkbtn'));
-      setTimeout(function () { yes.focus(); }, 0);
-      return;
-    }
-    bar.appendChild(lineBtn(t('renameFolder'), function () { folderMode = 'rename'; renderCharts(); focusIn('folder-bar', 'input'); }, 'linkbtn'));
-    if (folders.length > 1) {
-      bar.appendChild(lineBtn(t('deleteFolder'), function () { folderMode = 'delete'; renderCharts(); }, 'linkbtn'));
-    }
+    // Delete: the charts are kept and move to "No folder".
+    var n = inFolder(f.id).length;
+    bar.appendChild(el('span', 'warn', (n ? t('folderDelWarn').replace('{n}', String(n)) : t('folderDelEmpty')).replace('{name}', folderName(f))));
+    var yes = lineBtn(t('deleteFolder'), function () {
+      yes.disabled = true;
+      sendJSON('DELETE', '/api/folders/' + encodeURIComponent(f.id)).then(function (res) {
+        folderMode = null;
+        if (!res.ok) { msg($('chart-msg'), res.d.error || t('saveErr'), 'err'); renderCharts(); return; }
+        msg($('chart-msg'), '', 'info');
+        activeFolder = n ? 'none' : 'all';
+        loadCharts();
+      }).catch(function () { yes.disabled = false; msg($('chart-msg'), t('network'), 'err'); });
+    });
+    bar.appendChild(yes);
+    bar.appendChild(lineBtn(t('cancel'), function () { folderMode = null; renderCharts(); }, 'linkbtn'));
+    setTimeout(function () { yes.focus(); }, 0);
   }
 
   function chartRow(p, showFolder) {
@@ -769,13 +938,8 @@
     nameLine.appendChild(el('span', 'chart-name', p.name));
     if (p.isSelf) nameLine.appendChild(el('span', 'chart-badge', t('main')));
     var fo = showFolder && folderById(p.folderId);
-    if (fo) {
-      var tag = nameLine.appendChild(el('span', 'chart-folder', folderName(fo)));
-      tag.setAttribute('title', t('folderOf'));
-    }
-    var lines = birthLines(p.form);
-    info.appendChild(el('div', 'chart-meta', lines.when));
-    info.appendChild(el('div', 'chart-place', lines.where));
+    if (fo) nameLine.appendChild(el('span', 'chart-folder', folderName(fo)));
+    info.appendChild(el('div', 'chart-meta', birthLines(p.form).when));
     if (p.note) info.appendChild(el('div', 'chart-note', p.note));
 
     if (editingId === p.id) {
@@ -805,6 +969,8 @@
       var mv = li.appendChild(el('form', 'chart-move'));
       var sel = el('select');
       sel.setAttribute('aria-label', t('moveTo'));
+      var none = el('option', null, t('noFolder')); none.value = '';
+      sel.appendChild(none);
       folders.forEach(function (f) {
         var o = el('option', null, folderName(f)); o.value = f.id;
         if (f.id === p.folderId) o.selected = true;
@@ -817,9 +983,10 @@
       mv.appendChild(lineBtn(t('cancel'), function () { movingId = null; renderCharts(); focusRow(p.id, 'dots'); }, 'linkbtn'));
       mv.addEventListener('submit', function (e) {
         e.preventDefault();
-        if (sel.value === p.folderId) { movingId = null; renderCharts(); focusRow(p.id, 'dots'); return; }
+        var target = sel.value || null;
+        if (target === (folderById(p.folderId) ? p.folderId : null)) { movingId = null; renderCharts(); focusRow(p.id, 'dots'); return; }
         go.disabled = true;
-        patchChart(p.id, { folderId: sel.value }).then(function (ok) {
+        patchChart(p.id, { folderId: target }).then(function (ok) {
           if (ok) movingId = null; else go.disabled = false;
           renderCharts();
         });
@@ -840,16 +1007,7 @@
     var open = el('a', 'btn-line', t('open'));
     open.href = 'calculator.html?profile=' + encodeURIComponent(p.id);
     actions.appendChild(open);
-    var dots = el('button', 'btn-line btn-dots', '⋯');
-    dots.type = 'button';
-    dots.setAttribute('aria-haspopup', 'menu');
-    dots.setAttribute('aria-expanded', 'false');
-    dots.setAttribute('aria-label', t('more').replace('{name}', p.name));
-    dots.addEventListener('click', function (e) { e.stopPropagation(); toggleMenu(dots, p); });
-    dots.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowDown') { e.preventDefault(); if (!openMenu) toggleMenu(dots, p); }
-    });
-    actions.appendChild(dots);
+    actions.appendChild(dotsButton(t('more').replace('{name}', p.name), function (d) { chartMenu(d, p); }));
     return li;
   }
 
@@ -884,6 +1042,35 @@
       })
       .catch(function () { msg($('chart-msg'), t('network'), 'err'); });
   }
+
+  // ---- Tabs: My charts / My account. The choice lives in the address
+  // (#account), so a reload or Back returns to it.
+  function showTab(name, focus) {
+    var acct = name === 'account';
+    $('tab-charts').setAttribute('aria-selected', acct ? 'false' : 'true');
+    $('tab-account').setAttribute('aria-selected', acct ? 'true' : 'false');
+    $('tab-charts').tabIndex = acct ? -1 : 0;
+    $('tab-account').tabIndex = acct ? 0 : -1;
+    $('panel-charts').classList.toggle('hidden', acct);
+    $('panel-account').classList.toggle('hidden', !acct);
+    if (focus) $(acct ? 'tab-account' : 'tab-charts').focus();
+  }
+  function tabFromHash() { return location.hash === '#account' ? 'account' : 'charts'; }
+  function goTab(name, focus) {
+    var want = name === 'account' ? '#account' : '';
+    if ((location.hash || '') !== want) history.replaceState(null, '', location.pathname + location.search + want);
+    showTab(name, focus);
+  }
+  $('tab-charts').addEventListener('click', function () { goTab('charts'); });
+  $('tab-account').addEventListener('click', function () { goTab('account'); });
+  $('lib-tabs').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    var toAccount = e.key === 'End' || ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && tabFromHash() === 'charts');
+    goTab(toAccount ? 'account' : 'charts', true);
+  });
+  window.addEventListener('hashchange', function () { showTab(tabFromHash()); });
+  showTab(tabFromHash());
 
   $('chart-search').addEventListener('input', renderCharts);
   new MutationObserver(function () {

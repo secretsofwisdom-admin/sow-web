@@ -1,5 +1,5 @@
 // PATCH  /api/profiles/:id { name?, form?, note?, isSelf?, folderId? } → the updated profile
-// folderId must be one of the holder's folders (else 400).
+// folderId: one of the holder's folders (else 400), or null for no folder.
 // DELETE /api/profiles/:id                                  → { success: true }
 // Every query is scoped to the signed-in customer, so another account's id
 // behaves exactly like one that does not exist (404).
@@ -51,9 +51,13 @@ export async function onRequestPatch(context) {
       sets.push("is_self = ?"); args.push(body.isSelf ? 1 : 0);
     }
     if ("folderId" in body) {
-      const folder = await ownFolder(env, g.customer.id, body.folderId);
-      if (!folder) return json({ error: "Unknown folder." }, 400);
-      sets.push("folder_id = ?"); args.push(folder.id);
+      if (body.folderId === null) {
+        sets.push("folder_id = NULL");
+      } else {
+        const folder = await ownFolder(env, g.customer.id, body.folderId);
+        if (!folder) return json({ error: "Unknown folder." }, 400);
+        sets.push("folder_id = ?"); args.push(folder.id);
+      }
     }
     if (!sets.length) return json({ error: "Nothing to change." }, 400);
     sets.push("updated_at = ?"); args.push(Date.now());

@@ -1,4 +1,4 @@
-// GET  /api/folders          → { folders: [{ id, kind, name, count }] }  (seeds the starters)
+// GET  /api/folders          → { folders: [{ id, kind, name, count }], unfiled }  (seeds the starters once)
 // POST /api/folders { name } → the new folder
 // Folders for saved birth charts; rules in ../_folders.js. Requires a session.
 import { json, getSessionCustomer, randomToken, rejectCrossSite } from "../_shared.js";
@@ -9,8 +9,8 @@ export async function onRequestGet(context) {
   try {
     const customer = await getSessionCustomer(env, request);
     if (!customer) return json({ error: "Not signed in." }, 401);
-    const rows = await ensureFolders(env, customer.id);
-    return json({ folders: rows.map(folderJson) }, 200, { "Cache-Control": "no-store" });
+    const { folders, unfiled } = await ensureFolders(env, customer.id);
+    return json({ folders: folders.map(folderJson), unfiled }, 200, { "Cache-Control": "no-store" });
   } catch (e) {
     return json({ error: "Server error. Please try again." }, 500);
   }
@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
     const n = cleanFolderName(body.name);
     if (n.error) return json({ error: n.error }, 400);
 
-    const rows = await ensureFolders(env, customer.id);
+    const { folders: rows } = await ensureFolders(env, customer.id);
     if (rows.length >= MAX_FOLDERS) {
       return json({ error: "limit", message: `You can keep up to ${MAX_FOLDERS} folders.` }, 409);
     }

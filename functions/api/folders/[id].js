@@ -1,7 +1,7 @@
 // PATCH  /api/folders/:id { name } → the renamed folder
-// DELETE /api/folders/:id          → { success: true, deletedCharts: n }
-// Deleting a folder deletes the charts in it (the holder's choice, asked
-// twice on the page); the last folder is refused with 409 { error: 'last' }.
+// DELETE /api/folders/:id          → { success: true, movedCharts: n }
+// Deleting a folder keeps its charts: they move to "no folder" (rules v2,
+// 2026-11-10). Any folder may be deleted, the last one included.
 // Every query is scoped to the signed-in customer, so another account's id
 // is a 404.
 import { json, getSessionCustomer, rejectCrossSite } from "../_shared.js";
@@ -44,17 +44,11 @@ export async function onRequestDelete(context) {
   try {
     const g = await guard(context);
     if (g.error) return g.error;
-    const total = await env.DB
-      .prepare("SELECT COUNT(*) AS n FROM profile_folders WHERE customer_id = ?")
-      .bind(g.customer.id).first();
-    if (total.n <= 1) {
-      return json({ error: "last", message: "An account keeps at least one folder." }, 409);
-    }
     const [charts] = await env.DB.batch([
-      env.DB.prepare("DELETE FROM birth_profiles WHERE customer_id = ? AND folder_id = ?").bind(g.customer.id, g.folder.id),
+      env.DB.prepare("UPDATE birth_profiles SET folder_id = NULL WHERE customer_id = ? AND folder_id = ?").bind(g.customer.id, g.folder.id),
       env.DB.prepare("DELETE FROM profile_folders WHERE id = ? AND customer_id = ?").bind(g.folder.id, g.customer.id),
     ]);
-    return json({ success: true, deletedCharts: charts.meta?.changes ?? 0 });
+    return json({ success: true, movedCharts: charts.meta?.changes ?? 0 });
   } catch (e) {
     return json({ error: "Server error. Please try again." }, 500);
   }

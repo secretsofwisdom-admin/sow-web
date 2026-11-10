@@ -1,26 +1,27 @@
-// GET  /api/profiles               → { profiles: [...], folders: [...] }  (main first, then by name)
+// GET  /api/profiles               → { profiles: [...], folders: [...], unfiled }  (main first, then by name)
 // POST /api/profiles { name, form, note?, isSelf?, folderId? } → the new profile
-// Without folderId (or with one that is not the holder's own) the chart goes
-// into the default folder; see ../_folders.js. `folders` was added
-// 2026-11-09; older calculator builds read only `profiles`.
+// Without folderId the chart has no folder; a folderId that is not one of the
+// holder's own folders is refused (400). See ../_folders.js. `folders` was
+// added 2026-11-09, `unfiled` 2026-11-10; older calculator builds read only
+// `profiles`.
 // Saved birth data for the calculator. Requires a session.
 import { json, getSessionCustomer, randomToken, rejectCrossSite } from "../_shared.js";
 import {
   MAX_PROFILES, validateBirthForm, cleanName, cleanNote, profileJson, PROFILE_COLUMNS,
 } from "../_profiles.js";
-import { ensureFolders, defaultFolderId, folderJson, ownFolder } from "../_folders.js";
+import { ensureFolders, folderJson, ownFolder } from "../_folders.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   try {
     const customer = await getSessionCustomer(env, request);
     if (!customer) return json({ error: "Not signed in." }, 401);
-    // Before the profiles: it files any chart that has no folder yet.
-    const folders = await ensureFolders(env, customer.id);
+    // Before the profiles: it clears links to deleted folders.
+    const { folders, unfiled } = await ensureFolders(env, customer.id);
     const { results } = await env.DB
       .prepare(`SELECT ${PROFILE_COLUMNS} FROM birth_profiles WHERE customer_id = ? ORDER BY is_self DESC, name COLLATE NOCASE, created_at`)
       .bind(customer.id).all();
-    return json({ profiles: results.map(profileJson), folders: folders.map(folderJson) }, 200, { "Cache-Control": "no-store" });
+    return json({ profiles: results.map(profileJson), folders: folders.map(folderJson), unfiled }, 200, { "Cache-Control": "no-store" });
   } catch (e) {
     return json({ error: "Server error. Please try again." }, 500);
   }
@@ -52,14 +53,18 @@ export async function onRequestPost(context) {
       return json({ error: "limit", message: `You can keep up to ${MAX_PROFILES} profiles.` }, 409);
     }
 
-    const folder = (await ownFolder(env, customer.id, body.folderId)) ||
-      { id: defaultFolderId(await ensureFolders(env, customer.id)) };
+    let folderId = null;
+    if (body.folderId != null) {
+      const folder = await ownFolder(env, customer.id, body.folderId);
+      if (!folder) return json({ error: "Unknown folder." }, 400);
+      folderId = folder.id;
+    }
 
     const id = randomToken(12);
     const now = Date.now();
     const insert = env.DB
       .prepare("INSERT INTO birth_profiles (id, customer_id, name, is_self, form, note, folder_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(id, customer.id, n.name, isSelf ? 1 : 0, JSON.stringify(f.form), t.note, folder.id, now, now);
+      .bind(id, customer.id, n.name, isSelf ? 1 : 0, JSON.stringify(f.form), t.note, folderId, now, now);
     // Only one main profile: clear the old one in the same batch.
     await env.DB.batch(isSelf
       ? [env.DB.prepare("UPDATE birth_profiles SET is_self = 0 WHERE customer_id = ? AND is_self = 1").bind(customer.id), insert]

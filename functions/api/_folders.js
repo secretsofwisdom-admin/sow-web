@@ -1,23 +1,22 @@
-// Folders for saved birth charts (2026-11-09): shared by folders/*.js and
-// profiles/*.js. Leading underscore => not a route.
+// Folders for saved birth charts: shared by folders/*.js and profiles/*.js.
+// Leading underscore => not a route.
 //
-// Rules:
-// - Every account has at least one folder. The first listing seeds three
-//   starter folders (kind 'family', 'clients', 'personal', name NULL so the
-//   page shows them in its own language). After that they behave like any
-//   other folder: they can be renamed or deleted.
-// - Each chart sits in exactly one folder. A chart with no folder, or with a
-//   folder that no longer exists, is moved into the default folder
-//   ('personal' while it exists, otherwise the first one) whenever the list
-//   is read, so older rows and the calculator builds that predate folders
-//   need nothing special.
-// - Deleting a folder deletes its charts with it (the holder's choice); the
-//   last folder cannot be deleted.
+// Rules (v2, 2026-11-10; v1 of 2026-11-09 filed and deleted differently):
+// - Each account is given three starter folders once, on its first listing:
+//   kind 'personal', 'family', 'clients', in that order, name NULL so the
+//   page shows them in its own language. customers.folders_seeded records
+//   it, so an account that deletes every folder does not get them back.
+//   After that they behave like any other folder.
+// - A chart sits in at most one folder. folder_id NULL means "no folder";
+//   nothing is filed by guesswork. A folder_id that points at a deleted
+//   folder is cleared on the next listing.
+// - Deleting a folder keeps its charts: they move to no folder.
+// - "Main" (is_self) is a mark on a chart, not a folder.
 import { randomToken } from "./_shared.js";
 
 export const MAX_FOLDERS = 50;
 export const MAX_FOLDER_NAME = 60;
-const STARTERS = ["family", "clients", "personal"];
+const STARTERS = ["personal", "family", "clients"];
 
 // Returns { name } or { error }.
 export function cleanFolderName(v) {
@@ -43,35 +42,32 @@ async function listRows(env, customerId) {
   return results;
 }
 
-export function defaultFolderId(rows) {
-  const personal = rows.find((r) => r.kind === "personal");
-  return (personal || rows[0])?.id ?? null;
-}
-
-// Seeds the starter folders on an account that has none, files every chart
-// that has no valid folder, and returns the folders in order with counts.
+// Seeds the starter folders once per account, clears links to folders that
+// no longer exist, and returns { folders (in order, with counts), unfiled }.
 export async function ensureFolders(env, customerId) {
-  let rows = await listRows(env, customerId);
-  if (!rows.length) {
+  // Only the listing that flips the flag seeds; a racing second listing
+  // changes nothing here. INSERT OR IGNORE + the unique (customer_id, kind)
+  // index stay as a second guard.
+  const flip = await env.DB
+    .prepare("UPDATE customers SET folders_seeded = 1 WHERE id = ? AND folders_seeded = 0")
+    .bind(customerId).run();
+  if (flip.meta && flip.meta.changes) {
     const now = Date.now();
-    // OR IGNORE + the unique (customer_id, kind) index: a second listing
-    // racing this one cannot add a second set.
     await env.DB.batch(STARTERS.map((kind, i) => env.DB
       .prepare("INSERT OR IGNORE INTO profile_folders (id, customer_id, kind, name, position, created_at) VALUES (?, ?, ?, NULL, ?, ?)")
       .bind(randomToken(12), customerId, kind, i, now)));
-    rows = await listRows(env, customerId);
   }
-  const target = defaultFolderId(rows);
-  if (target) {
-    const r = await env.DB
-      .prepare(
-        `UPDATE birth_profiles SET folder_id = ?
-          WHERE customer_id = ?
-            AND (folder_id IS NULL OR folder_id NOT IN (SELECT id FROM profile_folders WHERE customer_id = ?))`)
-      .bind(target, customerId, customerId).run();
-    if (r.meta && r.meta.changes) rows = await listRows(env, customerId);
-  }
-  return rows;
+  await env.DB
+    .prepare(
+      `UPDATE birth_profiles SET folder_id = NULL
+        WHERE customer_id = ? AND folder_id IS NOT NULL
+          AND folder_id NOT IN (SELECT id FROM profile_folders WHERE customer_id = ?)`)
+    .bind(customerId, customerId).run();
+  const folders = await listRows(env, customerId);
+  const u = await env.DB
+    .prepare("SELECT COUNT(*) AS n FROM birth_profiles WHERE customer_id = ? AND folder_id IS NULL")
+    .bind(customerId).first();
+  return { folders, unfiled: u.n };
 }
 
 // The folder row if it belongs to the customer, else null.

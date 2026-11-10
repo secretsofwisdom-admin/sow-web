@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS customers (
   newsletter     INTEGER NOT NULL DEFAULT 0,
   created_at     INTEGER NOT NULL,
   password_hash  TEXT,                      -- PBKDF2 string; NULL for email-link-only accounts
-  email_verified INTEGER NOT NULL DEFAULT 0 -- 1 once ownership proven (link click or reset)
+  email_verified INTEGER NOT NULL DEFAULT 0, -- 1 once ownership proven (link click or reset)
+  folders_seeded INTEGER NOT NULL DEFAULT 0  -- 1 once the starter folders were made (migrations/0004)
 );
 
 -- Single-use, short-lived email tokens (stored hashed).
@@ -41,7 +42,7 @@ CREATE TABLE IF NOT EXISTS birth_profiles (
   is_self     INTEGER NOT NULL DEFAULT 0, -- the account holder's own chart; at most one
   form        TEXT NOT NULL,              -- BaZi birth form as JSON, see functions/api/_profiles.js
   note        TEXT NOT NULL DEFAULT '',
-  folder_id   TEXT,                       -- profile_folders.id (migrations/0003); set on first listing if NULL
+  folder_id   TEXT,                       -- profile_folders.id (migrations/0003); NULL = no folder (0004)
   created_at  INTEGER NOT NULL,
   updated_at  INTEGER NOT NULL
 );

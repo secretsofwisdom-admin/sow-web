@@ -47,7 +47,14 @@
     "mainNote": "Основная карта открывается автоматически, когда вы возвращаетесь в калькулятор.",
     "editProfile": "Изменить профиль",
     "cancel": "Отмена",
-    "newsletterHeading": "Рассылка"
+    "newsletterHeading": "Рассылка",
+    "libraryTitle": "Библиотека карт",
+    "librarySub": "Личный кабинет",
+    "tabCharts": "Мои карты",
+    "tabAccount": "Мой аккаунт",
+    "foldersHeading": "Папки",
+    "folderLabel": "Папка",
+    "createFolder": "Создать папку"
   },
   "brand": {
     "name": "Secrets of Wisdom · NZ",
