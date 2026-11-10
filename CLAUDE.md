@@ -225,7 +225,7 @@ Read-only, run from the repo root. Asserts the things that have actually drifted
 - Scoped to colours on purpose — radii, font stack, `--nav-h` and bracket geometry are shared across palettes, and `--galaxy` may legitimately be inherited. Earlier drafts flagged correct CSS twice by being stricter than the invariant actually is.
 - Checks SKIP rather than fail when the thing they guard does not exist yet, so it is runnable mid-rollout.
 
-**After editing `style.css`, restamp**, or check 7b fails:
+**After editing `style.css`, `script.js`, `lang-switcher.js` or `theme-switcher.js`, restamp**, or check 7b / 7c fails:
 
 ```
 python3 scripts/stamp_css.py
@@ -234,6 +234,7 @@ python3 scripts/stamp_css.py
 - `style.css` is served `max-age=14400` while the HTML is `max-age=0`, so without a changing URL a returning visitor pairs **new markup with a four-hour-old stylesheet** — the inline script sets `data-theme`, the cached sheet has no `[data-theme]` blocks to answer it, and `.nav-controls` renders unstyled.
 - The stamp is `md5(style.css)[:8]`, **not a date**. A date only busts the cache on the first edit of a given day; the second edit that day produces the same stamp and the hole silently reopens — which nearly happened on the light-veil change. A content hash lets check 7b *verify* rather than merely compare equal, so forgetting to restamp fails the check instead of shipping.
 - The three legal pages load no stylesheet and are deliberately outside both the stamp and the check.
+- Since 2026-11-09 the same script also stamps the three shared `<script defer src>` tags, each with its own `md5[:8]` (check 7c); they are cached `max-age=14400` too, and without it `script.js`'s current-page marking in the menu reached returning visitors up to four hours late.
 
 ## Design system — "Imperial"
 The site was re-skinned to match the calculator so the two read as one product. Tokens are ported from the calculator's `imperial` theme (`BaziCalculator/lib/theme/imperial_tokens.dart`), where they were sampled pixel-by-pixel from reference art — **don't round them to tidier values**.

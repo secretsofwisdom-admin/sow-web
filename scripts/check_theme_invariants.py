@@ -178,6 +178,28 @@ def check_css_version():
            + "\n      restamp with:  python3 scripts/stamp_css.py")
 
 
+# --- check 7c: the shared scripts' version stamps -------------------------
+# script.js, lang-switcher.js and theme-switcher.js are cached for four hours
+# like style.css, so each <script defer src> carries md5(file)[:8] as ?v=
+# (2026-11-09). Restamp with scripts/stamp_css.py.
+JS_STAMPED = ["script.js", "lang-switcher.js", "theme-switcher.js"]
+
+
+def check_js_version():
+    problems = []
+    for name in JS_STAMPED:
+        want = hashlib.md5((ROOT / name).read_bytes()).hexdigest()[:8]
+        for page in NAV_PAGES:
+            m = re.search(r'<script defer src="' + re.escape(name) + r'(\?v=([^"]*))?"', read(page))
+            got = "NO-TAG" if not m else (m.group(2) or "UNSTAMPED")
+            if got != want:
+                problems.append(f"{page}:{name}={got} (want {want})")
+    report("7c js version stamps", not problems,
+           "" if not problems else "; ".join(problems[:6])
+           + (f" … and {len(problems) - 6} more" if len(problems) > 6 else "")
+           + "\n      restamp with:  python3 scripts/stamp_css.py")
+
+
 # --- check 8: legal pages' <style> blocks identical ------------------------
 def check_legal():
     hashes = {}
@@ -216,7 +238,7 @@ def check_assets():
     report("9 lacquer crop", size == (1480, 860), f"got {size}, want (1480, 860)")
 
 
-for fn in (check_tokens, check_nav, check_css_version, check_legal, check_assets):
+for fn in (check_tokens, check_nav, check_css_version, check_js_version, check_legal, check_assets):
     fn()
 
 print()
