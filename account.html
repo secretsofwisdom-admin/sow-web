@@ -15,7 +15,7 @@
   <meta name="description" content="Sign in to your Secrets of Wisdom account to view your order history and manage your preferences." />
   <meta name="robots" content="noindex" />
   <link rel="icon" type="image/png" href="images/secrets-logo.png" />
-  <link rel="stylesheet" href="style.css?v=3f11279e" />
+  <link rel="stylesheet" href="style.css?v=98900c79" />
   <script defer src="lang-switcher.js?v=f7d97bcc"></script>
   <script defer src="theme-switcher.js?v=1d7e352d"></script>
   <script defer src="script.js?v=1d0c08da"></script>
@@ -29,7 +29,7 @@
       --a-text: #E8E3D9;
       --a-sub: #BDB6AA;
       --a-rule: #66543A;
-      --a-panel: rgba(17, 20, 22, .94);
+      --a-panel: rgba(10, 21, 36, .94);
       --a-inner: rgba(255, 255, 255, .03);
       --a-gold: #E8BE70;
       --a-gold-ink: #241A0C;
@@ -153,7 +153,7 @@
 
     /* The ⋯ menu: real buttons in a small list, keyboard-operable. */
     .chart-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 220px; margin: 0; padding: 6px; list-style: none; background: var(--a-panel); border: 1px solid var(--a-rule); border-radius: var(--r-md); }
-    html:not([data-theme="light"]) .chart-menu { background: #15191C; }
+    html:not([data-theme="light"]) .chart-menu { background: #0C1828; }
     @media (max-width: 900px) { .chart-menu { right: auto; left: 0; } }
     .chart-menu button { display: block; width: 100%; text-align: left; background: none; border: none; border-radius: var(--r-sm); color: var(--a-text); font-family: var(--font-display); font-size: 16px; text-transform: none; letter-spacing: .2px; padding: 9px 12px; cursor: pointer; box-shadow: none; filter: none; }
     .chart-menu button:hover, .chart-menu button:focus-visible { background: var(--a-inner); color: var(--a-head); box-shadow: none; }
@@ -168,12 +168,12 @@
        / My account), and one charcoal panel with the folders on the left and
        the chart list on the right. Data (dates, notes, counts) is set in the
        system sans-serif; names and headings keep EB Garamond. */
-    .acct-page { --a-data: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --a-lib: #14191B; --a-sel: rgba(232, 190, 112, .14); }
+    .acct-page { --a-data: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --a-lib: #0A1524; --a-sel: rgba(232, 190, 112, .14); }
     html[data-theme="light"] .acct-page { --a-lib: rgba(253, 250, 243, .97); --a-sel: rgba(138, 98, 36, .12); }
     .lib-head { text-align: center; margin: -14px 0 24px; }
     .lib-title { font-family: var(--font-display); color: var(--a-head); font-size: 52px; font-weight: 500; line-height: 1.1; margin: 0; }
     .lib-sub { font-family: var(--font-display); color: var(--a-sub); font-size: 20px; margin: 4px 0 18px; }
-    .lib-tabs { display: inline-flex; border: 1px solid var(--a-rule); border-radius: var(--r-md); padding: 3px; gap: 3px; background: rgba(10, 13, 15, .55); }
+    .lib-tabs { display: inline-flex; border: 1px solid var(--a-rule); border-radius: var(--r-md); padding: 3px; gap: 3px; background: rgba(5, 13, 24, .55); }
     html[data-theme="light"] .lib-tabs { background: var(--a-inner); }
     .acct-page .lib-tab { background: none; border: 1px solid transparent; border-radius: var(--r-sm); color: var(--a-text); font-family: var(--font-display); font-size: 19px; font-weight: 500; text-transform: none; letter-spacing: .2px; padding: 8px 30px; cursor: pointer; box-shadow: none; filter: none; }
     .acct-page .lib-tab:hover { color: var(--a-head); background: var(--a-inner); box-shadow: none; }
@@ -256,15 +256,41 @@
       .acct-page #panel-account { grid-template-columns: minmax(0, 1fr); }
     }
 
-    /* Background: the mountain landscape, on this page only and only in the
-       dark theme. body::before is a fixed, window-sized layer, so the image
-       covers the window from the top centre and is never stretched over the
-       long list; the dark base colour fills the rest. The galaxy veil is
-       switched off here. The light theme keeps its parchment ground. */
+    /* Background (luopan v3, 2026-11-10): navy base #050D18, the night
+       landscape with no compass in it, and over it the verified Luopan vector
+       (images/luopan-gold.svg: 24 mountains, Later Heaven trigrams, south at
+       the top). Both are fixed, window-sized layers starting under the menu,
+       so they are never stretched over a long chart list. The compass is
+       centred on the page, its top 16% of its diameter above the layer's top,
+       scaled only proportionally, never mirrored or rotated, at .30 opacity
+       (.22 on narrow screens); the panels above stay fully opaque. Dark theme
+       only: the light theme keeps its parchment ground, and the galaxy veil
+       (style.css's body::after) is replaced here by the compass. */
     html:not([data-theme="light"]) body.page-library::before {
-      background: #0B0E10 url('images/library-bg.jpg') center top / cover no-repeat;
+      top: var(--nav-h);
+      background: #050D18 url('images/night-landscape.jpg') center top / cover no-repeat;
     }
-    html:not([data-theme="light"]) body.page-library::after { display: none; }
+    html:not([data-theme="light"]) body.page-library::after {
+      --luopan: clamp(600px, 82vw, 1440px);
+      content: '';
+      position: fixed;
+      inset: auto;
+      top: calc(var(--nav-h) - var(--luopan) * .16);
+      left: 50%;
+      width: var(--luopan);
+      height: var(--luopan);
+      transform: translateX(-50%);
+      background: url('images/luopan-gold.svg') center / contain no-repeat;
+      mix-blend-mode: normal;
+      opacity: .30;
+      z-index: -1;
+      pointer-events: none;
+    }
+    @media (max-width: 600px) {
+      html:not([data-theme="light"]) body.page-library::after { opacity: .22; }
+    }
+    /* The compass may run past the window's sides; never a scroll bar. */
+    html:not([data-theme="light"]) body.page-library { overflow-x: clip; }
 
     /* Profile, newsletter, orders */
     .pf-name { color: var(--a-head); font-family: var(--font-display); font-size: 23px; margin: 14px 0 4px; overflow-wrap: anywhere; }

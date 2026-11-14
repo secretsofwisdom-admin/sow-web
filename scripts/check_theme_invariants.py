@@ -227,16 +227,10 @@ def check_assets():
         report(f"9 {name} parity", a is not None and a == b,
                f"site={a and a[:8]} astro={b and b[:8]}")
 
-    lacquer = ROOT / "images" / "bg_lacquer.png"
-    if not lacquer.exists():
-        return report("9 lacquer crop", False, "images/bg_lacquer.png missing")
-    try:
-        from PIL import Image
-    except ImportError:
-        return report("9 lacquer crop", None, "PIL not available")
-    size = Image.open(lacquer).size
-    report("9 lacquer crop", size == (1480, 860), f"got {size}, want (1480, 860)")
-
+    # The lacquer-crop check (bg_lacquer.png at 1480x860, so its compass sat
+    # concentric with the veil's medallion) was removed on 2026-11-10: the
+    # dark theme no longer layers those two pictures. The light veil above is
+    # still derived from celestial-veil.jpg and shared with the astro app.
 
 for fn in (check_tokens, check_nav, check_css_version, check_js_version, check_legal, check_assets):
     fn()

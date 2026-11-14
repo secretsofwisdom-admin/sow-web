@@ -24,14 +24,13 @@
     /* The page behind the canvas, so the first paint is the chart's own
        ground rather than a white flash inside the site's dark iframe.
 
-       #12100E matches no token (neither bgMid #0E1114 nor bgCore #1A1C1E).
-       It is shipped behaviour and deliberately left alone; this is not the
-       change that should alter it.
+       #050D18 is imperial's bgMid, the site-wide ink blue since 2026-11-10
+       (it was #12100E, which matched no token).
 
-       The two overrides are the same fix mirrored: under the light palette a
-       #12100E first paint is a *dark* flash inside a pale page, which is
-       exactly as wrong. Each value is that palette's own bgMid. */
-    html, body { margin: 0; padding: 0; height: 100%; background: #12100E; }
+       The override is the same fix mirrored: under the light palette a dark
+       first paint is a flash inside a pale page, which is exactly as wrong.
+       Each value is that palette's own bgMid. */
+    html, body { margin: 0; padding: 0; height: 100%; background: #050D18; }
     html[data-theme="light"],  html[data-theme="light"]  body { background: #F2EADB; }
 
     /* Flutter's engine sets `touch-action: none` on <body> at startup, which
@@ -121,7 +120,7 @@
        already there when the first chart is cast. -->
   <script src="astronomy.browser.min.js"></script>
 
-  <script src="flutter_bootstrap.js?v=e1951b12" async></script>
+  <script src="flutter_bootstrap.js?v=583e394b" async></script>
 
   <!-- The other half of the pinch-zoom fix.
 

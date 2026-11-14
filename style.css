@@ -29,10 +29,12 @@
 }
 
 :root {
-  /* Ground */
-  --bg-core: #1A1C1E;
-  --bg-mid: #0E1114;
-  --bg-edge: #03050A;
+  /* Ground — ink blue since 2026-11-10 (the user: #050D18, approved in
+     luopan v3, is the base of every dark page). Was #1A1C1E / #0E1114 /
+     #03050A charcoal. */
+  --bg-core: #0C1A2C;
+  --bg-mid: #050D18;
+  --bg-edge: #02060C;
 
   /* Gold ramp — the accent system */
   --gold-bright: #F5DCA0;
@@ -41,10 +43,10 @@
   --gold-rule: #6B5730;
 
   /* Panels */
-  --panel-fill: #15181B;
-  --panel-inner: #1B1E24;
+  --panel-fill: #0A1524;   /* was #15181B */
+  --panel-inner: #0F1D30;  /* was #1B1E24 */
   --panel-border: #332C22;
-  --nav-fill: #111619;
+  --nav-fill: #07101C;     /* was #111619 */
   /* Site menu (2026-11-09, the approved preview): light champagne links,
      warm ivory on hover, soft gold for the current page, muted bronze
      hairlines. */
@@ -85,9 +87,9 @@
   --bracket-inset: 3px;
   --bracket-arm: 7px;
 
-  /* Strength of the ghosted galaxy wallpaper — see body::after.
-     Ceiling is .10. Above that the 12px footer line in --ink-muted drops
-     under 4.5:1 against the brightest part of the veil (.12 -> 4.37:1). */
+  /* Strength of the light theme's multiplied veil (body::after there). The
+     dark theme has no veil since 2026-11-10; when it had one, .10 was its
+     ceiling for the 12px footer line in --ink-muted (.12 -> 4.37:1). */
   --galaxy: .10;
 
   --font-display: 'EB Garamond', Georgia, serif;
@@ -198,95 +200,53 @@ body {
   overflow-x: hidden;
 }
 
-/* Lacquer plate over the radial vignette. Gradient stops are the Flutter
-   alignment (0.05,-0.45) r=0.85 converted to CSS percentages.
+/* Backdrop (2026-11-10, the user's background brief).
 
-   Painted on a fixed pseudo-element rather than with
-   `background-attachment: fixed`, which iOS Safari ignores outright and which
-   costs a repaint on every scroll frame elsewhere. */
+   Dark theme: the ink-blue base #050D18 and one picture, never two blended.
+   Regular pages show the clean night landscape (luopan v3's
+   night-landscape-clean.png, no compass, no tree), fixed to the window under
+   the menu and covering it from the top centre, so a long page scrolls over
+   it instead of stretching it. The home page has its own scene instead (the
+   landscape under the hero, the Luopan behind the medallion — see the home
+   hero below), so its fixed layer is the ground alone. The chart library adds
+   its verified Luopan in account.html.
+
+   Replaced here: the lacquer plate with an old generated compass
+   (bg_lacquer.png) and the galaxy photo screened over it
+   (celestial-veil.jpg). Their two circles had to be registered concentric
+   by cropping; with one picture per page that rule is gone.
+
+   Painted on fixed pseudo-elements rather than with background-attachment:
+   fixed, which iOS Safari ignores. */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
+  top: var(--nav-h);
   z-index: -1;
   pointer-events: none;
-  background:
-    url('images/bg_lacquer.png') center center / cover no-repeat,
-    radial-gradient(circle at 52.5% 27.5%, var(--bg-core) 0%, var(--bg-mid) 40%, var(--bg-edge) 100%);
+  background: var(--bg-mid) url('images/night-landscape.jpg') center top / cover no-repeat;
 }
+html:not([data-theme="light"]) body.page-home::before { background: var(--bg-mid); }
 
-/* The old galaxy wallpaper, ghosted back over the lacquer.
-
-   `screen` is what makes this safe: the layer can only ADD light, so it lifts
-   stars and nebula through the lacquer grain without muting the plate or
-   pulling the gold toward purple. The calculator seam survives.
-
-   It has to sit on TOP — bg_lacquer.png is fully opaque (it carries a tRNS
-   chunk, but no pixel actually uses it), so anything underneath is invisible.
-   Both pseudo-elements are at z-index -1 in the root stacking context, and at
-   equal z-index tree order decides, so ::after paints over ::before.
-
-   Both images are cropped so their circular motif — the luopan compass in the
-   lacquer, the medallion in the veil — sits at the exact centre of its own
-   file. That is what makes `center center` correct: for a cover background a
-   circle at image-fraction c with position p lands at c*ih*s + (vh - ih*s)*p,
-   which collapses to 0.5*vh when c = p = 0.5. The scale term cancels, so the
-   two circles stay concentric at every viewport size on every page.
-
-   Do NOT try to register them with background-position offsets instead. The
-   veil's aspect is wider than any real viewport, so it has zero vertical
-   overflow and its Y position is inert; the lacquer has zero horizontal
-   overflow and its X position is inert. Dead axes on opposite sides — no pair
-   of offsets can work. See CLAUDE.md for the crop boxes.
-
-   Note this is a veil, not a scrim: the old design needed a translucent scrim
-   OVER the photo to keep prose legible. Sections are opaque panels now, so
-   only the header, the gutters and the footer ever see the backdrop. */
-body::after {
+/* Light mode is kept as it was: the parchment vignette, and over it the
+   tonal opposite of the old galaxy photo (celestial-veil-light.jpg, built by
+   scripts/make_light_veil.py) multiplied in. `multiply` can only remove
+   light, so it never blows out the parchment; empty sky in that file is pure
+   white, a multiply no-op. --galaxy is .10, measured in the light block. */
+html[data-theme="light"] body::before {
+  top: 0;
+  background: radial-gradient(circle at 52.5% 27.5%,
+              var(--bg-core) 0%, var(--bg-mid) 40%, var(--bg-edge) 100%);
+}
+html[data-theme="light"] body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: url('images/celestial-veil.jpg') center center / cover no-repeat;
+  background: url('images/celestial-veil-light.jpg') center center / cover no-repeat;
   opacity: var(--galaxy);
-  mix-blend-mode: screen;
-}
-
-/* Light mode: no lacquer, and the tonal opposite of the veil.
-
-   bg_lacquer.png is FULLY OPAQUE — it carries a tRNS chunk but no pixel uses
-   it — so on a pale ground it is not a texture, it is a dark slab covering
-   the page. The calculator's own token file says the same thing about its
-   `backgroundPlate`, and BaZi's two light themes already solve it by leaving
-   that null. Same answer here: drop the plate, keep the vignette. */
-html[data-theme="light"] body::before {
-  background: radial-gradient(circle at 52.5% 27.5%,
-              var(--bg-core) 0%, var(--bg-mid) 40%, var(--bg-edge) 100%);
-}
-
-/* The veil has to be a DIFFERENT FILE here, not the same one re-blended.
-   `screen` can only add light, so over parchment the photo washes to a faint
-   smear; and multiplying the photo as-is paints a dark galaxy on a pale page,
-   which is a negative, not a backdrop. What light mode needs is the tonal
-   opposite, and that is what celestial-veil-light.jpg is —
-   scripts/make_light_veil.py derives it and documents why the chroma is
-   thrown away rather than merely inverted.
-
-   `multiply` is the mirror of `screen`: it can only REMOVE light, so it can
-   never blow out the parchment or push the gold toward a colour it is not.
-   The asset is built to exploit that — empty sky is pure white, and multiply
-   by white is a no-op, so most of the frame is left exactly as the vignette
-   above painted it instead of being uniformly muddied.
-
-   Only the image and the blend change. `center center / cover no-repeat` are
-   separate longhands already set by the shorthand above, so they carry over,
-   and with them the concentric-medallion invariant: the light veil is the
-   same 1280x696 crop, per-pixel-derived, so its medallion is still at the
-   dead centre of the file. --galaxy lands on .10 here too, but for the
-   opposite reason; the measurement is in the [data-theme="light"] block. */
-html[data-theme="light"] body::after {
-  background-image: url('images/celestial-veil-light.jpg');
   mix-blend-mode: multiply;
 }
 
@@ -405,7 +365,8 @@ p { margin: 0 0 14px; }
 
 /* --------------------------------------------------------------------------
    Navigation — the calculator's bottom nav bar, flipped to the top:
-   flat #111315, a single gold hairline edge, no blur, no shadow.
+   flat --nav-fill (ink blue since 2026-11-10), a single gold hairline edge,
+   no blur, no shadow.
    -------------------------------------------------------------------------- */
 nav {
   position: fixed;
@@ -529,9 +490,111 @@ header p:not(.tagline) {
 .hero-image {
   display: block;
   width: 100%;
+  height: auto;
   max-width: 300px;
   margin: 34px auto 0;
   filter: drop-shadow(0 0 30px rgba(227, 181, 105, .22));
+}
+
+/* Home hero, approved mock-up home-harmony-v3 (2026-11-10), dark theme:
+   layers landscape (.home-scene) -> Luopan (.hero-luopan) -> medallion and
+   text. The medallion is the same sow_medallion.png, once; the verified
+   luopan-gold.svg sits behind it with its centre exactly on the medallion's
+   centre (1300 px wide screens, 1170 px at <=1350, 910 px at <=760 — the
+   approved +30%), at .30 opacity (.24 narrow), fading out at top and bottom,
+   proportional, never mirrored or rotated. The nav (fixed, opaque, z 1000)
+   covers anything of the circle that rises above the header, and body's
+   overflow-x: hidden keeps it from adding a horizontal scroll bar. The light
+   theme keeps its old hero: the medallion alone, no landscape, no Luopan. */
+.home-scene, .hero-luopan { display: none; }
+html:not([data-theme="light"]) .home-scene {
+  display: block;
+  position: absolute;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  height: 940px;
+  z-index: -1;
+  pointer-events: none;
+  background: url('images/night-landscape.jpg') center bottom / cover no-repeat;
+}
+html:not([data-theme="light"]) .home-scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(5, 13, 24, 0) 76%, var(--bg-mid) 100%);
+}
+.hero-emblem { position: relative; }
+html:not([data-theme="light"]) .page-home header h1 { font-size: 58px; line-height: 1.15; }
+html:not([data-theme="light"]) .page-home header p:not(.tagline):not(.hero-intro) {
+  text-transform: none;
+  font-size: 23px;
+  letter-spacing: 0;
+  margin-top: 10px;
+}
+html:not([data-theme="light"]) .page-home .tagline { font-size: 12px; letter-spacing: 2.2px; margin-top: 15px; }
+html:not([data-theme="light"]) .hero-emblem { width: 338px; margin: 28px auto 22px; }
+html:not([data-theme="light"]) .hero-emblem::before {
+  content: '';
+  position: absolute;
+  inset: -45px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(199, 149, 61, .095), rgba(199, 149, 61, .035) 38%, transparent 69%);
+  z-index: -1;
+}
+html:not([data-theme="light"]) .hero-emblem .hero-image { max-width: none; width: 100%; height: auto; margin: 0; filter: none; }
+html:not([data-theme="light"]) .hero-luopan {
+  --fade: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, .4) 18%, #000 33%, #000 65%, rgba(0, 0, 0, .4) 82%, transparent 100%);
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1300px;
+  height: 1300px;
+  transform: translate(-50%, -50%);
+  background: url('images/luopan-gold.svg') center / contain no-repeat;
+  opacity: .30;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: var(--fade);
+  mask-image: var(--fade);
+}
+header .hero-intro {
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 1;
+  font-size: 23px;
+  line-height: 1.5;
+  max-width: 750px;
+  margin: 26px auto 0;
+  color: var(--ink);
+  text-wrap: balance;
+}
+html:not([data-theme="light"]) header .hero-intro { margin-top: 0; color: #D5CCBA; }
+.hero-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin: 24px auto 0; }
+.hero-actions .btn-cta {
+  text-transform: none;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: .2px;
+  min-width: 180px;
+  text-align: center;
+}
+@media (max-width: 1350px) {
+  html:not([data-theme="light"]) .home-scene { height: 880px; }
+  html:not([data-theme="light"]) .page-home header h1 { font-size: 52px; }
+  html:not([data-theme="light"]) .hero-emblem { width: 306px; margin: 24px auto 20px; }
+  html:not([data-theme="light"]) .hero-luopan { width: 1170px; height: 1170px; }
+  header .hero-intro { font-size: 21px; }
+}
+@media (max-width: 760px) {
+  html:not([data-theme="light"]) .home-scene { height: 980px; }
+  html:not([data-theme="light"]) .page-home header h1 { font-size: 38px; }
+  html:not([data-theme="light"]) .page-home header p:not(.tagline):not(.hero-intro) { font-size: 18px; }
+  html:not([data-theme="light"]) .hero-emblem { width: min(275px, 73vw); margin: 26px auto; }
+  html:not([data-theme="light"]) .hero-luopan { width: 910px; height: 910px; opacity: .24; }
+  header .hero-intro { font-size: 20px; }
+  .hero-actions { gap: 12px; }
 }
 
 /* --------------------------------------------------------------------------

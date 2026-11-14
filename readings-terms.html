@@ -32,7 +32,7 @@
     font-weight:400 800; font-style:normal; font-display:swap;
   }
   :root{
-    --bg:#0E1114; --bg2:#15181B; --panel:#15181B;
+    --bg:#050D18; --bg2:#0A1524; --panel:#0A1524;
     --ink:#E6DFD1; --muted:#9A9A96; --gold:#E3B569; --gold-soft:#F5DCA0;
     --line:#6B5730; --radius:10px;
     --galaxy:.10;
@@ -70,44 +70,26 @@
     color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;
     padding:40px 18px 72px;
   }
-  /* Lacquer plate on a fixed layer — background-attachment:fixed is ignored
-     by iOS Safari. */
+  /* Backdrop (2026-11-10), as on the site's regular pages: the ink-blue
+     base and the clean night landscape, one picture, nothing blended. Fixed
+     layer, because background-attachment:fixed is ignored by iOS Safari. */
   body::before{
     content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:
-      url('images/bg_lacquer.png') center center / cover no-repeat,
-      radial-gradient(circle at 52.5% 27.5%,#1A1C1E 0%,#0E1114 40%,#03050A 100%);
+    background:#050D18 url('images/night-landscape.jpg') center top / cover no-repeat;
   }
-  /* Light drops the plate. bg_lacquer.png is fully opaque, so on a pale
-     ground it is a dark slab over the page, not a texture. The gradient stops
-     are hardcoded above rather than tokenised, so this has to restate the
-     whole layer. The veil is kept, but as a different file -- see below. */
+  /* Light is kept as it was: the parchment vignette (hardcoded stops, so the
+     whole layer is restated) and over it celestial-veil-light.jpg, the tonal
+     opposite of the old galaxy photo built by scripts/make_light_veil.py,
+     multiplied in -- multiply only removes light, and the file's empty sky is
+     pure white, a no-op. */
   html[data-theme="light"] body::before{
     background:
       radial-gradient(circle at 52.5% 27.5%,#FBF6EC 0%,#F2EADB 40%,#E3D8C4 100%);
   }
-  /* Light needs a different FILE, not a different blend: `screen` over
-     parchment has no darkness to lift, and `multiply` with the dark photo
-     paints a negative. celestial-veil-light.jpg is the tonal opposite, built
-     by the site's scripts/make_light_veil.py from this same image; its empty
-     sky is pure white, and multiply by white is a no-op, so most of the frame
-     is left as the vignette painted it. Only the image and the blend change
-     -- `center center / cover no-repeat` are longhands already set below. */
   html[data-theme="light"] body::after{
-    background-image:url('images/celestial-veil-light.jpg');
-    mix-blend-mode:multiply;
-  }
-  /* The old galaxy wallpaper, ghosted over the lacquer. `screen` only adds
-     light, so it never mutes the plate or shifts the gold. Must sit on top —
-     bg_lacquer.png is fully opaque. Strength capped at .10: above that the
-     12px --muted lines drop under 4.5:1 against the brightest stars.
-     Both images are cropped so their circular motif sits at the centre of its
-     own file, which is what makes `center center` keep the compass and the
-     medallion concentric at every viewport size. See CLAUDE.md. */
-  body::after{
     content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:url('images/celestial-veil.jpg') center center / cover no-repeat;
-    opacity:var(--galaxy);mix-blend-mode:screen;
+    background:url('images/celestial-veil-light.jpg') center center / cover no-repeat;
+    opacity:var(--galaxy);mix-blend-mode:multiply;
   }
   .wrap{max-width:760px;margin:0 auto;position:relative}
   .crest{text-align:center;margin-bottom:12px}
