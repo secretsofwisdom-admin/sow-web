@@ -11,6 +11,7 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - **Pages URL:** sow-web-7ne.pages.dev
 - **GitHub account:** secretsofwisdom-admin
 - **Cloudflare account ID:** 8ddfe9e9bbacfc0b4b511b916abc650f
+- **Visitor statistics:** Cloudflare Web Analytics is already on for `secretsofwisdom.org` (automatic setup, since ~Feb 2026; found 2026-11-16). Nothing to install in the repo. Cloudflare injects the beacon at the edge only for browsers, so `curl` shows no beacon. Dashboard: Analytics → Web analytics. Numbers are sampled (steps of 10), there is no unique-visitor count, and both `/calculator` and `/calc/` are counted for one calculator opening. Dashboard login fails in the built-in browser pane (verification check); use Claude in Chrome.
 
 ## Contact Form Email
 - **Provider:** Resend (API key stored as Cloudflare Pages secret `RESEND_API_KEY`)
