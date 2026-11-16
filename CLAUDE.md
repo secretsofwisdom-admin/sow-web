@@ -13,6 +13,13 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - **Cloudflare account ID:** 8ddfe9e9bbacfc0b4b511b916abc650f
 - **Visitor statistics:** Cloudflare Web Analytics is already on for `secretsofwisdom.org` (automatic setup, since ~Feb 2026; found 2026-11-16). Nothing to install in the repo. Cloudflare injects the beacon at the edge only for browsers, so `curl` shows no beacon. Dashboard: Analytics → Web analytics. Numbers are sampled (steps of 10), there is no unique-visitor count, and both `/calculator` and `/calc/` are counted for one calculator opening. Dashboard login fails in the built-in browser pane (verification check); use Claude in Chrome.
 
+## Search basics (2026-11-16)
+- **One address:** `secretsofwisdom.org`. Cloudflare Redirect Rules (dashboard, not in the repo), live 2026-11-16: zone `.nz` — rule "Redirect .nz to secretsofwisdom.org" (`secretsofwisdom.nz` and `www.secretsofwisdom.nz` → 301 to the same path on `.org`, query kept); zone `.org` — "Redirect from WWW to root" (301, query kept). `sow-web-7ne.pages.dev` still answers 200; the canonical links cover it.
+- `robots.txt` (only `/api/` disallowed) and `sitemap.xml` (9 pages, extensionless URLs, `lastmod` written by hand — update it when a page's content changes; add new pages).
+- `<link rel="canonical">` on the 9 indexable pages (index, about, services, contact, guide, posts, calculator, astrology, privacy), extensionless, right after the description meta; `og:url` matches it. `noindex` meta on account, agreement, readings-terms, thank-you, payment-thank-you.
+- `_headers`: `X-Robots-Tag: noindex` on `/calc/*` and `/astro/*` — the app documents are shown inside `calculator.html` / `astrology.html` and must not appear in search on their own.
+- Not done: Russian text is injected by script, so search engines see English only; journal posts share one URL; calculator pages have no descriptive text; no schema.org markup; Search Console / Yandex Webmaster not checked.
+
 ## Contact Form Email
 - **Provider:** Resend (API key stored as Cloudflare Pages secret `RESEND_API_KEY`)
 - **Endpoint:** `/api/contact` (Pages Function at `functions/api/contact.js`)

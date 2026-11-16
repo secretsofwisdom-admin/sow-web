@@ -1,6 +1,7 @@
 /calc/*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
+  X-Robots-Tag: noindex
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: interest-cohort=()
   Cross-Origin-Embedder-Policy: require-corp
@@ -12,6 +13,7 @@
 /astro/*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
+  X-Robots-Tag: noindex
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: interest-cohort=()
   Cross-Origin-Embedder-Policy: require-corp
