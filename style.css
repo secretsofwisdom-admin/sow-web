@@ -839,6 +839,36 @@ section:has(.svc-card) {
   margin-bottom: 20px;
 }
 
+/* Journal (2026-11-16): each card on posts.html links to the post's own
+   page. An anchor of its own class, not .post-card-header — script.js treats
+   that one as an expand/collapse switch. */
+.post-card-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 22px 26px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color .2s;
+}
+section a.post-card-link { border-bottom: none; color: inherit; }
+.post-card-link:hover { background-color: rgba(227, 181, 105, .045); }
+.post-header h1 { font-size: 36px; max-width: 880px; margin: 0 auto; line-height: 1.2; }
+.post-header time {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+.post-page p { margin: 0 0 14px; }
+.post-page .post-cta { text-align: center; margin: 26px 0 8px; }
+section .post-cta a.btn-cta { color: var(--btn-ink); border: 1.2px solid var(--gold-bright); }
+.post-page .post-back { margin: 24px 0 0; font-size: 15px; }
+@media (max-width: 768px) {
+  .post-card-link { flex-direction: column; gap: 12px; padding: 16px; }
+  .post-header h1 { font-size: 27px; }
+}
+
 /* Home grid */
 .home-grid {
   display: grid;

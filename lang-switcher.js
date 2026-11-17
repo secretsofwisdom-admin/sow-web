@@ -168,7 +168,47 @@
     });
   }
 
+  // Russian copies of the public pages live under /ru/ (2026-11-16,
+  // scripts/build_ru.py), so that search engines can read the Russian text.
+  // On those pages the address decides the language, not the stored choice.
+  function pathLang() {
+    return /^\/ru(\/|$)/.test(window.location.pathname) ? 'ru' : 'en';
+  }
+
+  // The same page in the other language, if there is one: pages that exist in
+  // both carry <link rel="alternate" hreflang>. Only the path is taken from
+  // it, so the mirror, pages.dev and a local server stay on their own origin.
+  function alternatePath(lang) {
+    var link = document.querySelector('link[rel="alternate"][hreflang="' + lang + '"]');
+    if (!link) return null;
+    try {
+      return new URL(link.getAttribute('href'), window.location.href).pathname;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Query and hash go along: ?profile=, ?new=1 and #calendar belong to the
+  // calculator and must survive the move.
+  function goToAlternate(lang, replace) {
+    var path = alternatePath(lang);
+    if (!path || path === window.location.pathname) return false;
+    var url = path + window.location.search + window.location.hash;
+    if (replace) window.location.replace(url);
+    else window.location.assign(url);
+    return true;
+  }
+
+  function storeLang(lang) {
+    try {
+      localStorage.setItem(STORAGE_KEY, lang === 'ru' ? 'ru' : 'en');
+    } catch (e) {
+      // localStorage throws in Safari private mode; the address still works.
+    }
+  }
+
   function currentLang() {
+    if (pathLang() === 'ru') return 'ru';
     try {
       return localStorage.getItem(STORAGE_KEY) === 'ru' ? 'ru' : 'en';
     } catch (e) {
@@ -229,15 +269,19 @@
   });
 
   function switchTo(lang) {
+    storeLang(lang);
+    // A page that exists in both languages changes address instead of being
+    // rewritten in place. This reloads a calculator; the BaZi app restores its
+    // form and chart from the tab's sessionStorage, the astrology app starts
+    // empty. Pages with no Russian copy (account, thank-you) still swap here.
+    if (goToAlternate(lang, false)) return;
     if (lang === 'ru') {
-      localStorage.setItem(STORAGE_KEY, 'ru');
       if (translations) {
         applyTranslations(translations);
       } else {
         fetchAndApply();
       }
     } else {
-      localStorage.setItem(STORAGE_KEY, 'en');
       restoreEnglish();
     }
     postCalculatorLanguage(lang);
@@ -272,7 +316,22 @@
     saveOriginals();
 
     // Auto-apply saved language
-    var saved = localStorage.getItem(STORAGE_KEY);
+    var saved = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      saved = null;
+    }
+    if (pathLang() === 'ru') {
+      // The text is already Russian in the markup; applying the translations
+      // again is harmless and also sets the brand lines and the form strings.
+      storeLang('ru');
+      saved = 'ru';
+    } else if (saved === 'ru' && goToAlternate('ru', true)) {
+      // A visitor who reads in Russian opened an English address that has a
+      // Russian copy: send them there, so the menu keeps them on /ru/.
+      return;
+    }
     if (saved === 'ru') {
       fetchAndApply();
     }
