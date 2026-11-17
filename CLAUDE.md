@@ -18,6 +18,8 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - `robots.txt` (only `/api/` disallowed) and `sitemap.xml` (9 pages, extensionless URLs, `lastmod` written by hand — update it when a page's content changes; add new pages).
 - `<link rel="canonical">` on the 9 indexable pages (index, about, services, contact, guide, posts, calculator, astrology, privacy), extensionless, right after the description meta; `og:url` matches it. `noindex` meta on account, agreement, readings-terms, thank-you, payment-thank-you.
 - `_headers`: `X-Robots-Tag: noindex` on `/calc/*` and `/astro/*` — the app documents are shown inside `calculator.html` / `astrology.html` and must not appear in search on their own.
+- Live since 2026-11-16 (sow-web 28f45a9, pushed by another session together with its calculator rebuilds); `robots.txt` checked on the live site. The sitemap has **not** been submitted to Google Search Console or Yandex Webmaster.
+- **Traffic baseline, 30 days to 2026-11-16** (Web Analytics, bots excluded, sampled): ~380 page views; `/calc/` 120, `/` 110, `/calculator` 100, `/account` 40, `/posts` 10; referrers only the site itself (220) and direct (160) — no search, social or outside links; countries US 320, Georgia 30, Japan / China / Ukraine 10 each; desktop 200, mobile 180. Includes the owner's own visits and test sessions. `.nz` had no data at all. Portal database the same day: 1 customer, 1 saved chart.
 - Not done: Russian text is injected by script, so search engines see English only; journal posts share one URL; calculator pages have no descriptive text; no schema.org markup; Search Console / Yandex Webmaster not checked.
 
 ## Contact Form Email
