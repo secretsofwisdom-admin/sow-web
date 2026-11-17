@@ -509,11 +509,12 @@ header p:not(.tagline) {
 .home-scene, .hero-luopan { display: none; }
 html:not([data-theme="light"]) .home-scene {
   display: block;
-  position: absolute;
+  position: fixed;
   top: var(--nav-h);
   left: 0;
   right: 0;
-  height: 940px;
+  bottom: 0;
+  height: auto;
   z-index: -1;
   pointer-events: none;
   background: url('images/night-landscape.jpg') center bottom / cover no-repeat;
@@ -581,14 +582,12 @@ html:not([data-theme="light"]) header .hero-intro { margin-top: 0; color: #D5CCB
   text-align: center;
 }
 @media (max-width: 1350px) {
-  html:not([data-theme="light"]) .home-scene { height: 880px; }
   html:not([data-theme="light"]) .page-home header h1 { font-size: 52px; }
   html:not([data-theme="light"]) .hero-emblem { width: 306px; margin: 24px auto 20px; }
   html:not([data-theme="light"]) .hero-luopan { width: 1170px; height: 1170px; }
   header .hero-intro { font-size: 21px; }
 }
 @media (max-width: 760px) {
-  html:not([data-theme="light"]) .home-scene { height: 980px; }
   html:not([data-theme="light"]) .page-home header h1 { font-size: 38px; }
   html:not([data-theme="light"]) .page-home header p:not(.tagline):not(.hero-intro) { font-size: 18px; }
   html:not([data-theme="light"]) .hero-emblem { width: min(275px, 73vw); margin: 26px auto; }
