@@ -33,6 +33,12 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - **Calculator text:** `.calc-wrapper` is `position: fixed` and fills the screen, and making the page scroll would put the phone zoom/pan behaviour at risk, so the descriptive text went into the two guide posts and into richer `<title>`/descriptions of `calculator.html` / `astrology.html`, not onto the calculator pages. **The guide texts (EN + RU) were written by Claude from the feature notes; the owner said to merge on 2026-11-16** — terms she may still want to adjust: «двенадцать управителей дня», «сезоны», «поздний час Крысы», "true solar time".
 - Verified locally 2026-11-16 (`wrangler pages dev`, preview entry `search-ru-9101`): static Russian on `/ru/about`, menu links and current-page mark, EN↔RU navigation, redirect of a stored-`ru` visitor incl. `calculator?new=1#calendar`, in-place swap on `account`, post list and post pages at 1024 and 375 px, dark and light. Not checked: a language switch with a cast chart in either calculator; a phone.
 
+## Share chart (2026-11-16, committed locally, **not pushed**)
+- Both calculators: a Share button (BaZi: «Поделиться» in the header; astro: share icon beside the theme button), only while a chart is cast. Dialog shows the link, says the birth data is readable in it, copies it; «Отправить…» opens the browser's share sheet where one exists.
+- Link = the framing page's own address + `?chart=<base64url JSON>` (`calculator?chart=…`, `astrology?chart=…`, `/ru/…` and the mirror keep their own address). Name included (owner's choice). Nothing stored on the server; no site code changed — the apps read and drop the parameter from the parent page. `lang-switcher.js` keeps the query on its redirects.
+- Built from BaziCalculator 2337a28 and AstroCalculator d150f03 (astro tree also carries the uncommitted 2026-11-10 ink-blue token change, already live).
+- Checked 2026-11-16 on a local `python3 -m http.server` (`wrangler pages dev` truncated `main.dart.js` / `canvaskit.wasm` that day): link casts the chart in both apps, EN and `/ru/`, param removed; copy works in real Chrome (the built-in browser pane refuses clipboard writes on every page). Not checked: a phone, the share sheet itself.
+
 ## Contact Form Email
 - **Provider:** Resend (API key stored as Cloudflare Pages secret `RESEND_API_KEY`)
 - **Endpoint:** `/api/contact` (Pages Function at `functions/api/contact.js`)
