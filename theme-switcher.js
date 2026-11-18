@@ -9,7 +9,7 @@
  * This file runs after first paint. The palette itself is applied earlier, by
  * the small synchronous script in each page's <head>: a deferred script runs
  * after parse, which is far too late to stop a flash of the wrong ground.
- * Everything here is the part that can afford to wait — wiring the select,
+ * Everything here is the part that can afford to wait — wiring the toggle,
  * persisting a choice, telling the calculators.
  */
 (function () {
@@ -36,8 +36,10 @@
     } else {
       document.documentElement.dataset.theme = theme;
     }
-    document.querySelectorAll('.theme-select').forEach(function (sel) {
-      if (sel.value !== theme) sel.value = theme;
+    // The word and icon follow the attribute in CSS; only the state for
+    // assistive technology is set here.
+    document.querySelectorAll('.theme-toggle').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
     });
   }
 
@@ -46,7 +48,7 @@
     if (theme === current()) {
       // Still re-apply: this is also the path the message listener uses when
       // a calculator announces a palette the store already agrees with, and
-      // the select may be out of sync.
+      // the button's pressed state may be out of sync.
       apply(theme);
       return;
     }
@@ -63,13 +65,14 @@
   window.sowCurrentTheme = current;
 
   function init() {
-    document.querySelectorAll('.theme-select').forEach(function (sel) {
-      sel.addEventListener('change', function () {
-        switchTo(this.value);
+    // One click flips dark and light (2026-11-18; it was a two-item select).
+    document.querySelectorAll('.theme-toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        switchTo(current() === 'light' ? DEFAULT : 'light');
       });
     });
-    // The <head> script already set the attribute; this syncs the select,
-    // which does not exist yet at that point.
+    // The <head> script already set the attribute; this syncs the button's
+    // pressed state, which does not exist yet at that point.
     apply(current());
   }
 

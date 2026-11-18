@@ -427,7 +427,7 @@ nav a[aria-current="page"] {
 nav a:focus-visible,
 .nav-toggle:focus-visible,
 .lang-select:focus-visible,
-.theme-select:focus-visible {
+.theme-toggle:focus-visible {
   outline: 2px solid var(--nav-current);
   outline-offset: 3px;
   border-radius: var(--r-sm);
@@ -1216,7 +1216,7 @@ footer {
   align-items: center;
 }
 .nav-controls .lang-select,
-.nav-controls .theme-select {
+.nav-controls .theme-toggle {
   position: static;
   transform: none;
   top: auto;
@@ -1233,8 +1233,7 @@ footer {
 
    Widths are fixed so the budget is a constant rather than a function of the
    widest option string the browser happens to render. */
-.lang-select,
-.theme-select {
+.lang-select {
   appearance: none;
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23A58750' d='M0 0h8L4 5z'/%3E%3C/svg%3E");
@@ -1247,7 +1246,7 @@ footer {
    content-sized, and the padding above is what was actually tuned. */
 
 .lang-select,
-.theme-select {
+.theme-toggle {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -1269,15 +1268,47 @@ footer {
   transition: border-color .25s ease, color .25s ease;
 }
 .lang-select:hover,
-.theme-select:hover {
+.theme-toggle:hover {
   color: var(--nav-link-hover);
   border-color: var(--nav-link);
+  /* The generic button:hover glow is for the gold call-to-action buttons. */
+  filter: none;
+  box-shadow: none;
 }
-.lang-select option,
-.theme-select option {
+.lang-select option {
   background: var(--panel-fill);
   color: var(--ink);
 }
+/* Theme toggle (2026-11-18, the owner: one click switches dark and light, no
+   list). Shares the select's box above; no caret, a moon or sun instead in
+   about the caret's room, so the controls block keeps its width for the
+   collapse budget. The current palette's word and icon are chosen by the
+   attribute the <head> script sets, so the button is right before any
+   script runs. Both words share one grid cell so the box is always as wide
+   as "LIGHT" and does not jump on a click. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-right: 8px;
+  line-height: 1.2;
+}
+.theme-toggle .tt-icon {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.theme-toggle .tt-text { display: inline-grid; }
+.theme-toggle .tt-dark,
+.theme-toggle .tt-light { grid-area: 1 / 1; }
+.theme-toggle .tt-light,
+.theme-toggle .tt-sun { visibility: hidden; }
+html[data-theme="light"] .theme-toggle .tt-light,
+html[data-theme="light"] .theme-toggle .tt-sun { visibility: visible; }
+html[data-theme="light"] .theme-toggle .tt-dark,
+html[data-theme="light"] .theme-toggle .tt-moon { visibility: hidden; }
 
 /* Brand stacked (RU mode) */
 [data-i18n-brand] .brand-en { display: block; font-size: 1em; }
@@ -1437,6 +1468,9 @@ html:has(.calc-wrapper) body {
     margin-top: 14px;
     justify-content: center;
   }
+  /* The rule above for a bare .lang-select also caught the one inside the
+     controls and set it 7px lower than its neighbour. */
+  nav.open .nav-controls .lang-select { margin-top: 0; }
   nav.open .nav-toggle { top: 18px; transform: none; }
   /* Pin the medallion to the top of the drawer — vertically centring it
      inside an open menu drops it into the middle of the link list. */
