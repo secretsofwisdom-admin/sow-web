@@ -39,7 +39,7 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - Built from BaziCalculator 48ee473 and AstroCalculator f419b98 (astro tree also carries the uncommitted 2026-11-10 ink-blue token change, already live). Details in `BaziCalculator/CLAUDE.md` ("Share chart").
 - Checked on a local `python3 -m http.server` (`wrangler pages dev` truncated `main.dart.js` / `canvaskit.wasm` on 2026-11-16): the link casts the chart in both apps, EN and `/ru/`, param removed, compact link gives the same chart as the JSON one; copy works in real Chrome (the built-in browser pane refuses clipboard writes on every page). Not checked: a phone, the share sheet itself.
 - Checked on the live site 2026-11-17: `/ru/calculator?c=…` casts the chart and drops the parameter.
-- 2026-11-18 (owner's choice «A»): BaZi header buttons stand in one column under the site's language select, icon + label, 27 units tall; proverb to their left; charts unchanged. Built from BaziCalculator 4bd5c21. (A text-only one-row version the same day was replaced before going live.)
+- 2026-11-18 (owner's choice «A»): BaZi header buttons stand in one column right under the menu's RU select (right edge 24 px from the window edge, drawn over the window, not on the canvas), icon + label, 27 units tall; proverb to their left; charts unchanged. Built from BaziCalculator 57d80f1.
 
 ## Contact Form Email
 - **Provider:** Resend (API key stored as Cloudflare Pages secret `RESEND_API_KEY`)
