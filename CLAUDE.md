@@ -38,7 +38,8 @@ Static website for "Secrets of Wisdom · NZ" — feng shui, astrology, spatial d
 - Link = the framing page's own address + `?c=<data>` (`calculator?c=…`, `astrology?c=…`; `/ru/…` and the mirror keep their own address). Data = birth data packed into bits, base64url; the city is found by its coordinates in the app's city database. A named Moscow chart is ~80 characters in all (`secretsofwisdom.org/calculator?c=` + 42). Name included (owner's choice). Nothing stored on the server; no site code changed — the apps read and drop the parameter from the parent page. `lang-switcher.js` keeps the query on its redirects. The first JSON `?chart=` version (~560 chars, 2026-11-16) never went live.
 - Built from BaziCalculator 48ee473 and AstroCalculator f419b98 (astro tree also carries the uncommitted 2026-11-10 ink-blue token change, already live). Details in `BaziCalculator/CLAUDE.md` ("Share chart").
 - Checked on a local `python3 -m http.server` (`wrangler pages dev` truncated `main.dart.js` / `canvaskit.wasm` on 2026-11-16): the link casts the chart in both apps, EN and `/ru/`, param removed, compact link gives the same chart as the JSON one; copy works in real Chrome (the built-in browser pane refuses clipboard writes on every page). Not checked: a phone, the share sheet itself.
-- Checked on the live site 2026-11-17: `/ru/calculator?c=…` casts the chart and drops the parameter. Signed in, the BaZi header holds four buttons and Appearance wraps to a second row (the `Wrap` is built for that).
+- Checked on the live site 2026-11-17: `/ru/calculator?c=…` casts the chart and drops the parameter.
+- 2026-11-18: BaZi header buttons are text only and smaller so all four (New chart, My charts, Share, Appearance) fit one row in RU too; built from BaziCalculator 45f9a31.
 
 ## Contact Form Email
 - **Provider:** Resend (API key stored as Cloudflare Pages secret `RESEND_API_KEY`)
