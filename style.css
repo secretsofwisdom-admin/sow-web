@@ -46,14 +46,16 @@
   --panel-fill: #0A1524;   /* was #15181B */
   --panel-inner: #0F1D30;  /* was #1B1E24 */
   --panel-border: #332C22;
-  --nav-fill: #07101C;     /* was #111619 */
-  /* Site menu (2026-11-09, the approved preview): light champagne links,
-     warm ivory on hover, soft gold for the current page, muted bronze
-     hairlines. */
-  --nav-link: #E4D3AD;
-  --nav-link-hover: #FFF0D2;
-  --nav-current: #E8BE70;
-  --nav-rule: #66543A;
+  --nav-fill: #050C19;     /* was #07101C, before that #111619 */
+  /* Site menu in white gold (2026-11-19, the owner, with the calculator's
+     midnight pack, for the whole site's dark theme): pale gold with a
+     champagne undertone in place of the yellow one. Links #D6C69C, lighter
+     on hover, the pack's highlight for the current page, a quiet hairline.
+     Before: #E4D3AD / #FFF0D2 / #E8BE70 / #66543A. */
+  --nav-link: #D6C69C;
+  --nav-link-hover: #F3E9CC;
+  --nav-current: #E7D8AF;
+  --nav-rule: #5F5640;
 
   /* Ink
      --ink-muted is the calculator's fieldValueInk, not its fieldHintInk. The
