@@ -43,6 +43,7 @@ PAGES = [
     "calculator", "astrology",
     "bazi-calculator-guide", "natal-chart-calculator-guide",
     "fire-horse-2026", "eclipse-corridor-2026",
+    "bazi-useful-element",
 ]
 # In the sitemap, English only.
 EN_ONLY = ["privacy"]

@@ -39,6 +39,7 @@ PAGES = [
     "posts.html", "services.html", "thank-you.html",
     "bazi-calculator-guide.html", "natal-chart-calculator-guide.html",
     "fire-horse-2026.html", "eclipse-corridor-2026.html",
+    "bazi-useful-element.html",
 ]
 
 LINK = re.compile(r'(<link rel="stylesheet" href="style\.css)(\?v=[^"]*)?(")')
