@@ -357,7 +357,8 @@ p { margin: 0 0 14px; }
   transition: opacity 1s ease;
 }
 #loader img {
-  max-width: 180px;
+  width: auto;
+  height: 150px;
   animation: loaderPulse 2s ease-in-out infinite;
 }
 @keyframes loaderPulse {
@@ -396,14 +397,13 @@ nav {
   border: none;
 }
 .nav-logo:hover { border: none; }
-/* sow-logo-nav.png is the owner's original logo (2026-11-10), only scaled
-   down from 1254 px: the round medallion with its smoke and roots, on a
-   transparent ground — no mask, no border, never cropped to the circle. */
+/* The compact mark (flame, smoke, bowl with W) from the owner's pack of
+   2026-11-20, the same file in both themes, cut by scripts/make_logo.py — only cropped and scaled, on a
+   transparent ground. Taller than wide, so the height is set and the width
+   follows; the file's own margin keeps the tip of the smoke whole. */
 .nav-logo img {
-  height: 58px;
-  width: 58px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(227, 181, 105, .22));
+  height: 68px;
+  width: auto;
 }
 nav a {
   text-decoration: none;
@@ -488,21 +488,24 @@ header p:not(.tagline) {
   margin-top: 14px;
 }
 
-/* Hero medallion — the artwork's own rim is the frame; the glow sits under it. */
+/* Hero logo — the full logo with its gold "Secrets of Wisdom" caption, the
+   same file in both themes, straight on the page's own ground, no filter
+   (2026-11-20, the owner's pack). The file is centred on the bowl's axis,
+   not on the caption (scripts/make_logo.py), so the flame and bowl stand on
+   the Luopan's centre; the caption sits a little to the right, as drawn. */
 .hero-image {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 300px;
-  margin: 34px auto 0;
-  filter: drop-shadow(0 0 30px rgba(227, 181, 105, .22));
+  max-width: 348px;
+  margin: 30px auto 0;
 }
 
 /* Home hero, approved mock-up home-harmony-v3 (2026-11-10), dark theme:
    layers landscape (.home-scene) -> Luopan (.hero-luopan) -> medallion and
-   text. The medallion is the same sow_medallion.png, once; the verified
-   luopan-gold.svg sits behind it with its centre exactly on the medallion's
-   centre (1300 px wide screens, 1170 px at <=1350, 910 px at <=760 — the
+   text. The emblem is the full logo (sow-logo-full.png) since 2026-11-20;
+   the verified luopan-gold.svg sits behind it with its centre exactly on
+   the emblem box's centre (1300 px wide screens, 1170 px at <=1350, 910 px at <=760 — the
    approved +30%), at .30 opacity (.24 narrow), fading out at top and bottom,
    proportional, never mirrored or rotated. The nav (fixed, opaque, z 1000)
    covers anything of the circle that rises above the header, and body's
@@ -528,6 +531,12 @@ html:not([data-theme="light"]) .home-scene::after {
   background: linear-gradient(to bottom, rgba(5, 13, 24, 0) 76%, var(--bg-mid) 100%);
 }
 .hero-emblem { position: relative; }
+/* The Luopan is wider than a phone. Without this clip a phone browser
+   widens the whole page to the circle's right edge (650 px at a 390 px
+   screen, seen in Chrome's phone emulation 2026-11-20), and the fixed menu
+   with it, so the menu button ends up off screen. Sideways only: the circle
+   still rises and falls past the header. */
+html:not([data-theme="light"]) .page-home header { overflow-x: clip; }
 html:not([data-theme="light"]) .page-home header h1 { font-size: 58px; line-height: 1.15; }
 html:not([data-theme="light"]) .page-home header p:not(.tagline):not(.hero-intro) {
   text-transform: none;
@@ -536,7 +545,7 @@ html:not([data-theme="light"]) .page-home header p:not(.tagline):not(.hero-intro
   margin-top: 10px;
 }
 html:not([data-theme="light"]) .page-home .tagline { font-size: 12px; letter-spacing: 2.2px; margin-top: 15px; }
-html:not([data-theme="light"]) .hero-emblem { width: 338px; margin: 28px auto 22px; }
+html:not([data-theme="light"]) .hero-emblem { width: 368px; margin: 28px auto 22px; }
 html:not([data-theme="light"]) .hero-emblem::before {
   content: '';
   position: absolute;
@@ -545,7 +554,7 @@ html:not([data-theme="light"]) .hero-emblem::before {
   background: radial-gradient(ellipse, rgba(199, 149, 61, .095), rgba(199, 149, 61, .035) 38%, transparent 69%);
   z-index: -1;
 }
-html:not([data-theme="light"]) .hero-emblem .hero-image { max-width: none; width: 100%; height: auto; margin: 0; filter: none; }
+html:not([data-theme="light"]) .hero-emblem .hero-image { max-width: none; width: 100%; height: auto; margin: 0; }
 html:not([data-theme="light"]) .hero-luopan {
   --fade: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, .4) 18%, #000 33%, #000 65%, rgba(0, 0, 0, .4) 82%, transparent 100%);
   display: block;
@@ -585,14 +594,14 @@ html:not([data-theme="light"]) header .hero-intro { margin-top: 0; color: #D5CCB
 }
 @media (max-width: 1350px) {
   html:not([data-theme="light"]) .page-home header h1 { font-size: 52px; }
-  html:not([data-theme="light"]) .hero-emblem { width: 306px; margin: 24px auto 20px; }
+  html:not([data-theme="light"]) .hero-emblem { width: 333px; margin: 24px auto 20px; }
   html:not([data-theme="light"]) .hero-luopan { width: 1170px; height: 1170px; }
   header .hero-intro { font-size: 21px; }
 }
 @media (max-width: 760px) {
   html:not([data-theme="light"]) .page-home header h1 { font-size: 38px; }
   html:not([data-theme="light"]) .page-home header p:not(.tagline):not(.hero-intro) { font-size: 18px; }
-  html:not([data-theme="light"]) .hero-emblem { width: min(275px, 73vw); margin: 26px auto; }
+  html:not([data-theme="light"]) .hero-emblem { width: min(300px, 80vw); margin: 26px auto; }
   html:not([data-theme="light"]) .hero-luopan { width: 910px; height: 910px; opacity: .24; }
   header .hero-intro { font-size: 20px; }
   .hero-actions { gap: 12px; }
@@ -1443,7 +1452,7 @@ html:has(.calc-wrapper) body {
     padding: 10px;
   }
   .nav-logo { left: 10px; }
-  .nav-logo img { height: 44px; width: 44px; }
+  .nav-logo img { height: 52px; width: auto; }
   .nav-toggle {
     display: flex;
     position: absolute;
@@ -1506,7 +1515,7 @@ html:has(.calc-wrapper) body {
   }
   section:has(.svc-card) { padding: 0 14px; margin: 22px auto; }
 
-  .hero-image { max-width: 240px; }
+  .hero-image { max-width: 262px; }
   .home-grid { grid-template-columns: 1fr; }
 
   .post-card-header, .svc-card-header {
