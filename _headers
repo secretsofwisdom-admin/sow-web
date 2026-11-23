@@ -18,15 +18,3 @@
   Permissions-Policy: interest-cohort=()
   Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Opener-Policy: same-origin
-
-# The icon font keeps its address from build to build while its contents
-# change: Flutter leaves in it only the icons the app uses. Cached for four
-# hours like other files, a returning visitor got the new app with the old
-# font, and a button added in that build had no icon (2026-11-22, the Save
-# chart button on the owner's screen). The browser now asks each time; the
-# file is about 10 KB and an unchanged one costs an empty answer.
-/calc/assets/fonts/MaterialIcons-Regular.otf
-  Cache-Control: public, max-age=0, must-revalidate
-
-/astro/assets/fonts/MaterialIcons-Regular.otf
-  Cache-Control: public, max-age=0, must-revalidate

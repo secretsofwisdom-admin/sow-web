@@ -15,6 +15,16 @@ Two links are stamped, because each file names the next:
   index.html -> flutter_bootstrap.js?v=<hash of the stamped bootstrap>
   flutter_bootstrap.js -> "mainJsPath":"main.dart.js?v=<hash of main.dart.js>"
 The bootstrap is stamped first, so its own hash covers the new main stamp.
+
+The icon font is stamped too (2026-11-22):
+  assets/FontManifest.json -> "fonts/MaterialIcons-Regular.otf?v=<its hash>"
+Flutter keeps in that file only the icons the app uses, so its contents
+change with every new icon while its address stays, and it is cached for
+four hours as well: the new Save chart button had no icon on the owner's
+screen. FontManifest.json itself is served max-age=0, so the new address is
+always seen. A Cache-Control rule in _headers does not help: the four hours
+are the zone's Browser Cache TTL, which overrides it on the main domain.
+
 Idempotent: a second run changes nothing.
 """
 import hashlib
@@ -27,6 +37,7 @@ APPS = ["calc", "astro"]
 
 MAIN = re.compile(r'("mainJsPath":"main\.dart\.js)(\?v=[0-9a-f]+)?(")')
 BOOT = re.compile(r'(<script src="flutter_bootstrap\.js)(\?v=[0-9a-f]+)?(")')
+ICONS = re.compile(r'("asset":"fonts/MaterialIcons-Regular\.otf)(\?v=[0-9a-f]+)?(")')
 
 
 def stamp(path: Path, pattern: re.Pattern, value: str) -> bool:
@@ -50,6 +61,8 @@ def main() -> int:
         boot = base / "flutter_bootstrap.js"
         changed = stamp(boot, MAIN, md5(base / "main.dart.js"))
         changed |= stamp(base / "index.html", BOOT, md5(boot))
+        icons = base / "assets" / "fonts" / "MaterialIcons-Regular.otf"
+        changed |= stamp(base / "assets" / "FontManifest.json", ICONS, md5(icons))
         print(f"{app}: {'stamped' if changed else 'already current'}")
     return 0
 
